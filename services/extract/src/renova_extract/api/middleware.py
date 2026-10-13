@@ -87,9 +87,7 @@ class SecurityHeadersMiddleware:
                 headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
                 headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
                 if not path.startswith(_DOCS_PATHS):
-                    headers.setdefault(
-                        "Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'"
-                    )
+                    headers.setdefault("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
                 if path.startswith("/v1/"):
                     headers.setdefault("Cache-Control", "no-store")
                 if self.hsts:

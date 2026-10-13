@@ -19,6 +19,10 @@ dependencies = [
   "redis==8.1.0",
   "structlog==26.1.0",
   "httpx==0.28.1",
+  "pypdfium2==5.13.0",
+  "pillow==12.3.0",
+  "pyyaml==6.0.3",
+  "boto3==1.43.103",
 ]
 
 [project.optional-dependencies]
@@ -28,13 +32,15 @@ dev = [
   "ruff==0.16.8",
   "mypy==2.3.1",
   "fakeredis==2.38.0",
+  "moto[s3]==5.2.3",
+  "types-PyYAML==6.0.12.20250915",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/renova_extract"]
 
 [tool.ruff]
-line-length = 110
+line-length = 120
 target-version = "py312"
 src = ["src", "tests"]
 
@@ -67,3 +73,7 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 markers = ["integration: needs running Redis/MinIO (docker compose)"]
+
+[[tool.mypy.overrides]]
+module = ["pypdfium2.*", "boto3.*", "botocore.*", "moto.*"]
+ignore_missing_imports = true

@@ -53,9 +53,7 @@ def _redact(value: Any) -> Any:
     return value
 
 
-def redact_sensitive(
-    _logger: Any, _method: str, event_dict: MutableMapping[str, Any]
-) -> MutableMapping[str, Any]:
+def redact_sensitive(_logger: Any, _method: str, event_dict: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
     for key in list(event_dict.keys()):
         if key == "event":
             continue
@@ -94,9 +92,7 @@ def _shared_processors() -> list[Any]:
 
 
 def build_formatter(json_logs: bool = True) -> logging.Formatter:
-    renderer: Any = (
-        structlog.processors.JSONRenderer() if json_logs else structlog.dev.ConsoleRenderer(colors=False)
-    )
+    renderer: Any = structlog.processors.JSONRenderer() if json_logs else structlog.dev.ConsoleRenderer(colors=False)
     return structlog.stdlib.ProcessorFormatter(
         foreign_pre_chain=_shared_processors(),
         processors=[

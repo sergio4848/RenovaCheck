@@ -1,0 +1,62 @@
+# Document type classification by keywords. Text is normalized before matching: lower case,
+# Polish diacritics removed, whitespace collapsed. Patterns are regular expressions on that text.
+# A type's score is the sum of the weights of its matching patterns (each counted once).
+# The best type wins when its score reaches min_score and leads the runner-up by min_margin;
+# otherwise the document is "unknown" and waits for a person to set the type.
+version: 1
+min_score: 6
+min_margin: 3
+types:
+  wniosek_ekstrakt:
+    label_pl: "Wyciąg z wniosku"
+    patterns:
+      - {regex: 'wyciag\s+z\s+wniosku', weight: 10}
+      - {regex: 'numer\s+wniosku', weight: 3}
+      - {regex: 'wnioskodawc', weight: 2}
+      - {regex: 'czyste\s+powietrze', weight: 1}
+  oferta:
+    label_pl: "Oferta"
+    patterns:
+      - {regex: '\boferta\s+nr\b', weight: 8}
+      - {regex: 'oferta\s+wazna', weight: 4}
+      - {regex: '\boferent\b', weight: 2}
+  umowa:
+    label_pl: "Umowa"
+    patterns:
+      - {regex: '\bumowa\s+nr\b', weight: 8}
+      - {regex: 'zawarta\s+w\s+dniu', weight: 4}
+      - {regex: 'pomiedzy\s+zamawiajacym', weight: 2}
+  aneks:
+    label_pl: "Aneks do umowy"
+    patterns:
+      - {regex: '\baneks\s+nr\b', weight: 10}
+      - {regex: 'strony\s+zgodnie\s+postanawiaja\s+zmienic', weight: 4}
+  faktura:
+    label_pl: "Faktura VAT"
+    patterns:
+      - {regex: '\bfaktura\s+vat\s+nr\b', weight: 8}
+      - {regex: 'razem\s+brutto', weight: 2}
+      - {regex: 'sposob\s+platnosci', weight: 1}
+  faktura_zaliczkowa:
+    label_pl: "Faktura zaliczkowa"
+    patterns:
+      - {regex: '\bfaktura\s+zaliczkowa\s+nr\b', weight: 12}
+      - {regex: 'zaliczka\s+brutto', weight: 3}
+  faktura_korygujaca:
+    label_pl: "Faktura korygująca"
+    patterns:
+      - {regex: '\bfaktura\s+korygujaca\s+nr\b', weight: 12}
+      - {regex: 'korekta\s+do\s+faktury', weight: 4}
+      - {regex: 'przyczyna\s+korekty', weight: 3}
+  protokol_odbioru:
+    label_pl: "Protokół odbioru"
+    patterns:
+      - {regex: '\bprotokol\s+odbioru\b', weight: 10}
+      - {regex: 'data\s+odbioru', weight: 3}
+      - {regex: 'odbior\s+bez\s+zastrzezen', weight: 2}
+  karta_produktu:
+    label_pl: "Karta produktu"
+    patterns:
+      - {regex: '\bkarta\s+produktu\b', weight: 10}
+      - {regex: '\bscop\b', weight: 2}
+      - {regex: 'liscie\s+zum', weight: 2}

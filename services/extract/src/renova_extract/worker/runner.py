@@ -79,9 +79,7 @@ async def run(settings: Settings, stop: asyncio.Event, redis: Redis | None = Non
         while not stop.is_set():
             touch_heartbeat()
             try:
-                item = await client.blpop(
-                    [settings.extract_queue], timeout=settings.worker_poll_timeout_seconds
-                )
+                item = await client.blpop([settings.extract_queue], timeout=settings.worker_poll_timeout_seconds)
                 backoff = 1.0
             except Exception as exc:
                 log.warning("worker.queue_unavailable", error=type(exc).__name__)

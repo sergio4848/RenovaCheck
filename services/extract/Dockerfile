@@ -38,7 +38,12 @@ RUN pip install --no-deps .
 FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/opt/venv/bin:$PATH"
+    PATH="/opt/venv/bin:$PATH" \
+    RENOVA_RULES_DIR=/app/rules
+# Local OCR fallback for pages without a text layer (TesseractPol adapter).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-pol \
+    && rm -rf /var/lib/apt/lists/*
 RUN groupadd --system --gid 10001 renova \
     && useradd --system --uid 10001 --gid renova --home-dir /app --shell /usr/sbin/nologin renova
 WORKDIR /app
@@ -48,6 +53,7 @@ COPY --from=build /opt/venv /opt/venv
 COPY --chown=renova:renova pyproject.toml README.md ./
 COPY --chown=renova:renova src ./src
 COPY --chown=renova:renova tests ./tests
+COPY --from=rules --chown=renova:renova . ./rules
 USER renova
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --retries=5 --start-period=10s \
