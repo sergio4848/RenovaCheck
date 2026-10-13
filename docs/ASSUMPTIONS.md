@@ -35,3 +35,13 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 | C9 | Yerel S3 deposu: `minio/minio` imajları Docker Hub'dan kaldırıldığı için topluluk derlemesi `pgsty/minio` (sabit sürüm) kullanılır; uygulama yalnızca S3 API'sine bağlıdır (ADR-0004). | "MinIO yerelde" kararı korunur, imaj kaynağı değişir. |
 | C10 | RLS "baseline" kontrolleri pgTAP yerine PHPUnit içinden katalog sorgularıyla yapılır (`RlsBaselineTest`). | Ek Postgres eklentisi/imajı gerektirmez; aynı güvenceyi verir. |
 | C11 | Hash zinciri değiştirmeyi **tespit eder**, şema sahibi yetkisiyle trigger'ı kapatan birini **engellemez** (ADR-0005). | Prototip için yeterli; üretimde harici imzalı çapa (ör. günlük hash'in dışarı yazılması) değerlendirilir. |
+
+## D. Sentetik veri (Faz 2)
+
+| # | Varsayım | Gerekçe |
+|---|---|---|
+| D1 | "20 sprawa × 5 belge = 100 belge" beş **çekirdek belge slotu** olarak yorumlandı: wniosek_ekstrakt, oferta/umowa, faktura, protokół odbioru, karta produktu. `missing_protocol` senaryosu slotu boş bırakır (2 vaka → 98 çekirdek belge); faktura zaliczkowa/korygująca ve aneks ek belgedir (+8). Toplam 106 PDF. | Eksik belge senaryosu tanım gereği belgeyi kaldırır; ek faturalar promptta "+" olarak tanımlı. |
+| D2 | Tek tedbir türü: hava-su pompa ciepła (+ montaż, opsiyonel zasobnik c.w.u. ve %23 KDV'li servis kalemi). Docieplenie/stolarka yok. | Kapsamı büyütmeme; tutar kuralları için %8/%23 karışımı yeterli. |
+| D3 | Konut termomodernizasyonunda montajlı cihaz teslimi için %8 KDV (art. 41 ust. 12); servis kalemi %23. | Gerçekçi netto/brutto satırları. Vergi danışmanlığı değildir. |
+| D4 | Üretici/model adları (Termavix TVX-08A vb.), ZUM numaraları (`ZUM/PC/1234`) ve şirket adları uydurmadır; yerleşim adları uydurma olmakla birlikte Polonya'da benzer adlı köyler bulunabilir. | Gerçek veri kullanmama kuralı. |
+| D5 | Wniosek ekstrakt, başvurunun tamamı değil; operatör sisteminden alınmış bir "wyciąg" olarak modellenir (başvurucu, adres, kapsam, planlanan maliyet). | 05 dokümanı yok; prompttaki "wniosek özeti" ifadesi. |

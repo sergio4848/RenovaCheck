@@ -36,8 +36,8 @@ Decisions: [`docs/ADR/`](docs/ADR/README.md).
 ```
 apps/web/            Laravel application
 services/extract/    Python extraction service + worker
-packages/rules/      rule set, field dictionary, schemas        (phase 4–5)
-tools/synth/         synthetic documents + ground truth         (phase 2)
+packages/rules/      field dictionary, schemas (rules: phase 5)
+tools/synth/         synthetic documents + ground truth
 infra/postgres/      roles and databases bootstrap
 docs/                plan, assumptions, ADRs, reports
 ```
@@ -59,6 +59,10 @@ Open <http://localhost:8080> and sign in with a demo account (password `renova-d
 | `wlasciciel@alfa.test` | Alfa Termo Audyt — owner |
 | `weryfikator@alfa.test` | Alfa Termo Audyt — reviewer, Beta Dokumentacja — reviewer |
 | `wlasciciel@beta.test` | Beta Dokumentacja — owner |
+
+Synthetic data: `make synth` writes 20 cases (106 PDFs with ground truth) to `data/synth/`
+and validates them against `packages/rules/schema/ground_truth.schema.json`; see
+[`tools/synth/README.md`](tools/synth/README.md).
 
 Other targets: `make help`, `make logs`, `make seed` (idempotent), `make lint`, `make down`,
 `make reset` (asks before deleting volumes).
