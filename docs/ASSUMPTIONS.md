@@ -72,3 +72,16 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 | F7 | Azure/Google adaptör testleri, belgelenmiş yanıt şemasına göre yazılmış fixture'larla çalışır (canlı servisten kaydedilmedi; anahtar yok). Google için erişim belirteci ortamdan gelir (`gcloud auth print-access-token`, saatlik); servis hesabı anahtarı saklanmaz. | ASSUMPTIONS C4; gerçek kıyaslama Faz 7'de anahtarla. |
 | F8 | Ölçüm, doğru belge türüyle (ground truth) yapılır; sınıflandırma hatası ayrı ölçülür (Faz 3, %100). Aynı alan bir belgede birden çok kez basılmışsa (protokolde adres) herhangi biriyle eşleşme doğru sayılır. `unreadable` FN'dir ama FP değildir. | Hataların kaynağını ayırmak. |
 
+## G. Kural motoru (Faz 5)
+
+| # | Varsayım | Gerekçe |
+|---|---|---|
+| G1 | Tüm kurallar `program: czyste_powietrze`, `edition: 2025-03-31`, `valid_from: 2025-03-31` ile yazıldı; `source_url` programın resmi sitesi (`https://czystepowietrze.gov.pl/`). Edycja başlangıç tarihi ve kuralların program belgelerindeki karşılığı **do weryfikacji** (05/06 yok); her kuralın `notes` alanında belirtildi. | Uydurma ayrıntılı kaynak/paragraf yerine doğrulanabilir kök kaynak. |
+| G2 | Referans tarihi: wniosek `application_date` → umowa/oferta `contract_date` → sprawa oluşturma tarihi. „Bugün” kullanılmaz (sonuç günden güne değişmesin). | „Kurallar dosya tarihine göre seçilir”. |
+| G3 | Tutarlılık çoğunluk oyuyla yapılır; tam çoğunluk yoksa hatalı belge atanmadan tek bulgu üretilir. Aneks varsa ürün alanları aneks öncesi {wniosek, umowa/oferta} ve sonrası {aneks, faktura, protokół, karta} olarak ayrı karşılaştırılır; değişikliği PRD-03 „uzgodniona zmiana” olarak bildirir. | Gerçek vakada 3–6 belge; uzgodniona zmiana yanlış alarm olmamalı. |
+| G4 | Wniosek tutarları faturayla karşılaştırılmaz (wniosek planlanan maliyettir; aneks sonrası farklı olması olağan). Fatura satır toplamı kalem satırları okunmadığı için `netto + VAT = brutto` kontrolüyle sınırlıdır (F1). | Kapsam ve çift alarm önleme. |
+| G5 | Oferta için yalnızca wykonawca imzası zorunlu; umowa, aneks ve protokół için iki imza. Okunamayan imza „eksik” sayılmaz (kalite kuralına gider). | Sentetik şablon ve pratik: teklifler müşteri imzası olmadan da geçerli olabilir. |
+| G6 | ZUM eşleştirmesi (opsiyonel) yapılmadı: sentetik karta numaraları modele bağlı üretilmiyor; `zum_sample.csv` ile anlamlı bir eşleştirme için synth'in genişletilmesi gerekir. | Opsiyonel kapsam. |
+| G7 | Sokak yazım bulgusu (ADR-02), önek ve patron adı/baş harfi dışındaki farkları (diakritik, büyük harf) bildirir. Bu tanımla tutarlı olsun diye sentetik veri tablosu düzeltildi (bazı „olağan” varyantlar farklı yazılıyordu). | Temiz vakalarda sahte bulguyu önlemek; düzeltme `fix:` commit'inde. |
+| G8 | Değerlendirme, sprawa'daki son belge işlendiğinde otomatik ve „Sprawdź ponownie” ile elle çalışır; girdi değişmediyse otomatik çalıştırma atlanır. Bulgular silinmez: artık üretilmeyen bulgu `is_current=false` olur. | Faz 6 kararlarının kaybolmaması. |
+

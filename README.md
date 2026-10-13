@@ -36,7 +36,7 @@ Decisions: [`docs/ADR/`](docs/ADR/README.md).
 ```
 apps/web/            Laravel application
 services/extract/    Python extraction service + worker
-packages/rules/      document types, field dictionary with extraction anchors, schemas
+packages/rules/      document types, field dictionary, rules (YAML, versioned), schemas
 tools/synth/         synthetic documents + ground truth
 infra/postgres/      roles and databases bootstrap
 infra/minio/         bucket and per-service accounts
@@ -73,9 +73,17 @@ classifies the document type and reads the fields defined in
 fields next to the page image with the boxes they were read from. Virus scanning is optional:
 `docker compose --profile av up -d` with `CLAMAV_ENABLED=true`.
 
-`make eval` measures document type accuracy and per-field precision/recall against the
-synthetic ground truth (clean PDFs must reach 95 %; scans are reported) and writes
-`data/eval/classification.json` and `data/eval/extraction.json`.
+When all documents of a case are processed, the rules in
+[`packages/rules/rules/`](packages/rules/rules) run on the stored fields
+([ADR-0008](docs/ADR/0008-rule-engine.md)): address, parties, device, amounts (net/gross,
+advance, correction), missing documents, dates and signatures. Findings appear on the case page
+as "do sprawdzenia" with the reason and links to the fields; "Sprawdź ponownie" re-runs them.
+A rule change is a new rule version (`python -m renova_extract.rules lock --write` records it;
+published versions are immutable).
+
+`make eval` measures document type accuracy, per-field precision/recall (clean PDFs must reach
+95 %; scans are reported) and per-rule TP/FP/FN on ground-truth fields (must be exact) and on
+extracted fields, and writes `data/eval/{classification,extraction,rules}.json`.
 
 OCR and the optional LLM helper are chosen in `.env`: `RENOVA_OCR_PROVIDER` (`tesseract`,
 `text_layer`, `azure`, `google`) and `RENOVA_LLM_PROVIDER` (`off` by default, or `anthropic`;
