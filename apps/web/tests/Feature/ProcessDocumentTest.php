@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Documents\ExtractClient;
 use App\Enums\DocType;
+use App\Jobs\EvaluateCase;
 use App\Jobs\ProcessDocument;
 use App\Models\AuditEvent;
 use App\Models\CaseFile;
@@ -14,6 +15,7 @@ use App\Tenancy\TenantContext;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -29,6 +31,7 @@ class ProcessDocumentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Queue::fake();
         config(['services.extract.url' => 'http://extract:8000', 'services.extract.token' => 'secret-token']);
         Storage::fake('s3');
         Storage::disk('s3')->buildTemporaryUrlsUsing(fn (string $path) => "http://minio:9000/renova-documents/{$path}?sig=1");
@@ -273,5 +276,33 @@ class ProcessDocumentTest extends TestCase
         $this->assertNull($middleware->releaseAfter);
         $this->assertLessThan((int) config('queue.connections.redis.retry_after'), $job->timeout);
         $this->assertGreaterThan((int) config('services.extract.timeout'), $job->timeout);
+    }
+
+    public function test_the_case_is_checked_once_its_last_document_is_done(): void
+    {
+        $second = app(TenantContext::class)->run($this->owner, fn () => Document::factory()->create([
+            'case_file_id' => $this->case->id, 'uploaded_by' => $this->owner->user_id,
+        ]));
+        app(TenantContext::class)->clear();
+        Http::fake(['extract:8000/*' => Http::response($this->response())]);
+
+        $this->runJob();
+        Queue::assertNotPushed(EvaluateCase::class);
+
+        Http::fake(['extract:8000/*' => Http::response(array_replace($this->response(), ['document_id' => $second->id, 'pages' => [
+            array_replace($this->response()['pages'][0], ['image_key' => $second->storagePrefix().'pages/001.png']),
+        ], 'fields' => []]))]);
+        $this->runJob($second->id);
+
+        Queue::assertPushed(EvaluateCase::class, fn ($job) => $job->caseFileId === $this->case->id && ! $job->force);
+    }
+
+    public function test_a_failed_document_also_lets_the_case_be_checked(): void
+    {
+        Http::fake(['extract:8000/*' => Http::response(['error' => ['code' => 'unsupported_document']], 422)]);
+
+        $this->runJob();
+
+        Queue::assertPushed(EvaluateCase::class);
     }
 }

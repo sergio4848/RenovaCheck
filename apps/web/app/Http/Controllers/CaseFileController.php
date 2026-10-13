@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCaseFileRequest;
+use App\Jobs\EvaluateCase;
 use App\Models\AuditEvent;
 use App\Models\CaseFile;
+use App\Models\Finding;
 use App\Services\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,12 +55,25 @@ class CaseFileController extends Controller
             ->orderBy('id')
             ->get();
 
-        $documents = $caseFile->documents()->with('pages')->withCount('fields')->orderBy('created_at')->orderBy('original_name')->get();
+        $documents = $caseFile->documents()->with(['pages', 'fields:id,document_id,name'])->withCount('fields')
+            ->orderBy('created_at')->orderBy('original_name')->get();
+        $findings = $caseFile->findings()->current()->get()
+            ->sortBy(fn (Finding $f) => [Finding::SEVERITY_ORDER[$f->severity], $f->rule_id])->values();
 
         return view('cases.show', [
             'case' => $caseFile->load('creator:id,name'),
             'events' => $events,
             'documents' => $documents,
+            'findings' => $findings,
+            'evaluation' => $caseFile->evaluations()->latest('created_at')->first(),
         ]);
+    }
+
+    /** Runs the rules again on demand (e.g. after rules were updated). */
+    public function evaluate(CaseFile $caseFile): RedirectResponse
+    {
+        EvaluateCase::dispatch($caseFile->organization_id, $caseFile->id, force: true);
+
+        return redirect()->route('cases.show', $caseFile)->with('status', __('Checking the case again.'));
     }
 }

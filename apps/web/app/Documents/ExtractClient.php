@@ -44,4 +44,30 @@ final class ExtractClient
         // 4xx: the document itself is the problem; retrying will not help.
         throw new ExtractFailed($code, retryable: $response->serverError());
     }
+
+    /**
+     * Runs the rules on the fields stored for a case.
+     *
+     * @param  array<string, mixed>  $case
+     * @return array<string, mixed> the raw response body; the caller validates it
+     *
+     * @throws ExtractFailed
+     */
+    public function evaluate(array $case): array
+    {
+        try {
+            $response = Http::baseUrl((string) config('services.extract.url'))
+                ->withToken((string) config('services.extract.token'))
+                ->acceptJson()
+                ->timeout(30)
+                ->post('/v1/cases/evaluate', $case);
+        } catch (ConnectionException $e) {
+            throw new ExtractFailed('extract_unreachable', retryable: true, previous: $e);
+        }
+        if (! $response->successful()) {
+            throw new ExtractFailed((string) ($response->json('error.code') ?? 'extract_error'), retryable: $response->serverError());
+        }
+
+        return (array) $response->json();
+    }
 }

@@ -13,6 +13,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/cases', [CaseFileController::class, 'index'])->name('cases.index')->can('cases.view');
     Route::post('/cases', [CaseFileController::class, 'store'])->name('cases.store')->can('cases.create');
     Route::get('/cases/{caseFile}', [CaseFileController::class, 'show'])->name('cases.show')->can('cases.view');
+    Route::post('/cases/{caseFile}/evaluate', [CaseFileController::class, 'evaluate'])->name('cases.evaluate')->can('cases.create');
 
     // Scoped bindings: a document resolves only through its own case (and RLS through the tenant).
     Route::scopeBindings()->prefix('/cases/{caseFile}/documents')->name('documents.')->group(function () {

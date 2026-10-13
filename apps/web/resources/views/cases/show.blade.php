@@ -50,6 +50,55 @@
                     </div>
                 </div>
                 <div class="col-12">
+                    @php($byId = $documents->keyBy('id'))
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">{{ __('Findings') }}</h3>
+                            <div class="card-actions d-flex align-items-center gap-3">
+                                @if ($evaluation)
+                                    <span class="small text-secondary">
+                                        {{ __('Checked :when · rules valid on :date (:count)', ['when' => $evaluation->created_at->format('Y-m-d H:i'), 'date' => $evaluation->reference_date->format('d.m.Y'), 'count' => count($evaluation->ruleset)]) }}
+                                    </span>
+                                @endif
+                                @can('cases.create')
+                                    <form method="POST" action="{{ route('cases.evaluate', $case) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">{{ __('Check again') }}</button>
+                                    </form>
+                                @endcan
+                            </div>
+                        </div>
+                        @if ($findings->isEmpty())
+                            <div class="card-body text-secondary">
+                                {{ $evaluation ? __('No findings: the documents are consistent under the current rules.') : __('The case has not been checked yet. It is checked automatically once all documents are processed.') }}
+                            </div>
+                        @else
+                            <div class="list-group list-group-flush">
+                                @foreach ($findings as $finding)
+                                    <div class="list-group-item" id="finding-{{ $finding->id }}">
+                                        <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+                                            <x-finding-severity :severity="$finding->severity" />
+                                            <strong>{{ $finding->title_pl }}</strong>
+                                            <span class="small text-secondary font-mono">{{ $finding->rule_id }} v{{ $finding->rule_version }}</span>
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis ms-auto">{{ __('review_status.'.$finding->review_status) }}</span>
+                                        </div>
+                                        <div>{{ $finding->reason_pl }}</div>
+                                        @if ($finding->subject_doc_ids)
+                                            <div class="small mt-1">
+                                                @foreach ($finding->subject_doc_ids as $docId)
+                                                    @if ($doc = $byId->get($docId))
+                                                        <a href="{{ route('documents.show', [$case, $doc]) }}{{ $finding->fields && $doc->fields->contains('name', $finding->fields[0]) ? '#field-'.$finding->fields[0] : '' }}" class="me-2">{{ $doc->original_name }}</a>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                <div class="col-12">
                     <div class="card">
                         <div class="card-header"><h3 class="card-title">{{ __('Documents') }}</h3></div>
                         @if ($documents->isEmpty())

@@ -26,6 +26,18 @@ class CaseFile extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<Finding, $this> */
+    public function findings(): HasMany
+    {
+        return $this->hasMany(Finding::class);
+    }
+
+    /** @return HasMany<CaseEvaluation, $this> */
+    public function evaluations(): HasMany
+    {
+        return $this->hasMany(CaseEvaluation::class);
+    }
+
     /** @return HasMany<Document, $this> */
     public function documents(): HasMany
     {

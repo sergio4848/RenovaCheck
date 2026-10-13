@@ -61,6 +61,7 @@ class ProcessDocument implements ShouldQueue
                     return;
                 }
                 $this->markFailed($document, $e->errorCode, $audit);
+                self::evaluateWhenCaseIsReady($document);
 
                 return;
             }
@@ -108,7 +109,23 @@ class ProcessDocument implements ShouldQueue
                     'unreadable' => count(array_filter($result['fields'], fn ($f) => $f['status'] === 'unreadable')),
                 ]);
             });
+            self::evaluateWhenCaseIsReady($document);
         });
+    }
+
+    /**
+     * Once no document of the case waits for analysis, run the rules. Called after the commit, so
+     * the last document to finish always sees the others; duplicates are absorbed by EvaluateCase.
+     */
+    private static function evaluateWhenCaseIsReady(Document $document): void
+    {
+        $pending = Document::query()
+            ->where('case_file_id', $document->case_file_id)
+            ->whereIn('status', ['uploaded', 'processing'])
+            ->exists();
+        if (! $pending) {
+            EvaluateCase::dispatch($document->organization_id, $document->case_file_id);
+        }
     }
 
     public function failed(?Throwable $exception): void
@@ -117,6 +134,7 @@ class ProcessDocument implements ShouldQueue
             $document = Document::query()->find($this->documentId);
             if ($document !== null && $document->status !== 'processed') {
                 $this->markFailed($document, 'processing_error', app(AuditLog::class));
+                self::evaluateWhenCaseIsReady($document);
             }
         });
     }
