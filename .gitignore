@@ -1,0 +1,18 @@
+.env
+.env.*
+!.env.example
+/infra/certs/*.crt
+.DS_Store
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated data (tools/synth, eval)
+/data/
