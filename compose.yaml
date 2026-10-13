@@ -209,6 +209,24 @@ services:
       extract:
         condition: service_healthy
 
+  # One-off tool: make synth
+  synth:
+    profiles: ["tools"]
+    build:
+      context: ./tools/synth
+      additional_contexts:
+        certs: ./infra/certs
+      network: ${COMPOSE_BUILD_NETWORK:-default}
+      args:
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+    image: renovacheck-synth:dev
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./data:/work/data
+      - ./packages:/work/packages:ro
+    restart: "no"
+
 volumes:
   pgdata:
   redisdata:
