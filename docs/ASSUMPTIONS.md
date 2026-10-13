@@ -45,3 +45,16 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 | D3 | Konut termomodernizasyonunda montajlı cihaz teslimi için %8 KDV (art. 41 ust. 12); servis kalemi %23. | Gerçekçi netto/brutto satırları. Vergi danışmanlığı değildir. |
 | D4 | Üretici/model adları (Termavix TVX-08A vb.), ZUM numaraları (`ZUM/PC/1234`) ve şirket adları uydurmadır; yerleşim adları uydurma olmakla birlikte Polonya'da benzer adlı köyler bulunabilir. | Gerçek veri kullanmama kuralı. |
 | D5 | Wniosek ekstrakt, başvurunun tamamı değil; operatör sisteminden alınmış bir "wyciąg" olarak modellenir (başvurucu, adres, kapsam, planlanan maliyet). | 05 dokümanı yok; prompttaki "wniosek özeti" ifadesi. |
+
+## E. Belge alma ve sınıflandırma (Faz 3)
+
+| # | Varsayım | Gerekçe |
+|---|---|---|
+| E1 | Sınıflandırma yalnızca kural/anahtar kelime ile yapılır; "opsiyonel model" ertelendi. | Sentetik sette %100 doğruluk (106/106, skanlar dahil); model eklemek ölçülebilir bir kazanç getirmez. Gerçek belgelerde yeniden değerlendirilir. |
+| E2 | Compose'da varsayılan OCR `tesseract` (pol). Testler ve `RENOVA_OCR_PROVIDER=text_layer` modu OCR'sız çalışır; bu modda skanlar "nierozpoznany" kalır, yanlış türe atanmaz. | Promptun "adaptörsüz test" şartı + skanların sınıflandırılması. |
+| E3 | Sayfa görüntüleri 150 dpi gri tonlamalı PNG; sayfa sınırı 50, dosya sınırı 20 MB (web) / 25 MB (extract), istek başına 20 dosya. | İnceleme ekranı için yeterli çözünürlük, makul depolama. |
+| E4 | ClamAV varsayılan kapalı (`--profile av` + `CLAMAV_ENABLED=true` ile açılır); açıkken ClamAV'a ulaşılamazsa yükleme reddedilir (fail closed). | ASSUMPTIONS C6. |
+| E5 | Holdout ölçümü (seed 4242) aynı şablon ailesinden üretildiği için gerçek dağılım dışı test değildir. | Ezberleme riskinin kısmi kontrolü; gerçek belgelerle doğrulama TRL 4 işi. |
+| E6 | Kaynak sınırları prototip değerleri: sayfa render ≤ 25 MP, görüntü ≤ 40 MP, sayfa başına ≤ 100k karakter, belge başına OCR bütçesi 120 s, eşzamanlı analiz 2, extract konteyneri 2 GB / 2 CPU. | Güvenlik incelemesi (kaynak tüketimi); gerçek yükte ölçülüp ayarlanır. |
+| E7 | Yerel MinIO'da servis başına hesap (`minio-init`): web yalnızca `org/*` altında oku/yaz/sil, extract yalnızca `…/pages/*` altına yazar. Root hesabı yalnızca kurulumda kullanılır. Üretimde aynı ayrım bulut IAM ile yapılır. | En az yetki; extract orijinallere yalnızca web'in imzaladığı URL ile erişir. |
+| E8 | Veritabanı sahibi (`renova_owner`) kimlik bilgileri yalnızca `migrate` servisine verilir; web ve kuyruk yalnızca `renova_app` ile çalışır. | RLS'in atlanamaması (ADR-0002). |

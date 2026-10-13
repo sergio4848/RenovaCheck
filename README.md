@@ -36,9 +36,10 @@ Decisions: [`docs/ADR/`](docs/ADR/README.md).
 ```
 apps/web/            Laravel application
 services/extract/    Python extraction service + worker
-packages/rules/      field dictionary, schemas (rules: phase 5)
+packages/rules/      document types, field dictionary, schemas (rules: phase 5)
 tools/synth/         synthetic documents + ground truth
 infra/postgres/      roles and databases bootstrap
+infra/minio/         bucket and per-service accounts
 docs/                plan, assumptions, ADRs, reports
 ```
 
@@ -64,6 +65,16 @@ Synthetic data: `make synth` writes 20 cases (106 PDFs with ground truth) to `da
 and validates them against `packages/rules/schema/ground_truth.schema.json`; see
 [`tools/synth/README.md`](tools/synth/README.md).
 
+Document flow: on a case page, upload PDF/PNG/JPEG files; a queue job sends each one to the
+extraction service, which renders page images, reads the text layer (or OCR for scans) and
+classifies the document type. `make eval` measures classification on `data/synth`
+(writes `data/eval/classification.json`). Virus scanning is optional:
+`docker compose --profile av up -d` with `CLAMAV_ENABLED=true`.
+
+Object storage uses one account per service (created by `minio-init` from `S3_WEB_*` and
+`S3_EXTRACT_*` in `.env`); the MinIO root account is only used for that setup. If your `.env`
+predates these keys, copy them from `.env.example`.
+
 Other targets: `make help`, `make logs`, `make seed` (idempotent), `make lint`, `make down`,
 `make reset` (asks before deleting volumes).
 
@@ -71,6 +82,7 @@ Other targets: `make help`, `make logs`, `make seed` (idempotent), `make lint`, 
 |---|---|
 | Web | <http://localhost:8080> |
 | Extract API docs | <http://localhost:8001/docs> (health: `/health`, readiness: `/ready`) |
+| MinIO API (signed URLs) | <http://localhost:9000> |
 | MinIO console | <http://localhost:9001> |
 
 ### Builds behind a TLS-intercepting proxy

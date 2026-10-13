@@ -26,13 +26,14 @@
 | Monorepo düzeni | `apps/web`, `services/extract`, `packages/rules`, `tools/synth`, `infra/`, `docs/` | 0001 |
 | Kiracı izolasyonu | Her iş tablosunda `organization_id` + `ENABLE/FORCE ROW LEVEL SECURITY`; uygulama tablo sahibi olmayan `renova_app` rolüyle bağlanır; middleware her istek/işte `set_config('app.organization_id')` yazar, istek/iş sonunda temizler. Uygulama katmanında ayrıca global scope (çift kilit). | 0002 |
 | Web ↔ extract | Laravel kuyruk işi (Redis) orkestrasyonu yapar ve sonuçları **tek yazar** olarak DB'ye kaydeder; extract servisi DB'ye yazmaz, dosyaya MinIO'dan kısa ömürlü signed URL ile erişir. Python `worker` süreci toplu işler (eval, OCR kıyaslama, gürültülü skan OCR) içindir. | 0003 |
-| Provenans | Her değer `{value, doc_id, page, bbox, method, confidence}`; bbox sayfaya göre normalize [0..1]. Kaynaksız değer reddedilir; okunamayan alan `unreadable`; varsayılan değerle doldurma yok. Pydantic modelinde "parse, don't validate": `ExtractedValue` yalnızca kaynakla kurulabilir. | 0006 |
-| OCR | `OcrAdapter` arayüzü: `PdfTextLayer` (temiz metin, varsayılan, test modu), `TesseractPol`, `AzureDocumentIntelligence` (Poland Central), `GoogleDocumentAI`. Seçim `RENOVA_OCR_PROVIDER`. | 0007 |
-| LLM | Yalnızca ekstraksiyon yardımcısı, varsayılan `off`; `fake` modu CI için. Sıcaklık 0, çıktı Pydantic şemasıyla doğrulanır, her değer sayfa metninde normalize string-match ile bulunmazsa düşer. Kural kararı vermez. | 0008 |
-| Kural motoru | Saf Python, deterministik; YAML kuralları JSON Schema ile doğrulanır; dosya tarihine göre `valid_from/valid_to` seçimi; kural değişikliği = yeni `version` + regresyon fixture'ı. | 0009 |
-| Bulgu yaşam döngüsü | Her bulgu `do_sprawdzenia` doğar; karar: `zgodne / rozbieżność / uzgodniona_zmiana / nie_dotyczy` + yorum (critical'da yorum zorunlu). Onaysız `critical` rapora "onaylı" girmez. Kararlar ve tüm durum değişiklikleri append-only `audit_events`'e yazılır (UPDATE/DELETE trigger ile engelli + hash zinciri). | 0005, 0010 |
-| PDF kütüphaneleri | pdfplumber (MIT), pypdfium2 (Apache/BSD), reportlab (BSD), Pillow. PyMuPDF (AGPL) yok. Laravel rapor PDF'i: `barryvdh/laravel-dompdf`. | 0007 |
+| Provenans | Her değer `{value, doc_id, page, bbox, method, confidence}`; bbox sayfaya göre normalize [0..1]. Kaynaksız değer reddedilir; okunamayan alan `unreadable`; varsayılan değerle doldurma yok. Pydantic modelinde "parse, don't validate": `ExtractedValue` yalnızca kaynakla kurulabilir. | 0007 |
+| OCR | `OcrAdapter` arayüzü: `PdfTextLayer` (temiz metin, varsayılan, test modu), `TesseractPol`, `AzureDocumentIntelligence` (Poland Central), `GoogleDocumentAI`. Seçim `RENOVA_OCR_PROVIDER`. | 0008 |
+| LLM | Yalnızca ekstraksiyon yardımcısı, varsayılan `off`; `fake` modu CI için. Sıcaklık 0, çıktı Pydantic şemasıyla doğrulanır, her değer sayfa metninde normalize string-match ile bulunmazsa düşer. Kural kararı vermez. | 0009 |
+| Kural motoru | Saf Python, deterministik; YAML kuralları JSON Schema ile doğrulanır; dosya tarihine göre `valid_from/valid_to` seçimi; kural değişikliği = yeni `version` + regresyon fixture'ı. | 0010 |
+| Bulgu yaşam döngüsü | Her bulgu `do_sprawdzenia` doğar; karar: `zgodne / rozbieżność / uzgodniona_zmiana / nie_dotyczy` + yorum (critical'da yorum zorunlu). Onaysız `critical` rapora "onaylı" girmez. Kararlar ve tüm durum değişiklikleri append-only `audit_events`'e yazılır (UPDATE/DELETE trigger ile engelli + hash zinciri). | 0005, 0011 |
+| PDF kütüphaneleri | pdfplumber (MIT), pypdfium2 (Apache/BSD), reportlab (BSD), Pillow. PyMuPDF (AGPL) yok. Laravel rapor PDF'i: `barryvdh/laravel-dompdf`. | 0008 |
 | UI | Tabler (MIT) vendored, Blade bileşenleri, Alpine.js; dil PL (`lang/pl.json`), i18n altyapısı PL/EN. | — |
+| Belge alma ve sınıflandırma | Magic-byte doğrulama, SHA-256 tekilleştirme, opsiyonel ClamAV, private bucket + kısa ömürlü imzalı URL; anahtar kelime sınıflandırıcı (`doc_types.yaml`), metin katmanı yoksa OCR. | 0006 |
 | Nesne deposu | MinIO upstream imajları Docker Hub'dan kalktı → topluluk derlemesi `pgsty/minio` (sabit sürüm). | 0004 |
 
 ## 2. Fazlar, işler, kabul kriterleri

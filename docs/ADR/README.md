@@ -11,3 +11,4 @@ Copyright (c) 2026 Sergen Şahin.)
 | [0003](0003-web-extract-boundary.md) | Web ↔ extract boundary: one writer, stateless extraction | Accepted |
 | [0004](0004-object-storage-image.md) | Object storage image after MinIO stopped publishing images | Accepted |
 | [0005](0005-append-only-event-log.md) | Append-only, hash-chained event log | Accepted |
+| [0006](0006-document-intake-and-classification.md) | Document intake, storage and type classification | Accepted |
