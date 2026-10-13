@@ -46,11 +46,19 @@ class CaseFileController extends Controller
     {
         $events = AuditEvent::query()
             ->with('actor:id,name')
-            ->where('subject_type', 'CaseFile')
-            ->where('subject_id', $caseFile->getKey())
+            ->where(fn ($q) => $q
+                ->where(fn ($q) => $q->where('subject_type', 'CaseFile')->where('subject_id', $caseFile->getKey()))
+                ->orWhere(fn ($q) => $q->where('subject_type', 'Document')
+                    ->whereIn('subject_id', $caseFile->documents()->select('id'))))
             ->orderBy('id')
             ->get();
 
-        return view('cases.show', ['case' => $caseFile->load('creator:id,name'), 'events' => $events]);
+        $documents = $caseFile->documents()->with('pages')->orderBy('created_at')->orderBy('original_name')->get();
+
+        return view('cases.show', [
+            'case' => $caseFile->load('creator:id,name'),
+            'events' => $events,
+            'documents' => $documents,
+        ]);
     }
 }

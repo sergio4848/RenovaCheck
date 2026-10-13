@@ -30,6 +30,11 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        if (app()->isProduction()) {
+            $this->command?->warn('Demo accounts are not seeded in production.');
+
+            return;
+        }
         $password = (string) env('DEMO_USER_PASSWORD', 'renova-demo');
 
         $organizations = [];

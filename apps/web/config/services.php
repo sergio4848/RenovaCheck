@@ -6,6 +6,14 @@ return [
     'extract' => [
         'url' => env('EXTRACT_URL', 'http://extract:8000'),
         'token' => env('EXTRACT_TOKEN'),
+        'timeout' => (int) env('EXTRACT_TIMEOUT', 180),
+    ],
+
+    // Optional virus scanning (docker compose --profile av). Off means uploads are marked "skipped".
+    'clamav' => [
+        'enabled' => (bool) env('CLAMAV_ENABLED', false),
+        'host' => env('CLAMAV_HOST', 'clamav'),
+        'port' => (int) env('CLAMAV_PORT', 3310),
     ],
 
     /*

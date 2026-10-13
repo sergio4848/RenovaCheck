@@ -85,6 +85,30 @@ final class TenantContext
         }
     }
 
+    /**
+     * Run background work for an organization without a signed-in user (queue jobs). Starts and
+     * ends with a cleared context, so a long-lived worker never carries a tenant between jobs.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function runForOrganization(string $organizationId, Closure $callback): mixed
+    {
+        $this->clear();
+        $this->write('app.organization_id', $organizationId);
+        try {
+            $organization = Organization::query()->find($organizationId)
+                ?? throw new MissingTenantContext;
+            $this->organization = $organization;
+
+            return $callback();
+        } finally {
+            $this->clear();
+        }
+    }
+
     public function organization(): ?Organization
     {
         return $this->organization;

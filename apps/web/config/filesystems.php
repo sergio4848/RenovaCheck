@@ -60,6 +60,22 @@ return [
             'report' => false,
         ],
 
+        // Private document storage. 's3' is reached by the app and the extraction service;
+        // 's3-public' only signs short-lived URLs with the host the browser uses.
+        's3-public' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            // Same bucket, signed for the browser: the host is part of the signature.
+            'endpoint' => env('AWS_PUBLIC_ENDPOINT', env('AWS_ENDPOINT')),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*

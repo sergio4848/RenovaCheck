@@ -3,9 +3,11 @@
 namespace Tests;
 
 use App\Enums\Role;
+use App\Models\CaseFile;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use App\Tenancy\TenantContext;
 use Closure;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -43,6 +45,13 @@ abstract class TestCase extends BaseTestCase
         } finally {
             $this->actAsAppRole();
         }
+    }
+
+    protected function caseFor(Membership $membership, string $reference = 'CP/1'): CaseFile
+    {
+        return app(TenantContext::class)->run($membership, fn () => CaseFile::create([
+            'reference' => $reference, 'title' => 'Dom', 'created_by' => $membership->user_id,
+        ]));
     }
 
     protected function member(Role $role = Role::Owner, ?Organization $organization = null, ?User $user = null): Membership

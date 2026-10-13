@@ -5,6 +5,9 @@ namespace App\Providers;
 use App\Auth\TenantAwareUserProvider;
 use App\Enums\Permission;
 use App\Models\User;
+use App\Services\Antivirus\ClamdScanner;
+use App\Services\Antivirus\Scanner;
+use App\Services\Antivirus\SkippingScanner;
 use App\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
@@ -18,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Scoped: reset between requests and between queued jobs.
         $this->app->scoped(TenantContext::class);
+        $this->app->bind(Scanner::class, fn () => config('services.clamav.enabled')
+            ? ClamdScanner::tcp((string) config('services.clamav.host'), (int) config('services.clamav.port'))
+            : new SkippingScanner);
     }
 
     public function boot(): void

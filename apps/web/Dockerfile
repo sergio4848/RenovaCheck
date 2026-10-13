@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # One image for the web app (Apache + mod_php), the queue worker and one-off artisan commands.
+# pcntl lets the queue worker enforce job timeouts.
 #
 #   docker build --build-context certs=../../infra/certs -t renova-web .
 #   docker build --build-context certs=../../infra/certs --build-arg INSTALL_DEV=false -t renova-web:prod .
@@ -17,7 +18,7 @@ RUN update-ca-certificates >/dev/null 2>&1 || true
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libpq-dev libicu-dev libzip-dev unzip git \
-    && docker-php-ext-install -j"$(nproc)" pdo_pgsql intl zip opcache bcmath \
+    && docker-php-ext-install -j"$(nproc)" pdo_pgsql intl zip opcache bcmath pcntl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite headers >/dev/null

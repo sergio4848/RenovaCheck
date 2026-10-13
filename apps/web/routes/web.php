@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditEventController;
 use App\Http\Controllers\CaseFileController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\OrganizationSwitchController;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +13,15 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/cases', [CaseFileController::class, 'index'])->name('cases.index')->can('cases.view');
     Route::post('/cases', [CaseFileController::class, 'store'])->name('cases.store')->can('cases.create');
     Route::get('/cases/{caseFile}', [CaseFileController::class, 'show'])->name('cases.show')->can('cases.view');
+
+    // Scoped bindings: a document resolves only through its own case (and RLS through the tenant).
+    Route::scopeBindings()->prefix('/cases/{caseFile}/documents')->name('documents.')->group(function () {
+        Route::post('/', [DocumentController::class, 'store'])->name('store')->can('cases.create');
+        Route::patch('/{document}/type', [DocumentController::class, 'updateType'])->name('type')->can('cases.create');
+        Route::get('/{document}/pages/{pageNo}', [DocumentController::class, 'page'])
+            ->whereNumber('pageNo')->name('page')->can('cases.view');
+        Route::get('/{document}/download', [DocumentController::class, 'download'])->name('download')->can('cases.view');
+    });
 
     Route::get('/members', [MemberController::class, 'index'])->name('members.index')->can('members.view');
     Route::get('/audit', [AuditEventController::class, 'index'])->name('audit.index')->can('audit.view');
