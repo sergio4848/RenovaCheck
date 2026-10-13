@@ -1,0 +1,4 @@
+/* Dense data screens: slightly tighter tables than Tabler's default. */
+.table-dense > :not(caption) > * > * { padding-top: .45rem; padding-bottom: .45rem; }
+.font-mono { font-family: var(--tblr-font-monospace); font-size: .8125rem; }
+.hash { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }

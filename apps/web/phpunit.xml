@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnWarning="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <!-- Tests run against PostgreSQL with row-level security active. The connection logs in as
+             the schema owner (to migrate and create fixtures) and switches to the runtime role
+             with SET ROLE for the code under test; see Tests\TestCase. Environment variables
+             set by the caller (compose, CI) take precedence over these defaults. -->
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_KEY" value="base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10="/>
+        <env name="APP_LOCALE" value="pl"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="DB_CONNECTION" value="pgsql" force="true"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="5432"/>
+        <env name="DB_DATABASE" value="renova_test" force="true"/>
+        <env name="DB_USERNAME" value="renova_owner"/>
+        <env name="DB_PASSWORD" value="renova_owner_dev"/>
+        <env name="DB_APP_ROLE" value="renova_app"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <!-- Laravel reads $_SERVER before $_ENV, so forced values are mirrored there; otherwise a
+             container's environment (APP_ENV=local, SESSION_DRIVER=redis, ...) would win. -->
+        <server name="APP_ENV" value="testing" force="true"/>
+        <server name="CACHE_STORE" value="array" force="true"/>
+        <server name="DB_CONNECTION" value="pgsql" force="true"/>
+        <server name="DB_DATABASE" value="renova_test" force="true"/>
+        <server name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <server name="SESSION_DRIVER" value="array" force="true"/>
+    </php>
+</phpunit>

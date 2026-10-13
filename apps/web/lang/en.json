@@ -1,0 +1,10 @@
+{
+    "event.case.created": "Case created",
+    "event.organization.switched_in": "Switched to organization",
+    "role.owner": "Owner",
+    "role.reviewer": "Reviewer",
+    "status.closed": "Closed",
+    "status.in_review": "In review",
+    "status.new": "New",
+    "subject.CaseFile": "Case"
+}
