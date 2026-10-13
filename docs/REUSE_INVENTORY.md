@@ -68,7 +68,7 @@ Tarama tarihi: 2026-10-13 · Kaynak: `github.com/sergio4848` (75 repo listelendi
 
 | Dosya | Ne işe yarar | RenovaCheck'te nerede | Karar |
 |---|---|---|---|
-| `supabase/tests/rls_baseline_test.sql`, `server_only_test.sql` | pgTAP: "her tabloda RLS açık", "uygulama rolünün yetkisiz erişimi yok", tablo allowlist | `infra/postgres/tests/rls_baseline_test.sql` (CI'da `pg_prove`) | **uyarlayarak al** (sorgular düz Postgres'te çalışır; şema/rol adları değişir) |
+| `supabase/tests/rls_baseline_test.sql`, `server_only_test.sql` | pgTAP: "her tabloda RLS açık", "uygulama rolünün yetkisiz erişimi yok", tablo allowlist | `apps/web/tests/Feature/RlsBaselineTest.php` (katalog sorguları PHPUnit içinde) | **uyarlayarak al** (pgTAP yerine PHPUnit; bkz. ASSUMPTIONS C10) |
 | `supabase/migrations/20261005212515_initial_schema.sql` | `security definer` + `set search_path=''`, `revoke all`, private şema, migration başında rollback yorumu | RLS migration'larının yazım kuralları | **uyarlayarak al** (politikalar `auth.uid()` → `current_setting('app.organization_id')::uuid`; `FORCE ROW LEVEL SECURITY`, tablo sahibi olmayan uygulama rolü) |
 | `supabase/migrations/20261010180000_ai_calls.sql`, `..170000_ai_config.sql` | AI çağrı defteri (started→done/failed/refused), bütçe rezervasyonu | `extraction_runs` tablosu (yöntem, sağlayıcı, süre, durum) | **uyarlayarak al** (bütçe kısmı alınmaz; LLM varsayılan kapalı) |
 | `supabase/functions/_shared/aiRun.ts`, `aiPrompt.ts` | gate → model → çıktı kontrolü → tek tekrar → defter; kullanıcı metnini veri olarak çitleme | `services/extract/.../llm/assist.py` | **uyarlayarak al** (kontrol = Pydantic şeması + sayfa metninde string-match) |

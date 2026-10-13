@@ -24,15 +24,16 @@
 | Konu | Karar | ADR |
 |---|---|---|
 | Monorepo düzeni | `apps/web`, `services/extract`, `packages/rules`, `tools/synth`, `infra/`, `docs/` | 0001 |
-| Kiracı izolasyonu | Her iş tablosunda `organization_id` + `ENABLE/FORCE ROW LEVEL SECURITY`; uygulama tablo sahibi olmayan `renova_app` rolüyle bağlanır; middleware her istek/işte `SET LOCAL app.organization_id`. Uygulama katmanında ayrıca global scope (çift kilit). | 0002 |
+| Kiracı izolasyonu | Her iş tablosunda `organization_id` + `ENABLE/FORCE ROW LEVEL SECURITY`; uygulama tablo sahibi olmayan `renova_app` rolüyle bağlanır; middleware her istek/işte `set_config('app.organization_id')` yazar, istek/iş sonunda temizler. Uygulama katmanında ayrıca global scope (çift kilit). | 0002 |
 | Web ↔ extract | Laravel kuyruk işi (Redis) orkestrasyonu yapar ve sonuçları **tek yazar** olarak DB'ye kaydeder; extract servisi DB'ye yazmaz, dosyaya MinIO'dan kısa ömürlü signed URL ile erişir. Python `worker` süreci toplu işler (eval, OCR kıyaslama, gürültülü skan OCR) içindir. | 0003 |
-| Provenans | Her değer `{value, doc_id, page, bbox, method, confidence}`; bbox sayfaya göre normalize [0..1]. Kaynaksız değer reddedilir; okunamayan alan `unreadable`; varsayılan değerle doldurma yok. Pydantic modelinde "parse, don't validate": `ExtractedValue` yalnızca kaynakla kurulabilir. | 0004 |
-| OCR | `OcrAdapter` arayüzü: `PdfTextLayer` (temiz metin, varsayılan, test modu), `TesseractPol`, `AzureDocumentIntelligence` (Poland Central), `GoogleDocumentAI`. Seçim `RENOVA_OCR_PROVIDER`. | 0005 |
-| LLM | Yalnızca ekstraksiyon yardımcısı, varsayılan `off`; `fake` modu CI için. Sıcaklık 0, çıktı Pydantic şemasıyla doğrulanır, her değer sayfa metninde normalize string-match ile bulunmazsa düşer. Kural kararı vermez. | 0006 |
-| Kural motoru | Saf Python, deterministik; YAML kuralları JSON Schema ile doğrulanır; dosya tarihine göre `valid_from/valid_to` seçimi; kural değişikliği = yeni `version` + regresyon fixture'ı. | 0007 |
-| Bulgu yaşam döngüsü | Her bulgu `do_sprawdzenia` doğar; karar: `zgodne / rozbieżność / uzgodniona_zmiana / nie_dotyczy` + yorum (critical'da yorum zorunlu). Onaysız `critical` rapora "onaylı" girmez. Kararlar ve tüm durum değişiklikleri append-only `audit_events`'e yazılır (UPDATE/DELETE trigger ile engelli + hash zinciri). | 0008 |
-| PDF kütüphaneleri | pdfplumber (MIT), pypdfium2 (Apache/BSD), reportlab (BSD), Pillow. PyMuPDF (AGPL) yok. Laravel rapor PDF'i: `barryvdh/laravel-dompdf`. | 0005 |
+| Provenans | Her değer `{value, doc_id, page, bbox, method, confidence}`; bbox sayfaya göre normalize [0..1]. Kaynaksız değer reddedilir; okunamayan alan `unreadable`; varsayılan değerle doldurma yok. Pydantic modelinde "parse, don't validate": `ExtractedValue` yalnızca kaynakla kurulabilir. | 0006 |
+| OCR | `OcrAdapter` arayüzü: `PdfTextLayer` (temiz metin, varsayılan, test modu), `TesseractPol`, `AzureDocumentIntelligence` (Poland Central), `GoogleDocumentAI`. Seçim `RENOVA_OCR_PROVIDER`. | 0007 |
+| LLM | Yalnızca ekstraksiyon yardımcısı, varsayılan `off`; `fake` modu CI için. Sıcaklık 0, çıktı Pydantic şemasıyla doğrulanır, her değer sayfa metninde normalize string-match ile bulunmazsa düşer. Kural kararı vermez. | 0008 |
+| Kural motoru | Saf Python, deterministik; YAML kuralları JSON Schema ile doğrulanır; dosya tarihine göre `valid_from/valid_to` seçimi; kural değişikliği = yeni `version` + regresyon fixture'ı. | 0009 |
+| Bulgu yaşam döngüsü | Her bulgu `do_sprawdzenia` doğar; karar: `zgodne / rozbieżność / uzgodniona_zmiana / nie_dotyczy` + yorum (critical'da yorum zorunlu). Onaysız `critical` rapora "onaylı" girmez. Kararlar ve tüm durum değişiklikleri append-only `audit_events`'e yazılır (UPDATE/DELETE trigger ile engelli + hash zinciri). | 0005, 0010 |
+| PDF kütüphaneleri | pdfplumber (MIT), pypdfium2 (Apache/BSD), reportlab (BSD), Pillow. PyMuPDF (AGPL) yok. Laravel rapor PDF'i: `barryvdh/laravel-dompdf`. | 0007 |
 | UI | Tabler (MIT) vendored, Blade bileşenleri, Alpine.js; dil PL (`lang/pl.json`), i18n altyapısı PL/EN. | — |
+| Nesne deposu | MinIO upstream imajları Docker Hub'dan kalktı → topluluk derlemesi `pgsty/minio` (sabit sürüm). | 0004 |
 
 ## 2. Fazlar, işler, kabul kriterleri
 
@@ -99,7 +100,7 @@ Enerji hesabı, audyt/świadectwo üretimi, hibe kararı, GWD/kurum entegrasyonu
 | Sentetik veri ezberi (synth ile çıkarıcı aynı şablonu bilir) | %95 metriği şişebilir | Üreteçte şablon varyantları (≥3/tür), ayrı "holdout" seed; eval raporunda açıkça belirtilir |
 | Bulut OCR anahtarları yok | Faz 7 kıyaslaması eksik kalır | Tesseract gerçek ölçülür; Azure/Google anahtar verilince aynı script |
 | Bu cloud oturumunda Docker daemon elle başlatıldı | Ortam yeniden başlarsa kaybolur | Testler compose'suz da (yerel PHP 8.3 + Postgres 16) çalışabilecek şekilde |
-| RLS + Laravel bağlantı havuzu | Yanlış tenant bağlamı sızıntısı | `SET LOCAL` yalnızca transaction içinde; her istek transaction'a sarılı; izolasyon testleri CI'da zorunlu |
+| RLS + uzun ömürlü bağlantılar (kuyruk) | Yanlış tenant bağlamı sızıntısı | Bağlam her istek/iş sonunda temizlenir (`TenantContext::run`), mod_php kalıcı bağlantı kullanmaz; izolasyon testleri CI'da zorunlu |
 | GitHub reposu public | Plan/doküman görünür | Gerçek veri yok; gerekirse repoyu private'a almak senin kararın |
 
 ## 5. Engelleyici sorular (yanıt gelmezse varsayılanla ilerlenir)
@@ -114,6 +115,6 @@ Promptta istenen tüm skill'ler bu oturumda **mevcut**: `frontend-design:fronten
 Ek olarak kullanılacaklar: `coding-skills:unicode-pitfalls`, `coding-skills:metamorphic-testing`, `design-skills:ux-writing`, `backend-design:migration-safety`.
 
 ## 7. Çalışma düzeni
-- Dal: `claude/loving-meitner-q1lxqh`; her faz sonunda commit + push. Geçmiş yeniden yazılmaz.
+- Her faz sonunda commit + push. Geçmiş yeniden yazılmaz.
 - Commit/kod/dokümanda AI atfı yok; lisans/telif satırları korunur.
 - Tüm demo/test verisi yalnızca `tools/synth` çıktısı.
