@@ -1,0 +1,547 @@
+{
+  "$defs": {
+    "BBox": {
+      "additionalProperties": false,
+      "properties": {
+        "x0": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "X0",
+          "type": "number"
+        },
+        "y0": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Y0",
+          "type": "number"
+        },
+        "x1": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "X1",
+          "type": "number"
+        },
+        "y1": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Y1",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x0",
+        "y0",
+        "x1",
+        "y1"
+      ],
+      "title": "BBox",
+      "type": "object"
+    },
+    "CaseFacts": {
+      "additionalProperties": false,
+      "description": "The true state of the project, before any error was injected.",
+      "properties": {
+        "investor_name": {
+          "title": "Investor Name",
+          "type": "string"
+        },
+        "address_street": {
+          "title": "Address Street",
+          "type": "string"
+        },
+        "address_building_no": {
+          "title": "Address Building No",
+          "type": "string"
+        },
+        "address_postal_code": {
+          "title": "Address Postal Code",
+          "type": "string"
+        },
+        "address_city": {
+          "title": "Address City",
+          "type": "string"
+        },
+        "contractor_name": {
+          "title": "Contractor Name",
+          "type": "string"
+        },
+        "contractor_nip": {
+          "title": "Contractor Nip",
+          "type": "string"
+        },
+        "product_manufacturer": {
+          "title": "Product Manufacturer",
+          "type": "string"
+        },
+        "product_model": {
+          "title": "Product Model",
+          "type": "string"
+        },
+        "product_power_kw": {
+          "title": "Product Power Kw",
+          "type": "number"
+        },
+        "amount_net": {
+          "title": "Amount Net",
+          "type": "number"
+        },
+        "amount_vat": {
+          "title": "Amount Vat",
+          "type": "number"
+        },
+        "amount_gross": {
+          "title": "Amount Gross",
+          "type": "number"
+        },
+        "application_date": {
+          "format": "date",
+          "title": "Application Date",
+          "type": "string"
+        },
+        "contract_date": {
+          "format": "date",
+          "title": "Contract Date",
+          "type": "string"
+        },
+        "acceptance_date": {
+          "format": "date",
+          "title": "Acceptance Date",
+          "type": "string"
+        },
+        "invoice_date": {
+          "format": "date",
+          "title": "Invoice Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "investor_name",
+        "address_street",
+        "address_building_no",
+        "address_postal_code",
+        "address_city",
+        "contractor_name",
+        "contractor_nip",
+        "product_manufacturer",
+        "product_model",
+        "product_power_kw",
+        "amount_net",
+        "amount_vat",
+        "amount_gross",
+        "application_date",
+        "contract_date",
+        "acceptance_date",
+        "invoice_date"
+      ],
+      "title": "CaseFacts",
+      "type": "object"
+    },
+    "DocType": {
+      "enum": [
+        "wniosek_ekstrakt",
+        "oferta",
+        "umowa",
+        "aneks",
+        "faktura",
+        "faktura_zaliczkowa",
+        "faktura_korygujaca",
+        "protokol_odbioru",
+        "karta_produktu"
+      ],
+      "title": "DocType",
+      "type": "string"
+    },
+    "DocumentTruth": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "title": "Doc Id",
+          "type": "string"
+        },
+        "doc_type": {
+          "$ref": "#/$defs/DocType"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "pages": {
+          "minimum": 1,
+          "title": "Pages",
+          "type": "integer"
+        },
+        "quality": {
+          "$ref": "#/$defs/Quality"
+        },
+        "template": {
+          "title": "Template",
+          "type": "string"
+        },
+        "issue_date": {
+          "format": "date",
+          "title": "Issue Date",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/FieldTruth"
+          },
+          "title": "Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "doc_id",
+        "doc_type",
+        "file",
+        "sha256",
+        "pages",
+        "quality",
+        "template",
+        "issue_date",
+        "fields"
+      ],
+      "title": "DocumentTruth",
+      "type": "object"
+    },
+    "ErrorType": {
+      "enum": [
+        "address_number_swap",
+        "street_spelling_variant",
+        "model_swap",
+        "power_mismatch",
+        "missing_protocol",
+        "net_gross_confusion",
+        "advance_payment",
+        "correction_invoice",
+        "agreed_change",
+        "invoice_before_contract",
+        "missing_signature",
+        "low_quality_scan"
+      ],
+      "title": "ErrorType",
+      "type": "string"
+    },
+    "ExpectedFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "error_id": {
+          "title": "Error Id",
+          "type": "string"
+        },
+        "family": {
+          "$ref": "#/$defs/RuleFamily"
+        },
+        "outcome": {
+          "$ref": "#/$defs/Outcome"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "doc_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Doc Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "error_id",
+        "family",
+        "outcome",
+        "severity",
+        "fields",
+        "doc_ids"
+      ],
+      "title": "ExpectedFinding",
+      "type": "object"
+    },
+    "FieldTruth": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "text": {
+          "description": "Exactly as printed in the document",
+          "title": "Text",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Canonical value used for comparison",
+          "title": "Value"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        },
+        "injected_error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "error_id when this value was altered",
+          "title": "Injected Error"
+        }
+      },
+      "required": [
+        "name",
+        "text",
+        "value",
+        "page",
+        "bbox"
+      ],
+      "title": "FieldTruth",
+      "type": "object"
+    },
+    "InjectedError": {
+      "additionalProperties": false,
+      "properties": {
+        "error_id": {
+          "title": "Error Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ErrorType"
+        },
+        "doc_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Doc Id"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Field"
+        },
+        "true_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "True Value"
+        },
+        "written_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Written Value"
+        },
+        "description_pl": {
+          "title": "Description Pl",
+          "type": "string"
+        }
+      },
+      "required": [
+        "error_id",
+        "type",
+        "doc_id",
+        "field",
+        "true_value",
+        "written_value",
+        "description_pl"
+      ],
+      "title": "InjectedError",
+      "type": "object"
+    },
+    "Outcome": {
+      "description": "What a correct reviewer concludes about an injected difference.",
+      "enum": [
+        "discrepancy",
+        "match_after_normalization",
+        "explained_by_advance",
+        "explained_by_correction",
+        "agreed_change",
+        "missing_document",
+        "unreadable_source"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "Quality": {
+      "enum": [
+        "clean",
+        "scan"
+      ],
+      "title": "Quality",
+      "type": "string"
+    },
+    "RuleFamily": {
+      "enum": [
+        "address",
+        "product",
+        "amount",
+        "completeness",
+        "none"
+      ],
+      "title": "RuleFamily",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "critical",
+        "warning",
+        "info"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "case_id": {
+      "pattern": "^SYN-\\d{4}-\\d{3}$",
+      "title": "Case Id",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "program": {
+      "const": "czyste_powietrze",
+      "default": "czyste_powietrze",
+      "title": "Program",
+      "type": "string"
+    },
+    "contract_kind": {
+      "enum": [
+        "oferta",
+        "umowa"
+      ],
+      "title": "Contract Kind",
+      "type": "string"
+    },
+    "scenario": {
+      "items": {
+        "$ref": "#/$defs/ErrorType"
+      },
+      "title": "Scenario",
+      "type": "array"
+    },
+    "facts": {
+      "$ref": "#/$defs/CaseFacts"
+    },
+    "documents": {
+      "items": {
+        "$ref": "#/$defs/DocumentTruth"
+      },
+      "title": "Documents",
+      "type": "array"
+    },
+    "injected_errors": {
+      "items": {
+        "$ref": "#/$defs/InjectedError"
+      },
+      "title": "Injected Errors",
+      "type": "array"
+    },
+    "expected_findings": {
+      "items": {
+        "$ref": "#/$defs/ExpectedFinding"
+      },
+      "title": "Expected Findings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "case_id",
+    "seed",
+    "contract_kind",
+    "scenario",
+    "facts",
+    "documents",
+    "injected_errors",
+    "expected_findings"
+  ],
+  "title": "CaseTruth",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://renovacheck.invalid/schema/ground_truth.schema.json"
+}

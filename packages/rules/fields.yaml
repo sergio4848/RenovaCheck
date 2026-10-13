@@ -1,0 +1,33 @@
+# Field dictionary shared by the synthetic generator (tools/synth), extraction (services/extract)
+# and the rule engine. Phase 4 adds extraction anchors and normalizers per field.
+#
+# type: text | address_part | nip | money | percent | power_kw | date | bool | identifier
+version: 1
+fields:
+  document_number:       {type: identifier, label_pl: "Numer dokumentu"}
+  application_number:    {type: identifier, label_pl: "Numer wniosku", documents: [wniosek_ekstrakt]}
+  related_document_number: {type: identifier, label_pl: "Numer dokumentu powiązanego"}
+  investor_name:         {type: text, label_pl: "Inwestor / beneficjent"}
+  address_street:        {type: address_part, label_pl: "Ulica", normalize: [casefold, strip_diacritics, drop_street_prefix, drop_patron_first_name]}
+  address_building_no:   {type: address_part, label_pl: "Numer budynku"}
+  address_postal_code:   {type: address_part, label_pl: "Kod pocztowy", pattern: '^\d{2}-\d{3}$'}
+  address_city:          {type: address_part, label_pl: "Miejscowość", normalize: [casefold, strip_diacritics]}
+  contractor_name:       {type: text, label_pl: "Wykonawca"}
+  contractor_nip:        {type: nip, label_pl: "NIP wykonawcy", normalize: [digits_only]}
+  product_manufacturer:  {type: text, label_pl: "Producent urządzenia"}
+  product_model:         {type: identifier, label_pl: "Model urządzenia", normalize: [upper, collapse_dashes_spaces]}
+  product_power_kw:      {type: power_kw, label_pl: "Moc grzewcza [kW]"}
+  serial_number:         {type: identifier, label_pl: "Numer seryjny"}
+  zum_id:                {type: identifier, label_pl: "Pozycja na liście ZUM"}
+  amount_net:            {type: money, label_pl: "Kwota netto"}
+  amount_vat:            {type: money, label_pl: "Kwota VAT"}
+  amount_gross:          {type: money, label_pl: "Kwota brutto"}
+  advance_amount:        {type: money, label_pl: "Zaliczka"}
+  amount_due:            {type: money, label_pl: "Do zapłaty"}
+  application_date:      {type: date, label_pl: "Data złożenia wniosku"}
+  contract_date:         {type: date, label_pl: "Data umowy / oferty"}
+  invoice_date:          {type: date, label_pl: "Data wystawienia faktury"}
+  sale_date:             {type: date, label_pl: "Data sprzedaży"}
+  acceptance_date:       {type: date, label_pl: "Data odbioru"}
+  signature_investor:    {type: bool, label_pl: "Podpis inwestora"}
+  signature_contractor:  {type: bool, label_pl: "Podpis wykonawcy"}
