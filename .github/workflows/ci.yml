@@ -29,6 +29,8 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 3s --health-retries 20
     env:
+      # Not production: the event-log migration refuses to roll back in production.
+      APP_ENV: ci
       DB_HOST: 127.0.0.1
       DB_PORT: "5432"
       DB_DATABASE: renova
@@ -57,7 +59,10 @@ jobs:
           psql -q -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 \
             -v owner_pw=owner-ci -v app_pw=app-ci -f bootstrap.sql
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+        # Configuration comes from the job environment; an empty .env keeps dotenv quiet.
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          touch .env
       - name: Pint
         run: vendor/bin/pint --test
       - name: Migrations apply, roll back and re-apply
