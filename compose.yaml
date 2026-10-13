@@ -27,34 +27,38 @@ x-web-env: &web-env
   DB_USERNAME: renova_app
   DB_PASSWORD: ${RENOVA_APP_PASSWORD:?}
   DB_APP_ROLE: renova_app
-  DB_MIGRATOR_USERNAME: renova_owner
-  DB_MIGRATOR_PASSWORD: ${RENOVA_OWNER_PASSWORD:?}
   REDIS_CLIENT: predis
   REDIS_HOST: redis
   SESSION_DRIVER: redis
   CACHE_STORE: redis
   QUEUE_CONNECTION: redis
   FILESYSTEM_DISK: s3
-  AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:?}
-  AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?}
+  AWS_ACCESS_KEY_ID: ${S3_WEB_ACCESS_KEY:?}
+  AWS_SECRET_ACCESS_KEY: ${S3_WEB_SECRET_KEY:?}
   AWS_DEFAULT_REGION: us-east-1
   AWS_BUCKET: ${S3_BUCKET:-renova-documents}
   AWS_ENDPOINT: http://minio:9000
   AWS_USE_PATH_STYLE_ENDPOINT: "true"
+  # Signed URLs for the browser must carry the host the browser uses to reach MinIO.
+  AWS_PUBLIC_ENDPOINT: ${AWS_PUBLIC_ENDPOINT:-http://localhost:9000}
+  CLAMAV_ENABLED: ${CLAMAV_ENABLED:-false}
+  CLAMAV_HOST: clamav
   EXTRACT_URL: http://extract:8000
   EXTRACT_TOKEN: ${RENOVA_INTERNAL_TOKEN:?}
   DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-renova-demo}
 
 x-extract-env: &extract-env
-  RENOVA_ENVIRONMENT: development
+  RENOVA_ENVIRONMENT: ${RENOVA_ENVIRONMENT:-development}
   RENOVA_REDIS_URL: redis://redis:6379/1
   RENOVA_S3_ENDPOINT: http://minio:9000
   RENOVA_S3_BUCKET: ${S3_BUCKET:-renova-documents}
-  RENOVA_S3_ACCESS_KEY: ${MINIO_ROOT_USER:?}
-  RENOVA_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
+  RENOVA_S3_ACCESS_KEY: ${S3_EXTRACT_ACCESS_KEY:?}
+  RENOVA_S3_SECRET_KEY: ${S3_EXTRACT_SECRET_KEY:?}
   RENOVA_INTERNAL_TOKEN: ${RENOVA_INTERNAL_TOKEN:?}
-  RENOVA_OCR_PROVIDER: ${RENOVA_OCR_PROVIDER:-text_layer}
+  RENOVA_OCR_PROVIDER: ${RENOVA_OCR_PROVIDER:-tesseract}
   RENOVA_LLM_PROVIDER: ${RENOVA_LLM_PROVIDER:-off}
+  # One Tesseract thread per page; concurrency is bounded by the service itself.
+  OMP_THREAD_LIMIT: "1"
 
 services:
   postgres:
@@ -101,6 +105,7 @@ services:
     volumes:
       - miniodata:/data
     ports:
+      - "127.0.0.1:${MINIO_PORT:-9000}:9000"
       - "127.0.0.1:9001:9001"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/minio/health/live"]
@@ -118,12 +123,13 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
       S3_BUCKET: ${S3_BUCKET:-renova-documents}
-    entrypoint: ["sh", "-c"]
-    command:
-      - >-
-        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" &&
-        mc mb --ignore-existing "local/$$S3_BUCKET" &&
-        mc anonymous set none "local/$$S3_BUCKET"
+      S3_WEB_ACCESS_KEY: ${S3_WEB_ACCESS_KEY:?}
+      S3_WEB_SECRET_KEY: ${S3_WEB_SECRET_KEY:?}
+      S3_EXTRACT_ACCESS_KEY: ${S3_EXTRACT_ACCESS_KEY:?}
+      S3_EXTRACT_SECRET_KEY: ${S3_EXTRACT_SECRET_KEY:?}
+    volumes:
+      - ./infra/minio/init.sh:/renova/init.sh:ro
+    entrypoint: ["sh", "/renova/init.sh"]
     restart: "no"
 
   migrate:
@@ -137,7 +143,11 @@ services:
     image: renovacheck-web:dev
     pull_policy: build
     command: ["sh", "-c", "php artisan migrate --database=migrator --force && php artisan db:seed --database=migrator --force"]
-    environment: *web-env
+    # Only this one-off service gets the schema owner's credentials.
+    environment:
+      <<: *web-env
+      DB_MIGRATOR_USERNAME: renova_owner
+      DB_MIGRATOR_PASSWORD: ${RENOVA_OWNER_PASSWORD:?}
     depends_on:
       postgres:
         condition: service_healthy
@@ -181,10 +191,16 @@ services:
     build:
       context: ./services/extract
       <<: *build-common
+      additional_contexts:
+        certs: ./infra/certs
+        rules: ./packages/rules
     image: renovacheck-extract:dev
     pull_policy: build
     restart: unless-stopped
     environment: *extract-env
+    # Rendering and OCR are memory- and CPU-heavy; a hostile document must not starve the host.
+    mem_limit: ${EXTRACT_MEM_LIMIT:-2g}
+    cpus: ${EXTRACT_CPUS:-2}
     ports:
       - "127.0.0.1:${EXTRACT_PORT:-8001}:8000"
     depends_on:
@@ -209,6 +225,21 @@ services:
       extract:
         condition: service_healthy
 
+  # Optional virus scanning: docker compose --profile av up -d, and CLAMAV_ENABLED=true in .env.
+  # The signature database (~1 GB) is downloaded on first start.
+  clamav:
+    profiles: ["av"]
+    image: clamav/clamav:1.4.3
+    restart: unless-stopped
+    volumes:
+      - clamavdb:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 300s
+
   # One-off tool: make synth
   synth:
     profiles: ["tools"]
@@ -231,3 +262,4 @@ volumes:
   pgdata:
   redisdata:
   miniodata:
+  clamavdb:

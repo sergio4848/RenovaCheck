@@ -1,6 +1,6 @@
 # Convenience targets; each one is a thin wrapper around docker compose (see README.md).
 # Layout adapted from careos/Makefile — Copyright (c) 2026 Sergen Şahin.
-.PHONY: help env up down reset logs ps seed migrate data-dir synth test test-web test-extract test-synth lint lint-web lint-extract lint-synth
+.PHONY: help env up down reset logs ps seed migrate data-dir synth eval test test-web test-extract test-synth lint lint-web lint-extract lint-synth
 
 COMPOSE ?= docker compose
 TEST_DB_ENV = -e DB_DATABASE=renova_test -e DB_USERNAME=renova_owner -e DB_PASSWORD=$${RENOVA_OWNER_PASSWORD}
@@ -44,6 +44,11 @@ data-dir:
 
 synth: data-dir  ## Generate 20 synthetic cases into data/synth and validate them
 	HOST_UID=$$(id -u) HOST_GID=$$(id -g) $(COMPOSE) run --rm --build synth
+
+eval: data-dir  ## Measure classification (and later extraction/rules) on data/synth
+	@test -d data/synth || $(MAKE) synth
+	$(COMPOSE) run --rm --no-deps --user $$(id -u):$$(id -g) -v ./data:/work/data -w /work extract \
+		python -m renova_extract.eval classification --data /work/data/synth --out /work/data/eval
 
 test: test-web test-extract test-synth  ## Run all test suites inside the containers
 
