@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from renova_extract import __version__
+from renova_extract.api.cases import router as cases_router
 from renova_extract.api.documents import router as documents_router
 from renova_extract.api.exception_handlers import register_exception_handlers
 from renova_extract.api.health import router as health_router
@@ -17,6 +18,8 @@ from renova_extract.core.config import Settings, get_settings
 from renova_extract.core.logging import configure_logging
 from renova_extract.documents.analyze import Analyzer
 from renova_extract.documents.storage import ObjectStore, S3ObjectStore
+from renova_extract.rules.engine import RuleEngine
+from renova_extract.rules.loader import load_rules
 
 
 def create_app(settings: Settings | None = None, store: ObjectStore | None = None) -> FastAPI:
@@ -33,10 +36,12 @@ def create_app(settings: Settings | None = None, store: ObjectStore | None = Non
     )
     app.state.settings = settings
     app.state.analyzer = Analyzer.build(settings, store or S3ObjectStore(settings))
+    app.state.rule_engine = RuleEngine(load_rules(settings.rules_dir))
 
     register_exception_handlers(app)
     app.include_router(health_router)
     app.include_router(documents_router)
+    app.include_router(cases_router)
 
     # Starlette applies middleware in reverse order of registration: request context is outermost.
     app.add_middleware(BodySizeLimitMiddleware, max_bytes=settings.max_body_bytes)

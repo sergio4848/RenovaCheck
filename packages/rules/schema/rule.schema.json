@@ -1,0 +1,1692 @@
+{
+  "$defs": {
+    "AdvanceSettlementRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "advance_settlement",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/AmountThreshold",
+          "default": {
+            "min_confidence": 0.5,
+            "tolerance_pln": 0.01
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator"
+      ],
+      "title": "AdvanceSettlementRule",
+      "type": "object"
+    },
+    "AmountThreshold": {
+      "additionalProperties": false,
+      "properties": {
+        "min_confidence": {
+          "default": 0.5,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Min Confidence",
+          "type": "number"
+        },
+        "tolerance_pln": {
+          "default": 0.01,
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Tolerance Pln",
+          "type": "number"
+        }
+      },
+      "title": "AmountThreshold",
+      "type": "object"
+    },
+    "AnnexChangeRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "annex_change",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/ConfidenceThreshold",
+          "default": {
+            "min_confidence": 0.5
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator"
+      ],
+      "title": "AnnexChangeRule",
+      "type": "object"
+    },
+    "ArithmeticRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "net_vat_gross",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/AmountThreshold",
+          "default": {
+            "min_confidence": 0.5,
+            "tolerance_pln": 0.01
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator"
+      ],
+      "title": "ArithmeticRule",
+      "type": "object"
+    },
+    "ConfidenceThreshold": {
+      "additionalProperties": false,
+      "properties": {
+        "min_confidence": {
+          "default": 0.5,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Min Confidence",
+          "type": "number"
+        }
+      },
+      "title": "ConfidenceThreshold",
+      "type": "object"
+    },
+    "CorrectionRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "correction",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/AmountThreshold",
+          "default": {
+            "min_confidence": 0.5,
+            "tolerance_pln": 0.01
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator"
+      ],
+      "title": "CorrectionRule",
+      "type": "object"
+    },
+    "DateOrderRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "date_order",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/DateOrderThreshold"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator",
+        "threshold"
+      ],
+      "title": "DateOrderRule",
+      "type": "object"
+    },
+    "DateOrderThreshold": {
+      "additionalProperties": false,
+      "properties": {
+        "min_confidence": {
+          "default": 0.5,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Min Confidence",
+          "type": "number"
+        },
+        "later": {
+          "$ref": "#/$defs/FieldRef"
+        },
+        "earlier": {
+          "$ref": "#/$defs/FieldRef"
+        },
+        "min_days": {
+          "default": 0,
+          "maximum": 3650,
+          "minimum": 0,
+          "title": "Min Days",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "later",
+        "earlier"
+      ],
+      "title": "DateOrderThreshold",
+      "type": "object"
+    },
+    "Emits": {
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "enum": [
+            "discrepancy",
+            "match_after_normalization",
+            "agreed_change",
+            "explained_by_advance",
+            "explained_by_correction",
+            "missing_document",
+            "unreadable_source",
+            "no_rules"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "fields": {
+          "default": [],
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "outcome"
+      ],
+      "title": "Emits",
+      "type": "object"
+    },
+    "FieldRef": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_types": {
+          "items": {
+            "enum": [
+              "wniosek_ekstrakt",
+              "oferta",
+              "umowa",
+              "aneks",
+              "faktura",
+              "faktura_zaliczkowa",
+              "faktura_korygujaca",
+              "protokol_odbioru",
+              "karta_produktu"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Doc Types",
+          "type": "array"
+        },
+        "field": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "doc_types",
+        "field"
+      ],
+      "title": "FieldRef",
+      "type": "object"
+    },
+    "Inputs": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_types": {
+          "items": {
+            "enum": [
+              "wniosek_ekstrakt",
+              "oferta",
+              "umowa",
+              "aneks",
+              "faktura",
+              "faktura_zaliczkowa",
+              "faktura_korygujaca",
+              "protokol_odbioru",
+              "karta_produktu"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Doc Types",
+          "type": "array"
+        },
+        "fields": {
+          "default": [],
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "doc_types"
+      ],
+      "title": "Inputs",
+      "type": "object"
+    },
+    "InvoiceTotalRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "invoice_total",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/AmountThreshold",
+          "default": {
+            "min_confidence": 0.5,
+            "tolerance_pln": 0.01
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator"
+      ],
+      "title": "InvoiceTotalRule",
+      "type": "object"
+    },
+    "MajorityRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "majority",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/MajorityThreshold",
+          "default": {
+            "min_confidence": 0.5,
+            "split_on_annex": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator"
+      ],
+      "title": "MajorityRule",
+      "type": "object"
+    },
+    "MajorityThreshold": {
+      "additionalProperties": false,
+      "properties": {
+        "min_confidence": {
+          "default": 0.5,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Min Confidence",
+          "type": "number"
+        },
+        "split_on_annex": {
+          "default": false,
+          "title": "Split On Annex",
+          "type": "boolean"
+        }
+      },
+      "title": "MajorityThreshold",
+      "type": "object"
+    },
+    "RequiredDocumentsRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "required_documents",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/RequiredDocumentsThreshold"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator",
+        "threshold"
+      ],
+      "title": "RequiredDocumentsRule",
+      "type": "object"
+    },
+    "RequiredDocumentsThreshold": {
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "items": {
+            "items": {
+              "enum": [
+                "wniosek_ekstrakt",
+                "oferta",
+                "umowa",
+                "aneks",
+                "faktura",
+                "faktura_zaliczkowa",
+                "faktura_korygujaca",
+                "protokol_odbioru",
+                "karta_produktu"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "minItems": 1,
+          "title": "Required",
+          "type": "array"
+        }
+      },
+      "required": [
+        "required"
+      ],
+      "title": "RequiredDocumentsThreshold",
+      "type": "object"
+    },
+    "SignatureRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_type": {
+          "enum": [
+            "wniosek_ekstrakt",
+            "oferta",
+            "umowa",
+            "aneks",
+            "faktura",
+            "faktura_zaliczkowa",
+            "faktura_korygujaca",
+            "protokol_odbioru",
+            "karta_produktu"
+          ],
+          "title": "Doc Type",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "doc_type",
+        "fields"
+      ],
+      "title": "SignatureRequirement",
+      "type": "object"
+    },
+    "SignaturesRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "signatures",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/SignaturesThreshold"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator",
+        "threshold"
+      ],
+      "title": "SignaturesRule",
+      "type": "object"
+    },
+    "SignaturesThreshold": {
+      "additionalProperties": false,
+      "properties": {
+        "min_confidence": {
+          "default": 0.5,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Min Confidence",
+          "type": "number"
+        },
+        "required": {
+          "items": {
+            "$ref": "#/$defs/SignatureRequirement"
+          },
+          "minItems": 1,
+          "title": "Required",
+          "type": "array"
+        }
+      },
+      "required": [
+        "required"
+      ],
+      "title": "SignaturesThreshold",
+      "type": "object"
+    },
+    "SourceQualityRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "source_quality",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/ConfidenceThreshold",
+          "default": {
+            "min_confidence": 0.5
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator"
+      ],
+      "title": "SourceQualityRule",
+      "type": "object"
+    },
+    "StreetSpellingRule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z]{3}-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "title_pl": {
+          "maxLength": 200,
+          "minLength": 5,
+          "title": "Title Pl",
+          "type": "string"
+        },
+        "program": {
+          "const": "czyste_powietrze",
+          "title": "Program",
+          "type": "string"
+        },
+        "edition": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Edition",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "address",
+            "product",
+            "amount",
+            "completeness",
+            "quality"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "valid_from": {
+          "format": "date",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/Inputs"
+        },
+        "emits": {
+          "items": {
+            "$ref": "#/$defs/Emits"
+          },
+          "minItems": 1,
+          "title": "Emits",
+          "type": "array"
+        },
+        "source_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "notes": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Notes",
+          "type": "string"
+        },
+        "comparator": {
+          "const": "street_spelling",
+          "title": "Comparator",
+          "type": "string"
+        },
+        "threshold": {
+          "$ref": "#/$defs/ConfidenceThreshold",
+          "default": {
+            "min_confidence": 0.5
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "title_pl",
+        "program",
+        "edition",
+        "family",
+        "valid_from",
+        "severity",
+        "inputs",
+        "emits",
+        "source_url",
+        "notes",
+        "comparator"
+      ],
+      "title": "StreetSpellingRule",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Root of one rule file; exported as packages/rules/schema/rule.schema.json.",
+  "properties": {
+    "rule": {
+      "discriminator": {
+        "mapping": {
+          "advance_settlement": "#/$defs/AdvanceSettlementRule",
+          "annex_change": "#/$defs/AnnexChangeRule",
+          "correction": "#/$defs/CorrectionRule",
+          "date_order": "#/$defs/DateOrderRule",
+          "invoice_total": "#/$defs/InvoiceTotalRule",
+          "majority": "#/$defs/MajorityRule",
+          "net_vat_gross": "#/$defs/ArithmeticRule",
+          "required_documents": "#/$defs/RequiredDocumentsRule",
+          "signatures": "#/$defs/SignaturesRule",
+          "source_quality": "#/$defs/SourceQualityRule",
+          "street_spelling": "#/$defs/StreetSpellingRule"
+        },
+        "propertyName": "comparator"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/MajorityRule"
+        },
+        {
+          "$ref": "#/$defs/StreetSpellingRule"
+        },
+        {
+          "$ref": "#/$defs/AnnexChangeRule"
+        },
+        {
+          "$ref": "#/$defs/InvoiceTotalRule"
+        },
+        {
+          "$ref": "#/$defs/AdvanceSettlementRule"
+        },
+        {
+          "$ref": "#/$defs/CorrectionRule"
+        },
+        {
+          "$ref": "#/$defs/ArithmeticRule"
+        },
+        {
+          "$ref": "#/$defs/RequiredDocumentsRule"
+        },
+        {
+          "$ref": "#/$defs/DateOrderRule"
+        },
+        {
+          "$ref": "#/$defs/SignaturesRule"
+        },
+        {
+          "$ref": "#/$defs/SourceQualityRule"
+        }
+      ],
+      "title": "Rule"
+    }
+  },
+  "required": [
+    "rule"
+  ],
+  "title": "RenovaCheck rule file (the document is the value of `rule`)",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

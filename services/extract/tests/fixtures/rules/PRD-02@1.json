@@ -1,0 +1,164 @@
+{
+ "rule": "PRD-02@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "power on the contract",
+   "patch": {
+    "set": {
+     "D2": {
+      "product_power_kw": [
+       "12",
+       "12 kW"
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D2"
+     ],
+     "fields": [
+      "product_power_kw"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "annex changes the power",
+   "patch": {
+    "add": [
+     {
+      "doc_id": "D6",
+      "doc_type": "aneks",
+      "fields": {
+       "document_number": [
+        "UM/2026/100/A1",
+        "UM/2026/100/A1"
+       ],
+       "contract_date": [
+        "2026-04-01",
+        "01.04.2026"
+       ],
+       "related_document_number": [
+        "UM/2026/100",
+        "UM/2026/100"
+       ],
+       "investor_name": [
+        "jan nowak",
+        "Jan Nowak"
+       ],
+       "address_street": [
+        "kosciuszki",
+        "ul. Kościuszki"
+       ],
+       "address_building_no": [
+        "25",
+        "25"
+       ],
+       "address_postal_code": [
+        "98-134",
+        "98-134"
+       ],
+       "address_city": [
+        "debowa wola",
+        "Dębowa Wola"
+       ],
+       "contractor_name": [
+        "energo-montaz sp. j.",
+        "Energo-Montaż Sp. j."
+       ],
+       "contractor_nip": [
+        "0016680523",
+        "001-668-05-23"
+       ],
+       "product_manufacturer": [
+        "termavix",
+        "Termavix"
+       ],
+       "product_model": [
+        "TVX12B",
+        "TVX-12B"
+       ],
+       "product_power_kw": [
+        "12",
+        "12 kW"
+       ],
+       "amount_net": [
+        "41350.00",
+        "41 350,00 zł"
+       ],
+       "amount_vat": [
+        "3308.00",
+        "3 308,00 zł"
+       ],
+       "amount_gross": [
+        "44658.00",
+        "44 658,00 zł"
+       ],
+       "signature_investor": [
+        "true",
+        ""
+       ],
+       "signature_contractor": [
+        "true",
+        ""
+       ]
+      }
+     }
+    ],
+    "set": {
+     "D3": {
+      "product_model": [
+       "TVX12B",
+       "TVX-12B"
+      ],
+      "product_power_kw": [
+       "12",
+       "12 kW"
+      ],
+      "amount_net": [
+       "41350.00",
+       "41 350,00 zł"
+      ],
+      "amount_vat": [
+       "3308.00",
+       "3 308,00 zł"
+      ],
+      "amount_gross": [
+       "44658.00",
+       "44 658,00 zł"
+      ]
+     },
+     "D4": {
+      "product_model": [
+       "TVX12B",
+       "TVX-12B"
+      ],
+      "product_power_kw": [
+       "12",
+       "12 kW"
+      ]
+     },
+     "D5": {
+      "product_model": [
+       "TVX12B",
+       "TVX-12B"
+      ],
+      "product_power_kw": [
+       "12",
+       "12 kW"
+      ]
+     }
+    }
+   },
+   "expect": []
+  }
+ ]
+}

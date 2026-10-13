@@ -1,0 +1,34 @@
+{
+ "rule": "ADR-04@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "other NIP on the invoice",
+   "patch": {
+    "set": {
+     "D3": {
+      "contractor_nip": [
+       "0016680524",
+       "0016680524"
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "contractor_nip"
+     ]
+    }
+   ]
+  }
+ ]
+}

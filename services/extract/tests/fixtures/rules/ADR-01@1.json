@@ -1,0 +1,96 @@
+{
+ "rule": "ADR-01@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "building number differs on the invoice",
+   "patch": {
+    "set": {
+     "D3": {
+      "address_building_no": [
+       "52",
+       "52"
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "address_building_no"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "no majority",
+   "patch": {
+    "set": {
+     "D3": {
+      "address_building_no": [
+       "52",
+       "52"
+      ]
+     },
+     "D4": {
+      "address_building_no": [
+       "52",
+       "52"
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D1",
+      "D2",
+      "D3",
+      "D4"
+     ],
+     "fields": [
+      "address_building_no"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "unreadable value does not vote",
+   "patch": {
+    "set": {
+     "D3": {
+      "address_building_no": [
+       null,
+       "5?"
+      ]
+     }
+    }
+   },
+   "expect": []
+  },
+  {
+   "name": "low-confidence value does not vote",
+   "patch": {
+    "set": {
+     "D3": {
+      "address_building_no": [
+       "52",
+       "52",
+       0.3
+      ]
+     }
+    }
+   },
+   "expect": []
+  }
+ ]
+}

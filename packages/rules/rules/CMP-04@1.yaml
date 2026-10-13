@@ -1,0 +1,26 @@
+id: CMP-04
+version: 1
+title_pl: "Wymagane podpisy na dokumentach"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: completeness
+valid_from: 2025-03-31
+valid_to: null
+severity: critical
+inputs:
+  doc_types: [oferta, umowa, aneks, protokol_odbioru]
+  fields: [signature_investor, signature_contractor]
+comparator: signatures
+threshold:
+  min_confidence: 0.5
+  required:
+    - {doc_type: umowa, fields: [signature_investor, signature_contractor]}
+    - {doc_type: aneks, fields: [signature_investor, signature_contractor]}
+    - {doc_type: protokol_odbioru, fields: [signature_investor, signature_contractor]}
+    - {doc_type: oferta, fields: [signature_contractor]}
+emits:
+  - outcome: discrepancy
+    fields: [signature_investor, signature_contractor]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Umowa, aneks i protokół odbioru wymagają podpisów obu stron; oferta podpisu wykonawcy (akceptacja inwestora nie jest wymagana). Sprawdzana jest obecność podpisu, nie jego autentyczność. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

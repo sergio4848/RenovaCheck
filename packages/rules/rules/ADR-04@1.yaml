@@ -1,0 +1,22 @@
+id: ADR-04
+version: 1
+title_pl: "Ten sam wykonawca (nazwa i NIP) w dokumentach"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: address
+valid_from: 2025-03-31
+valid_to: null
+severity: critical
+inputs:
+  doc_types: [oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+  fields: [contractor_name, contractor_nip]
+comparator: majority
+threshold:
+  min_confidence: 0.5
+  split_on_annex: false
+emits:
+  - outcome: discrepancy
+    fields: [contractor_name, contractor_nip]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Faktury i protokół odbioru powinny pochodzić od wykonawcy z umowy lub oferty. NIP porównywany jako same cyfry. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

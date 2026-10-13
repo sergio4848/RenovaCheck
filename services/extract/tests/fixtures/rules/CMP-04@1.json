@@ -1,0 +1,67 @@
+{
+ "rule": "CMP-04@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "investor did not sign the protocol",
+   "patch": {
+    "set": {
+     "D4": {
+      "signature_investor": [
+       "false",
+       ""
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D4"
+     ],
+     "fields": [
+      "signature_investor"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "offer needs only the contractor",
+   "patch": {
+    "doc": {
+     "D2": {
+      "doc_type": "oferta"
+     }
+    },
+    "set": {
+     "D2": {
+      "signature_investor": [
+       "false",
+       ""
+      ]
+     }
+    }
+   },
+   "expect": []
+  },
+  {
+   "name": "signature not read is not a missing signature",
+   "patch": {
+    "set": {
+     "D4": {
+      "signature_investor": [
+       null,
+       ""
+      ]
+     }
+    }
+   },
+   "expect": []
+  }
+ ]
+}

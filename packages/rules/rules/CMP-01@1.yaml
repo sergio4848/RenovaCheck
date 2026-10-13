@@ -1,0 +1,26 @@
+id: CMP-01
+version: 1
+title_pl: "Komplet wymaganych dokumentów"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: completeness
+valid_from: 2025-03-31
+valid_to: null
+severity: critical
+inputs:
+  doc_types: [wniosek_ekstrakt, oferta, umowa, faktura, protokol_odbioru, karta_produktu]
+  fields: []
+comparator: required_documents
+threshold:
+  required:
+    - [wniosek_ekstrakt]
+    - [umowa, oferta]
+    - [faktura]
+    - [protokol_odbioru]
+    - [karta_produktu]
+emits:
+  - outcome: missing_document
+    fields: []
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Do rozliczenia przedsięwzięcia potrzebne są: wniosek, umowa lub oferta, faktura, protokół odbioru i karta produktu urządzenia. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

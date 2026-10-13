@@ -1,0 +1,21 @@
+id: QLT-01
+version: 1
+title_pl: "Dokument odczytany ze skanu lub nieczytelny"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: quality
+valid_from: 2025-03-31
+valid_to: null
+severity: info
+inputs:
+  doc_types: [wniosek_ekstrakt, oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru, karta_produktu]
+  fields: []
+comparator: source_quality
+threshold:
+  min_confidence: 0.5
+emits:
+  - outcome: unreadable_source
+    fields: []
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Wartości odczytane przez OCR, nieczytelne lub niepewne pola wymagają porównania z oryginałem przed decyzją. Reguła nie ocenia treści dokumentu.

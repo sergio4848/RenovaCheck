@@ -1,0 +1,75 @@
+{
+ "rule": "QLT-01@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "scanned invoice",
+   "patch": {
+    "doc": {
+     "D3": {
+      "text_source": "ocr"
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "unreadable_source",
+     "subjects": [
+      "D3"
+     ],
+     "fields": []
+    }
+   ]
+  },
+  {
+   "name": "unreadable amount",
+   "patch": {
+    "set": {
+     "D3": {
+      "amount_net": [
+       null,
+       "4S 7OO"
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "unreadable_source",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "amount_net"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "failed document",
+   "patch": {
+    "doc": {
+     "D4": {
+      "status": "failed"
+     }
+    },
+    "clear": [
+     "D4"
+    ]
+   },
+   "expect": [
+    {
+     "outcome": "unreadable_source",
+     "subjects": [
+      "D4"
+     ],
+     "fields": []
+    }
+   ]
+  }
+ ]
+}

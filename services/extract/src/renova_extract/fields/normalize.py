@@ -174,6 +174,21 @@ def street(text: str | float | int) -> str | None:
     return value or None
 
 
+def street_core(text: str) -> str:
+    """The street name as printed, without prefix and patron first name or initial.
+
+    Case and diacritics are kept: 'ul. T. Kościuszki' -> 'Kościuszki', 'ul. Kosciuszki' ->
+    'Kosciuszki'. Two spellings with equal ``street()`` but different cores are the same street
+    written differently.
+    """
+    tokens = collapse(text).replace(".", ". ").split()
+    while tokens and strip_punct(fold(tokens[0])) in _STREET_PREFIXES:
+        tokens.pop(0)
+    while len(tokens) > 1 and (strip_punct(fold(tokens[0])) in _PATRON_FIRST_NAMES or _INITIAL.match(fold(tokens[0]))):
+        tokens.pop(0)
+    return " ".join(strip_punct(t) for t in tokens if strip_punct(t))
+
+
 def city(text: str | float | int) -> str | None:
     value = fold(strip_punct(str(text)))
     return value or None

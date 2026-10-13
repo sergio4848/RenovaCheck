@@ -1,9 +1,10 @@
-"""python -m renova_extract.eval {classification|extraction|all} --data data/synth --out data/eval
+"""python -m renova_extract.eval {classification|extraction|rules|all} --data data/synth --out data/eval
 
 Options: --ocr tesseract|none (default tesseract).
 
-Exit code 1 when an acceptance threshold is missed: document type accuracy, or field precision
-and recall on clean PDFs. Scans are measured and reported without a threshold.
+Exit code 1 when an acceptance threshold is missed: document type accuracy, field precision and
+recall on clean PDFs, or any false positive/negative of the rules on ground-truth fields. Scans
+and the rules on extracted fields (pipeline mode) are measured and reported without a threshold.
 """
 
 from __future__ import annotations
@@ -17,14 +18,16 @@ from typing import Any
 from renova_extract.classify.classifier import DocTypeClassifier
 from renova_extract.core.config import Settings
 from renova_extract.eval import classification, extraction
+from renova_extract.eval import rules as rules_eval
 from renova_extract.fields.dictionary import FieldDictionary
 from renova_extract.ocr.base import OcrAdapter
 from renova_extract.ocr.tesseract import TesseractPol
+from renova_extract.rules.loader import load_rules
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="renova_extract.eval")
-    parser.add_argument("task", choices=["classification", "extraction", "all"])
+    parser.add_argument("task", choices=["classification", "extraction", "rules", "all"])
     parser.add_argument("--data", type=Path, default=Path("data/synth"))
     parser.add_argument("--out", type=Path, default=Path("data/eval"))
     parser.add_argument("--ocr", choices=["tesseract", "none"], default="tesseract")
@@ -52,6 +55,18 @@ def main(argv: list[str] | None = None) -> int:
         print(_extraction_text(report))  # noqa: T201
         clean = report["overall"]["clean"]
         ok &= all(clean[k] is not None and clean[k] >= args.min_field_score for k in ("precision", "recall"))
+    if args.task in ("rules", "all"):
+        dictionary = FieldDictionary.from_yaml(settings.rules_dir / "fields.yaml")
+        classifier = DocTypeClassifier.from_yaml(settings.rules_dir / "doc_types.yaml")
+        rules = load_rules(settings.rules_dir)
+        reports = {
+            mode: rules_eval.evaluate(args.data, rules, dictionary, mode, classifier, ocr, settings.max_pages).as_dict()
+            for mode in ("truth", "pipeline")
+        }
+        _write(args.out / "rules.json", reports)
+        print(_rules_text(reports))  # noqa: T201
+        truth = reports["truth"]["total"]
+        ok &= truth["fp"] == 0 and truth["fn"] == 0
     return 0 if ok else 1
 
 
@@ -96,6 +111,29 @@ def _extraction_text(report: dict[str, Any]) -> str:
         lines.append(
             f"  clean {error['kind']:<15} {error['doc_id']} {error['field']}: {error['expected']!r} -> {error['got']!r}"
         )
+    return "\n".join(lines)
+
+
+def _rules_text(reports: dict[str, dict[str, Any]]) -> str:
+    truth, pipeline = reports["truth"], reports["pipeline"]
+    lines = [
+        f"Rules ({truth['cases']} cases; truth = ground-truth fields, pipeline = extracted fields)",
+        f"  {'rule':<8} {'truth TP':>8} {'FP':>4} {'FN':>4}   {'pipeline TP':>11} {'FP':>4} {'FN':>4}",
+    ]
+    for rule in sorted(set(truth["rules"]) | set(pipeline["rules"])):
+        t, p = truth["rules"].get(rule, {}), pipeline["rules"].get(rule, {})
+        lines.append(
+            f"  {rule:<8} {t.get('tp', 0):>8} {t.get('fp', 0):>4} {t.get('fn', 0):>4}"
+            f"   {p.get('tp', 0):>11} {p.get('fp', 0):>4} {p.get('fn', 0):>4}"
+        )
+    tt, pt = truth["total"], pipeline["total"]
+    lines.append(f"  {'ALL':<8} {tt['tp']:>8} {tt['fp']:>4} {tt['fn']:>4}   {pt['tp']:>11} {pt['fp']:>4} {pt['fn']:>4}")
+    for mode, report in reports.items():
+        for error in report["errors"]:
+            detail = error.get("reason") or f"{error['outcome']} in {error.get('doc_id')}"
+            lines.append(f"  {mode} {error['kind']} {error['rule']} {error['case_id']}: {detail}")
+        for mismatch in report["severity_mismatches"]:
+            lines.append(f"  {mode} severity {mismatch}")
     return "\n".join(lines)
 
 

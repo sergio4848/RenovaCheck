@@ -1,0 +1,22 @@
+id: AMT-01
+version: 1
+title_pl: "Kwota faktury zgodna z umową lub ofertą"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: amount
+valid_from: 2025-03-31
+valid_to: null
+severity: warning
+inputs:
+  doc_types: [umowa, oferta, aneks, faktura]
+  fields: [amount_net, amount_gross]
+comparator: invoice_total
+threshold:
+  min_confidence: 0.5
+  tolerance_pln: 0.01
+emits:
+  - outcome: discrepancy
+    fields: [amount_net, amount_gross]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Kwota brutto faktury końcowej porównywana z umową lub ofertą (po aneksie: z aneksem). Rozpoznaje wpisanie kwoty brutto jako netto. Wynik zawsze do sprawdzenia. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

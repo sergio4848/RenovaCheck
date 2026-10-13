@@ -1,0 +1,22 @@
+id: AMT-04
+version: 1
+title_pl: "Netto + VAT = brutto w dokumencie"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: amount
+valid_from: 2025-03-31
+valid_to: null
+severity: warning
+inputs:
+  doc_types: [wniosek_ekstrakt, oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca]
+  fields: [amount_net, amount_vat, amount_gross]
+comparator: net_vat_gross
+threshold:
+  min_confidence: 0.5
+  tolerance_pln: 0.01
+emits:
+  - outcome: discrepancy
+    fields: [amount_net, amount_vat, amount_gross]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Kontrola arytmetyczna podsumowania dokumentu (również korekt z kwotami ujemnymi), tolerancja 1 grosz. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

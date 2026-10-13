@@ -1,0 +1,50 @@
+{
+ "rule": "CMP-01@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "acceptance protocol missing",
+   "patch": {
+    "drop": [
+     "D4"
+    ]
+   },
+   "expect": [
+    {
+     "outcome": "missing_document",
+     "subjects": [],
+     "fields": []
+    }
+   ]
+  },
+  {
+   "name": "offer instead of contract",
+   "patch": {
+    "doc": {
+     "D2": {
+      "doc_type": "oferta"
+     }
+    }
+   },
+   "expect": []
+  },
+  {
+   "name": "failed document still counts as present",
+   "patch": {
+    "doc": {
+     "D4": {
+      "status": "failed"
+     }
+    },
+    "clear": [
+     "D4"
+    ]
+   },
+   "expect": []
+  }
+ ]
+}

@@ -1,0 +1,24 @@
+id: CMP-02
+version: 1
+title_pl: "Faktura wystawiona po zawarciu umowy"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: completeness
+valid_from: 2025-03-31
+valid_to: null
+severity: warning
+inputs:
+  doc_types: [faktura, umowa, oferta]
+  fields: [invoice_date, contract_date]
+comparator: date_order
+threshold:
+  min_confidence: 0.5
+  later: {doc_types: [faktura], field: invoice_date}
+  earlier: {doc_types: [umowa, oferta], field: contract_date}
+  min_days: 0
+emits:
+  - outcome: discrepancy
+    fields: [invoice_date, contract_date]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Faktura końcowa nie może być wcześniejsza niż umowa lub oferta, której dotyczy. Data umowy brana tylko z umowy lub oferty (aneks ma własną datę). Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

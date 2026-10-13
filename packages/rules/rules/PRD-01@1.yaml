@@ -1,0 +1,22 @@
+id: PRD-01
+version: 1
+title_pl: "Producent i model urządzenia zgodne w dokumentach"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: product
+valid_from: 2025-03-31
+valid_to: null
+severity: critical
+inputs:
+  doc_types: [wniosek_ekstrakt, oferta, umowa, aneks, faktura, protokol_odbioru, karta_produktu]
+  fields: [product_manufacturer, product_model]
+comparator: majority
+threshold:
+  min_confidence: 0.5
+  split_on_annex: true
+emits:
+  - outcome: discrepancy
+    fields: [product_manufacturer, product_model]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Urządzenie z wniosku i umowy ma być tym, które zafakturowano i odebrano. Model porównywany bez wielkości liter, myślników i spacji. Jeśli aneks zmienia urządzenie, dokumenty przed aneksem i po nim są porównywane osobno (zmianę zgłasza PRD-03). Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

@@ -1,0 +1,22 @@
+id: ADR-03
+version: 1
+title_pl: "Ten sam inwestor we wszystkich dokumentach"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: address
+valid_from: 2025-03-31
+valid_to: null
+severity: critical
+inputs:
+  doc_types: [wniosek_ekstrakt, oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+  fields: [investor_name]
+comparator: majority
+threshold:
+  min_confidence: 0.5
+  split_on_annex: false
+emits:
+  - outcome: discrepancy
+    fields: [investor_name]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Beneficjent programu musi być stroną umowy i nabywcą na fakturach. Porównanie bez wielkości liter i polskich znaków. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.
