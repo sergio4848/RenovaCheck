@@ -1,6 +1,6 @@
 # Convenience targets; each one is a thin wrapper around docker compose (see README.md).
 # Layout adapted from careos/Makefile — Copyright (c) 2026 Sergen Şahin.
-.PHONY: help env up down reset logs ps seed migrate synth test test-web test-extract test-synth lint lint-web lint-extract lint-synth
+.PHONY: help env up down reset logs ps seed migrate data-dir synth test test-web test-extract test-synth lint lint-web lint-extract lint-synth
 
 COMPOSE ?= docker compose
 TEST_DB_ENV = -e DB_DATABASE=renova_test -e DB_USERNAME=renova_owner -e DB_PASSWORD=$${RENOVA_OWNER_PASSWORD}
@@ -38,8 +38,11 @@ migrate:       ## Apply database migrations
 seed:          ## Re-run the idempotent demo seed
 	$(COMPOSE) run --rm migrate php artisan db:seed --database=migrator --force
 
-synth:         ## Generate 20 synthetic cases into data/synth and validate them
+# Created by the invoking user before any bind mount, so containers running as that user can write.
+data-dir:
 	@mkdir -p data
+
+synth: data-dir  ## Generate 20 synthetic cases into data/synth and validate them
 	HOST_UID=$$(id -u) HOST_GID=$$(id -g) $(COMPOSE) run --rm --build synth
 
 test: test-web test-extract test-synth  ## Run all test suites inside the containers
@@ -50,7 +53,7 @@ test-web:      ## Laravel tests against PostgreSQL (renova_test) with RLS active
 test-extract:  ## Python unit tests
 	$(COMPOSE) run --rm --no-deps extract pytest -q -p no:cacheprovider
 
-test-synth:    ## Synthetic generator tests (determinism, schema, bbox provenance)
+test-synth: data-dir  ## Synthetic generator tests (determinism, schema, bbox provenance)
 	HOST_UID=$$(id -u) HOST_GID=$$(id -g) $(COMPOSE) run --rm --build --workdir /src --entrypoint pytest synth -q -p no:cacheprovider
 
 lint: lint-web lint-extract lint-synth  ## Static checks
@@ -61,5 +64,5 @@ lint-web:
 lint-extract:
 	$(COMPOSE) run --rm --no-deps extract sh -c "ruff check --no-cache . && ruff format --check --no-cache . && mypy --cache-dir=/tmp/mypy"
 
-lint-synth:
+lint-synth: data-dir
 	$(COMPOSE) run --rm --build --workdir /src --entrypoint sh synth -c "ruff check --no-cache . && ruff format --check --no-cache . && mypy --cache-dir=/tmp/mypy"
