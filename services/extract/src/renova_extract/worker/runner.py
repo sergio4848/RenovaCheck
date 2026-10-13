@@ -65,8 +65,14 @@ async def process_one(job: Job, handlers: Mapping[str, Handler] = HANDLERS) -> b
     return True
 
 
+def queue_client(settings: Settings) -> Redis:
+    # The socket must outlive a blocking BLPOP; redis-py's default socket timeout (5 s) would
+    # otherwise abort every idle poll with TimeoutError.
+    return Redis.from_url(settings.redis_url, socket_timeout=settings.worker_poll_timeout_seconds + 10)
+
+
 async def run(settings: Settings, stop: asyncio.Event, redis: Redis | None = None) -> None:
-    client = redis or Redis.from_url(settings.redis_url)
+    client = redis or queue_client(settings)
     backoff = 1.0
     log.info("worker.started", queue=settings.extract_queue)
     try:

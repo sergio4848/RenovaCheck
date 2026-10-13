@@ -49,3 +49,10 @@ def test_healthcheck_follows_heartbeat(tmp_path: Path, monkeypatch: pytest.Monke
     assert healthcheck() == 1
     runner.touch_heartbeat(beat)
     assert healthcheck() == 0
+
+
+def test_queue_socket_outlives_blocking_poll() -> None:
+    settings = make_settings(worker_poll_timeout_seconds=5)
+    client = runner.queue_client(settings)
+    timeout = client.connection_pool.connection_kwargs["socket_timeout"]
+    assert timeout > settings.worker_poll_timeout_seconds
