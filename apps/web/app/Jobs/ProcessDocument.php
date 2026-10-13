@@ -70,6 +70,19 @@ class ProcessDocument implements ShouldQueue
                 foreach ($result['pages'] as $page) {
                     $document->pages()->create($page);
                 }
+                $document->fields()->delete();
+                foreach ($result['fields'] as $field) {
+                    $document->fields()->create([
+                        'name' => $field['name'],
+                        'value' => self::storedValue($field['value'] ?? null),
+                        'raw_text' => mb_substr((string) ($field['text'] ?? ''), 0, 500),
+                        'page_no' => $field['page'],
+                        'bbox' => $field['bbox'],
+                        'method' => $field['method'],
+                        'confidence' => $field['confidence'],
+                        'status' => $field['status'],
+                    ]);
+                }
                 $classification = $result['classification'];
                 if ($document->doc_type_source !== 'user') {
                     $type = $classification['doc_type'] === null ? null : DocType::from($classification['doc_type']);
@@ -81,6 +94,7 @@ class ProcessDocument implements ShouldQueue
                 }
                 $document->forceFill([
                     'classification' => $classification + ['ocr_provider' => $result['ocr_provider']],
+                    'extraction' => $result['extraction'],
                     'page_count' => $result['page_count'],
                     'status' => 'processed',
                     'processed_at' => now(),
@@ -90,6 +104,8 @@ class ProcessDocument implements ShouldQueue
                     'confidence' => $classification['confidence'],
                     'pages' => $result['page_count'],
                     'ocr_provider' => $result['ocr_provider'],
+                    'fields' => count($result['fields']),
+                    'unreadable' => count(array_filter($result['fields'], fn ($f) => $f['status'] === 'unreadable')),
                 ]);
             });
         });
@@ -103,6 +119,11 @@ class ProcessDocument implements ShouldQueue
                 $this->markFailed($document, 'processing_error', app(AuditLog::class));
             }
         });
+    }
+
+    private static function storedValue(string|bool|null $value): ?string
+    {
+        return is_bool($value) ? ($value ? 'true' : 'false') : $value;
     }
 
     private function markFailed(Document $document, string $code, AuditLog $audit): void

@@ -6,6 +6,7 @@ use App\Documents\DocumentIntake;
 use App\Documents\FileSniffer;
 use App\Enums\DocType;
 use App\Http\Requests\StoreDocumentsRequest;
+use App\Jobs\ProcessDocument;
 use App\Models\CaseFile;
 use App\Models\Document;
 use App\Services\AuditLog;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class DocumentController extends Controller
 {
@@ -29,6 +31,18 @@ class DocumentController extends Controller
         ]), $results);
 
         return redirect()->route('cases.show', $caseFile)->with('upload_results', $messages);
+    }
+
+    public function show(CaseFile $caseFile, Document $document): View
+    {
+        $order = array_flip(config('documents.fields'));
+        $fields = $document->fields()->get()->sortBy(fn ($f) => $order[$f->name] ?? PHP_INT_MAX)->values();
+
+        return view('documents.show', [
+            'case' => $caseFile,
+            'document' => $document->load('pages'),
+            'fields' => $fields,
+        ]);
     }
 
     public function updateType(Request $request, CaseFile $caseFile, Document $document, AuditLog $audit): RedirectResponse
@@ -47,6 +61,11 @@ class DocumentController extends Controller
                 'to' => $validated['doc_type'],
                 'classifier' => $document->classification['doc_type'] ?? null,
             ]);
+            // The type decides which fields are read: analyse again with the corrected type.
+            if ($document->status === 'processed') {
+                $document->forceFill(['status' => 'uploaded'])->save();
+                ProcessDocument::dispatch($document->organization_id, $document->id)->afterCommit();
+            }
         });
 
         return redirect()->route('cases.show', $caseFile)->with('status', __('Document type updated.'));

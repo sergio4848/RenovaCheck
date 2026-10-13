@@ -29,6 +29,7 @@ class Document extends Model
             'doc_type' => DocType::class,
             'doc_type_confidence' => 'float',
             'classification' => 'array',
+            'extraction' => 'array',
             'processed_at' => 'immutable_datetime',
             'size_bytes' => 'integer',
             'page_count' => 'integer',
@@ -45,6 +46,12 @@ class Document extends Model
     public function pages(): HasMany
     {
         return $this->hasMany(DocumentPage::class)->orderBy('page_no');
+    }
+
+    /** @return HasMany<DocumentField, $this> */
+    public function fields(): HasMany
+    {
+        return $this->hasMany(DocumentField::class)->orderBy('name');
     }
 
     /** Prefix under which the extraction service writes derived files (page images). */

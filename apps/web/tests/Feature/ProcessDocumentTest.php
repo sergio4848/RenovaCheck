@@ -15,6 +15,7 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ProcessDocumentTest extends TestCase
@@ -53,7 +54,34 @@ class ProcessDocumentTest extends TestCase
             ]],
             'classification' => ['doc_type' => 'faktura', 'confidence' => 0.92, 'scores' => ['faktura' => 11], 'evidence' => ['faktura vat nr']],
             'ocr_provider' => 'tesseract',
+            'fields' => [
+                $this->field('amount_gross', '49522.27', '49 522,27 zł'),
+                $this->field('signature_contractor', true, 'Wykonawca', 'signature'),
+                $this->field('amount_vat', null, '3 8?2,O7', status: 'unreadable', confidence: 0.0),
+            ],
+            'extraction' => ['dictionary_version' => 2, 'doc_type' => 'faktura', 'llm_provider' => null],
         ], $overrides);
+    }
+
+    /** @return array<string, mixed> */
+    private function field(
+        string $name, string|bool|null $value, string $text, string $method = 'label',
+        string $status = 'ok', float $confidence = 0.98,
+    ): array {
+        return [
+            'name' => $name, 'value' => $value, 'text' => $text, 'doc_id' => $this->document->id, 'page' => 1,
+            'bbox' => ['x0' => 0.82, 'y0' => 0.36, 'x1' => 0.93, 'y1' => 0.37],
+            'method' => $method, 'confidence' => $confidence, 'status' => $status,
+        ];
+    }
+
+    /** A valid response whose first field is changed by $change. */
+    private function withField(callable $change): array
+    {
+        $response = $this->response();
+        $response['fields'][0] = $change($response['fields'][0]);
+
+        return $response;
     }
 
     private function runJob(?string $documentId = null, ?string $organizationId = null): void
@@ -85,6 +113,96 @@ class ProcessDocumentTest extends TestCase
             && str_starts_with($request['source_url'], 'http://minio:9000/renova-documents/'));
         $this->assertSame(1, app(TenantContext::class)->run($this->owner,
             fn () => AuditEvent::query()->where('event_type', 'document.processed')->count()));
+    }
+
+    public function test_fields_are_stored_with_their_provenance(): void
+    {
+        Http::fake(['extract:8000/*' => Http::response($this->response())]);
+
+        $this->runJob();
+
+        $document = $this->fresh();
+        $fields = app(TenantContext::class)->run($this->owner, fn () => $document->fields()->get()->keyBy('name'));
+        $this->assertSame(['amount_gross', 'amount_vat', 'signature_contractor'], $fields->keys()->sort()->values()->all());
+        $gross = $fields['amount_gross'];
+        $this->assertSame('49522.27', $gross->value);
+        $this->assertSame('49 522,27 zł', $gross->raw_text);
+        $this->assertSame(1, $gross->page_no);
+        $this->assertEqualsCanonicalizing(['x0' => 0.82, 'y0' => 0.36, 'x1' => 0.93, 'y1' => 0.37], $gross->bbox);
+        $this->assertSame('label', $gross->method);
+        $this->assertSame('true', $fields['signature_contractor']->value);
+        $this->assertNull($fields['amount_vat']->value);
+        $this->assertSame('unreadable', $fields['amount_vat']->status);
+        $this->assertSame(2, $document->extraction['dictionary_version']);
+        $event = app(TenantContext::class)->run($this->owner,
+            fn () => AuditEvent::query()->where('event_type', 'document.processed')->sole());
+        $this->assertSame(3, $event->payload['fields']);
+        $this->assertSame(1, $event->payload['unreadable']);
+    }
+
+    public function test_reprocessing_replaces_the_fields(): void
+    {
+        $second = array_replace($this->response(), ['fields' => [$this->field('amount_net', '45348.40', '45 348,40 zł')]]);
+        Http::fake(['extract:8000/*' => Http::sequence()->push($this->response())->push($second)]);
+
+        $this->runJob();
+        $processed = $this->fresh();
+        app(TenantContext::class)->run($this->owner, fn () => $processed->forceFill(['status' => 'uploaded'])->save());
+        $this->runJob();
+
+        $document = $this->fresh();
+        $names = app(TenantContext::class)->run($this->owner, fn () => $document->fields()->pluck('name')->all());
+        $this->assertSame(['amount_net'], $names);
+    }
+
+    public function test_a_type_set_by_a_person_is_sent_to_the_extraction(): void
+    {
+        app(TenantContext::class)->run($this->owner, fn () => $this->document->forceFill([
+            'doc_type' => DocType::Umowa, 'doc_type_source' => 'user',
+        ])->save());
+        Http::fake(['extract:8000/*' => Http::response($this->response())]);
+
+        $this->runJob();
+
+        Http::assertSent(fn ($request) => $request['doc_type'] === 'umowa');
+    }
+
+    public function test_classifier_types_are_not_sent_as_decided(): void
+    {
+        Http::fake(['extract:8000/*' => Http::response($this->response())]);
+
+        $this->runJob();
+
+        Http::assertSent(fn ($request) => $request['doc_type'] === null);
+    }
+
+    /** @return array<string, array{0: callable}> */
+    public static function invalidFields(): array
+    {
+        return [
+            'unknown field' => [fn ($f) => ['name' => 'iban'] + $f],
+            'box outside the page' => [fn ($f) => array_replace($f, ['bbox' => ['x0' => 0.5, 'y0' => 0.5, 'x1' => 1.5, 'y1' => 0.6]])],
+            'extra box key' => [fn ($f) => array_replace($f, ['bbox' => $f['bbox'] + ['z' => 1]])],
+            'page beyond the document' => [fn ($f) => array_replace($f, ['page' => 2])],
+            'another document' => [fn ($f) => array_replace($f, ['doc_id' => '00000000-0000-0000-0000-000000000000'])],
+            'readable without value' => [fn ($f) => array_replace($f, ['value' => null])],
+            'unreadable with value' => [fn ($f) => array_replace($f, ['status' => 'unreadable'])],
+            'array value' => [fn ($f) => array_replace($f, ['value' => ['a' => 1]])],
+            'unknown method' => [fn ($f) => array_replace($f, ['method' => 'guess'])],
+        ];
+    }
+
+    #[DataProvider('invalidFields')]
+    public function test_fields_outside_the_contract_reject_the_whole_result(callable $change): void
+    {
+        Http::fake(['extract:8000/*' => Http::response($this->withField($change))]);
+
+        $this->runJob();
+
+        $document = $this->fresh();
+        $this->assertSame('failed', $document->status);
+        $this->assertSame('invalid_extract_response', $document->error_code);
+        $this->assertSame(0, app(TenantContext::class)->run($this->owner, fn () => $document->fields()->count()));
     }
 
     public function test_a_manual_type_survives_reprocessing(): void

@@ -21,6 +21,7 @@ Route::middleware(['auth', 'tenant'])->group(function () {
         Route::get('/{document}/pages/{pageNo}', [DocumentController::class, 'page'])
             ->whereNumber('pageNo')->name('page')->can('cases.view');
         Route::get('/{document}/download', [DocumentController::class, 'download'])->name('download')->can('cases.view');
+        Route::get('/{document}', [DocumentController::class, 'show'])->name('show')->can('cases.view');
     });
 
     Route::get('/members', [MemberController::class, 'index'])->name('members.index')->can('members.view');

@@ -4,11 +4,14 @@ namespace Tests\Feature;
 
 use App\Enums\DocType;
 use App\Http\Controllers\DocumentController;
+use App\Jobs\ProcessDocument;
 use App\Models\AuditEvent;
 use App\Models\CaseFile;
 use App\Models\Document;
+use App\Models\DocumentField;
 use App\Models\Membership;
 use App\Tenancy\TenantContext;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -17,6 +20,7 @@ class DocumentAccessTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Queue::fake();
         Storage::fake('s3-public');
         Storage::disk('s3-public')->buildTemporaryUrlsUsing(
             fn (string $path, $expiration, array $options) => 'http://localhost:9000/renova-documents/'.$path
@@ -128,5 +132,81 @@ class DocumentAccessTest extends TestCase
         $this->assertSame('a b_c.jpg', $name("a\r\nb;c.html", 'image/jpeg'));
         $this->assertSame('document.pdf', $name('..'));
         $this->assertSame(104, strlen($name(str_repeat('x', 300).'.pdf')));
+    }
+
+    private function withFields(Membership $membership, Document $document): void
+    {
+        app(TenantContext::class)->run($membership, function () use ($document) {
+            $document->fields()->create([
+                'name' => 'amount_gross', 'value' => '49522.27', 'raw_text' => '49 522,27 zł', 'page_no' => 1,
+                'bbox' => ['x0' => 0.82, 'y0' => 0.36, 'x1' => 0.93, 'y1' => 0.37],
+                'method' => 'label', 'confidence' => 0.98, 'status' => 'ok',
+            ]);
+            $document->fields()->create([
+                'name' => 'amount_vat', 'value' => null, 'raw_text' => '3 8?2,O7', 'page_no' => 1,
+                'bbox' => ['x0' => 0.84, 'y0' => 0.35, 'x1' => 0.93, 'y1' => 0.36],
+                'method' => 'label', 'confidence' => 0, 'status' => 'unreadable',
+            ]);
+        });
+    }
+
+    public function test_document_page_shows_fields_over_the_page_image(): void
+    {
+        $owner = $this->member();
+        $case = $this->caseFor($owner);
+        $document = $this->document($owner, $case);
+        $this->withFields($owner, $document);
+
+        $this->actingAs($owner->user)->get("/cases/{$case->id}/documents/{$document->id}")
+            ->assertOk()
+            ->assertSee('Kwota brutto')
+            ->assertSee('49 522,27 zł')
+            ->assertSee('49522.27')
+            ->assertSee('nieczytelne')
+            ->assertSee('left:82.000%;top:36.000%;width:11.000%;height:1.000%', false)
+            ->assertSee("/cases/{$case->id}/documents/{$document->id}/pages/1", false);
+        $this->actingAs($owner->user)->get("/cases/{$case->id}")->assertSee('pola: 2');
+    }
+
+    public function test_fields_of_another_organization_are_not_visible(): void
+    {
+        $alfa = $this->member();
+        $beta = $this->member();
+        $betaCase = $this->caseFor($beta);
+        $betaDoc = $this->document($beta, $betaCase);
+        $this->withFields($beta, $betaDoc);
+
+        $this->actingAs($alfa->user)->get("/cases/{$betaCase->id}/documents/{$betaDoc->id}")->assertNotFound();
+        $count = app(TenantContext::class)->run($alfa, fn () => DocumentField::query()->count());
+        $this->assertSame(0, $count);
+    }
+
+    public function test_type_correction_analyses_the_document_again(): void
+    {
+        $owner = $this->member();
+        $case = $this->caseFor($owner);
+        $document = $this->document($owner, $case);
+
+        $this->actingAs($owner->user)
+            ->patch("/cases/{$case->id}/documents/{$document->id}/type", ['doc_type' => 'umowa'])
+            ->assertRedirect("/cases/{$case->id}");
+
+        Queue::assertPushed(ProcessDocument::class, fn ($job) => $job->documentId === $document->id);
+        app(TenantContext::class)->activate($owner);
+        $this->assertSame('uploaded', $document->refresh()->status);
+    }
+
+    public function test_field_list_matches_the_field_dictionary(): void
+    {
+        $path = base_path('../../packages/rules/fields.yaml');
+        if (! is_file($path)) {
+            $this->markTestSkipped('packages/rules is not available in this checkout.');
+        }
+        preg_match_all('/^  ([a-z][a-z0-9_]*):\s*$/m', (string) file_get_contents($path), $matches);
+
+        $this->assertEqualsCanonicalizing($matches[1], config('documents.fields'));
+        foreach (config('documents.fields') as $name) {
+            $this->assertNotSame('field.'.$name, __('field.'.$name, [], 'pl'), "missing Polish label for {$name}");
+        }
     }
 }

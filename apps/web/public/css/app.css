@@ -2,3 +2,12 @@
 .table-dense > :not(caption) > * > * { padding-top: .45rem; padding-bottom: .45rem; }
 .font-mono { font-family: var(--tblr-font-monospace); font-size: .8125rem; }
 .hash { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+
+/* Page image with the boxes fields were read from (coordinates in percent of the page). */
+.page-view { position: relative; line-height: 0; }
+.page-view img { width: 100%; height: auto; display: block; }
+.field-box { position: absolute; border: 1px solid rgba(var(--tblr-primary-rgb), .45); background: rgba(var(--tblr-primary-rgb), .08); border-radius: 2px; margin: -2px; padding: 2px; box-sizing: content-box; }
+.field-box.is-unreadable { border-color: rgba(var(--tblr-warning-rgb), .8); background: rgba(var(--tblr-warning-rgb), .12); }
+.field-box.is-active, .field-box:target { border-width: 2px; border-color: var(--tblr-primary); background: rgba(var(--tblr-primary-rgb), .2); }
+.field-row.is-active > td, .field-row:target > td { background: rgba(var(--tblr-primary-rgb), .07); }
+.field-raw { max-width: 14rem; display: inline-block; vertical-align: bottom; }

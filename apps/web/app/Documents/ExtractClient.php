@@ -29,6 +29,8 @@ final class ExtractClient
                     'document_id' => $document->id,
                     'source_url' => $sourceUrl,
                     'output_prefix' => $document->storagePrefix(),
+                    // A type set by a person decides which fields are read.
+                    'doc_type' => $document->doc_type_source === 'user' ? $document->doc_type?->value : null,
                 ]);
         } catch (ConnectionException $e) {
             throw new ExtractFailed('extract_unreachable', retryable: true, previous: $e);

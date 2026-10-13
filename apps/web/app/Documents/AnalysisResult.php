@@ -39,11 +39,42 @@ final class AnalysisResult
             'classification.scores' => ['present', 'array'],
             'classification.evidence' => ['present', 'array'],
             'ocr_provider' => ['required', 'string', 'max:32'],
+            'fields' => ['present', 'array', 'max:200'],
+            'fields.*.name' => ['required', 'string', 'distinct', 'in:'.implode(',', config('documents.fields'))],
+            'fields.*.value' => ['nullable', self::scalarValue(...)],
+            'fields.*.text' => ['present', 'nullable', 'string', 'max:500'],
+            'fields.*.doc_id' => ['required', 'in:'.$document->id],
+            'fields.*.page' => ['required', 'integer', 'min:1', 'max:'.(is_array($body) ? (int) ($body['page_count'] ?? 0) : 0)],
+            'fields.*.bbox' => ['required', 'array:x0,y0,x1,y1'],
+            'fields.*.bbox.*' => ['required', 'numeric', 'between:0,1'],
+            'fields.*.method' => ['required', 'in:'.implode(',', config('documents.field_methods'))],
+            'fields.*.confidence' => ['required', 'numeric', 'between:0,1'],
+            'fields.*.status' => ['required', 'in:ok,unreadable'],
+            'extraction' => ['required', 'array'],
+            'extraction.dictionary_version' => ['required', 'integer', 'min:1'],
+            'extraction.doc_type' => ['nullable', 'in:'.implode(',', array_column(DocType::cases(), 'value'))],
+            'extraction.llm_provider' => ['nullable', 'string', 'max:32'],
         ]);
         if ($validator->fails()) {
             throw new ExtractFailed('invalid_extract_response', retryable: false);
         }
 
-        return $validator->validated();
+        $validated = $validator->validated();
+        foreach ($validated['fields'] as $field) {
+            // A readable field has a value; an unreadable one has none.
+            if (($field['status'] === 'ok') === (($field['value'] ?? null) === null)) {
+                throw new ExtractFailed('invalid_extract_response', retryable: false);
+            }
+        }
+
+        return $validated;
+    }
+
+    /** Field values are strings (normalized form) or booleans (signatures). */
+    private static function scalarValue(string $attribute, mixed $value, \Closure $fail): void
+    {
+        if (! is_bool($value) && ! (is_string($value) && mb_strlen($value) <= 500)) {
+            $fail('invalid');
+        }
     }
 }

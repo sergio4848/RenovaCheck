@@ -68,8 +68,13 @@
                                         @foreach ($documents as $document)
                                             <tr>
                                                 <td>
-                                                    <a href="{{ route('documents.download', [$case, $document]) }}">{{ $document->original_name }}</a>
-                                                    <div class="small text-secondary">{{ number_format($document->size_bytes / 1024, 0, ',', ' ') }} kB</div>
+                                                    <a href="{{ route('documents.show', [$case, $document]) }}">{{ $document->original_name }}</a>
+                                                    <div class="small text-secondary">
+                                                        {{ number_format($document->size_bytes / 1024, 0, ',', ' ') }} kB
+                                                        @if ($document->fields_count)
+                                                            · {{ __(':count fields', ['count' => $document->fields_count]) }}
+                                                        @endif
+                                                    </div>
                                                 </td>
                                                 <td style="min-width: 15rem">
                                                     @if ($document->doc_type)

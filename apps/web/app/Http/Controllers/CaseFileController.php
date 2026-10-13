@@ -53,7 +53,7 @@ class CaseFileController extends Controller
             ->orderBy('id')
             ->get();
 
-        $documents = $caseFile->documents()->with('pages')->orderBy('created_at')->orderBy('original_name')->get();
+        $documents = $caseFile->documents()->with('pages')->withCount('fields')->orderBy('created_at')->orderBy('original_name')->get();
 
         return view('cases.show', [
             'case' => $caseFile->load('creator:id,name'),
