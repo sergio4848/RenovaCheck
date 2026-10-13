@@ -36,7 +36,7 @@ Decisions: [`docs/ADR/`](docs/ADR/README.md).
 ```
 apps/web/            Laravel application
 services/extract/    Python extraction service + worker
-packages/rules/      document types, field dictionary, schemas (rules: phase 5)
+packages/rules/      document types, field dictionary with extraction anchors, schemas
 tools/synth/         synthetic documents + ground truth
 infra/postgres/      roles and databases bootstrap
 infra/minio/         bucket and per-service accounts
@@ -66,10 +66,20 @@ and validates them against `packages/rules/schema/ground_truth.schema.json`; see
 [`tools/synth/README.md`](tools/synth/README.md).
 
 Document flow: on a case page, upload PDF/PNG/JPEG files; a queue job sends each one to the
-extraction service, which renders page images, reads the text layer (or OCR for scans) and
-classifies the document type. `make eval` measures classification on `data/synth`
-(writes `data/eval/classification.json`). Virus scanning is optional:
+extraction service, which renders page images, reads the text layer (or OCR for scans),
+classifies the document type and reads the fields defined in
+[`packages/rules/fields.yaml`](packages/rules/fields.yaml) with their page and box
+([ADR-0007](docs/ADR/0007-field-extraction-and-provenance.md)). The document page shows the
+fields next to the page image with the boxes they were read from. Virus scanning is optional:
 `docker compose --profile av up -d` with `CLAMAV_ENABLED=true`.
+
+`make eval` measures document type accuracy and per-field precision/recall against the
+synthetic ground truth (clean PDFs must reach 95 %; scans are reported) and writes
+`data/eval/classification.json` and `data/eval/extraction.json`.
+
+OCR and the optional LLM helper are chosen in `.env`: `RENOVA_OCR_PROVIDER` (`tesseract`,
+`text_layer`, `azure`, `google`) and `RENOVA_LLM_PROVIDER` (`off` by default, or `anthropic`;
+its proposals are kept only when they occur verbatim in the page text).
 
 Object storage uses one account per service (created by `minio-init` from `S3_WEB_*` and
 `S3_EXTRACT_*` in `.env`); the MinIO root account is only used for that setup. If your `.env`

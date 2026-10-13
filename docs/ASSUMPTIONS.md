@@ -58,3 +58,17 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 | E6 | Kaynak sınırları prototip değerleri: sayfa render ≤ 25 MP, görüntü ≤ 40 MP, sayfa başına ≤ 100k karakter, belge başına OCR bütçesi 120 s, eşzamanlı analiz 2, extract konteyneri 2 GB / 2 CPU. | Güvenlik incelemesi (kaynak tüketimi); gerçek yükte ölçülüp ayarlanır. |
 | E7 | Yerel MinIO'da servis başına hesap (`minio-init`): web yalnızca `org/*` altında oku/yaz/sil, extract yalnızca `…/pages/*` altına yazar. Root hesabı yalnızca kurulumda kullanılır. Üretimde aynı ayrım bulut IAM ile yapılır. | En az yetki; extract orijinallere yalnızca web'in imzaladığı URL ile erişir. |
 | E8 | Veritabanı sahibi (`renova_owner`) kimlik bilgileri yalnızca `migrate` servisine verilir; web ve kuyruk yalnızca `renova_app` ile çalışır. | RLS'in atlanamaması (ADR-0002). |
+
+## F. Alan çıkarımı ve provenans (Faz 4)
+
+| # | Varsayım | Gerekçe |
+|---|---|---|
+| F1 | Çıkarım tamamen deterministiktir (etiket/blok/adres/başlık/imza mürekkebi); "tablo" yöntemi kalem satırları için henüz kullanılmaz, toplamlar etiketli satırlardan okunur. Kalem satırları Faz 5'te tutar kuralı gerektirirse eklenir. | Kabul kriteri toplam tutarlar üzerinden; kalem toplamı kuralı (Faz 5 c) gerekirse aynı yerleşim modeli kullanılır. |
+| F2 | Belge türü hangi alanların okunacağını belirler; tür bilinmiyorsa tüm alanlar denenir. Kişinin düzelttiği tür extract'a `doc_type` olarak gönderilir ve tür düzeltmesi analizi yeniden çalıştırır. | Yanlış türde gereksiz alan (FP) üretmemek. |
+| F3 | Sokak adlarında `ul./al./pl./os.` öneki ve yaygın patron adları/baş harfleri (ör. „Tadeusza”, „T.”) karşılaştırmada yok sayılır; liste `fields/normalize.py` içindedir ve son kelime asla düşürülmez. | „ul. T. Kościuszki” = „Kościuszki” (sentetik hata türü `street_spelling_variant` bunu bekler). |
+| F4 | Model karşılaştırması büyük/küçük harf, tire ve boşluğu yok sayar; A/B varyantları farklı kalır. OCR'ın `0`/`O` karışıklığı düzeltilmez (skan ölçümünde 1 hata olarak görünür). | Yanlış düzeltme, gerçek bir model farkını gizleyebilir. |
+| F5 | İmza varlığı, imza başlığının üstündeki alanda koyu piksel oranıyla ölçülür (≥ %0,4 imzalı, ≤ %0,15 imzasız, arası düşük güvenle). İmzanın kime ait olduğu veya geçerliliği değerlendirilmez. | Kapsam: „podpis var/yok”. |
+| F6 | LLM yardımcısı varsayılan kapalı. Açılırsa sayfa metni (yalnızca sentetik veri) yapılandırılan sağlayıcıya gider; öneri yalnızca sayfada birebir geçiyorsa kabul edilir, güven ≤ 0,5. Varsayılan model `claude-sonnet-5-5` (`RENOVA_LLM_MODEL`). OpenAI sağlayıcısı kaldırıldı (tek sağlayıcı yeterli). | Promptun „opsiyonel, kapalı, temperature 0, string-match” şartı. |
+| F7 | Azure/Google adaptör testleri, belgelenmiş yanıt şemasına göre yazılmış fixture'larla çalışır (canlı servisten kaydedilmedi; anahtar yok). Google için erişim belirteci ortamdan gelir (`gcloud auth print-access-token`, saatlik); servis hesabı anahtarı saklanmaz. | ASSUMPTIONS C4; gerçek kıyaslama Faz 7'de anahtarla. |
+| F8 | Ölçüm, doğru belge türüyle (ground truth) yapılır; sınıflandırma hatası ayrı ölçülür (Faz 3, %100). Aynı alan bir belgede birden çok kez basılmışsa (protokolde adres) herhangi biriyle eşleşme doğru sayılır. `unreadable` FN'dir ama FP değildir. | Hataların kaynağını ayırmak. |
+

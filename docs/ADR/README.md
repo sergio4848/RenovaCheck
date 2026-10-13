@@ -12,3 +12,4 @@ Copyright (c) 2026 Sergen Şahin.)
 | [0004](0004-object-storage-image.md) | Object storage image after MinIO stopped publishing images | Accepted |
 | [0005](0005-append-only-event-log.md) | Append-only, hash-chained event log | Accepted |
 | [0006](0006-document-intake-and-classification.md) | Document intake, storage and type classification | Accepted |
+| [0007](0007-field-extraction-and-provenance.md) | Deterministic field extraction with provenance | Accepted |
