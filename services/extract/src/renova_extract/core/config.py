@@ -16,7 +16,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["development", "test", "production"]
 OcrProvider = Literal["text_layer", "tesseract", "azure", "google"]
-LlmProvider = Literal["off", "fake", "anthropic", "openai"]
+LlmProvider = Literal["off", "fake", "anthropic"]
 
 _DEV_TOKEN = "dev-internal-token-change-me"  # noqa: S105 - development default, rejected in production
 _DEV_S3_SECRET = "renova-extract-secret-dev"  # noqa: S105 - development default, rejected in production
@@ -47,7 +47,24 @@ class Settings(BaseSettings):
     s3_secret_key: SecretStr = SecretStr(_DEV_S3_SECRET)
 
     ocr_provider: OcrProvider = "text_layer"
+    # Azure AI Document Intelligence (prebuilt-read); data residency: use the Poland Central region.
+    azure_di_endpoint: str = "https://polandcentral.api.cognitive.microsoft.com"
+    azure_di_key: SecretStr | None = None
+    # Google Document AI OCR processor. The access token comes from the environment's identity
+    # (e.g. `gcloud auth print-access-token`); the service never stores account keys.
+    google_project_id: str | None = None
+    google_location: str = "eu"
+    google_processor_id: str | None = None
+    google_access_token: SecretStr | None = None
+    cloud_ocr_timeout_seconds: float = Field(default=60.0, gt=0, le=300)
+
+    # Optional LLM helper for fields the deterministic extractors did not find. Off by default;
+    # every value it proposes must occur verbatim in the page text, or it is discarded.
     llm_provider: LlmProvider = "off"
+    llm_model: str = "claude-sonnet-5-5"
+    anthropic_api_key: SecretStr | None = None
+    anthropic_base_url: str = "https://api.anthropic.com"
+    llm_timeout_seconds: float = Field(default=30.0, gt=0, le=120)
 
     # Document analysis limits and inputs.
     max_document_bytes: int = Field(default=25 * 1024 * 1024, ge=1024)
@@ -71,9 +88,31 @@ class Settings(BaseSettings):
             insecure.append("RENOVA_INTERNAL_TOKEN")
         if self.s3_secret_key.get_secret_value() in ("", _DEV_S3_SECRET):
             insecure.append("RENOVA_S3_SECRET_KEY")
+        if self.llm_provider == "fake":
+            insecure.append("RENOVA_LLM_PROVIDER")
         if insecure:
             raise ValueError(f"insecure production settings: {', '.join(insecure)}")
         return self
+
+    @model_validator(mode="after")
+    def _providers_are_configured(self) -> Settings:
+        missing = []
+        if self.ocr_provider == "azure" and not _given(self.azure_di_key):
+            missing.append("RENOVA_AZURE_DI_KEY")
+        if self.ocr_provider == "google" and not (
+            self.google_project_id and self.google_processor_id and _given(self.google_access_token)
+        ):
+            missing.append("RENOVA_GOOGLE_PROJECT_ID/PROCESSOR_ID/ACCESS_TOKEN")
+        if self.llm_provider == "anthropic" and not _given(self.anthropic_api_key):
+            missing.append("RENOVA_ANTHROPIC_API_KEY")
+        if missing:
+            raise ValueError(f"provider settings missing: {', '.join(missing)}")
+        return self
+
+
+def _given(secret: SecretStr | None) -> bool:
+    # Compose passes unset variables as empty strings.
+    return secret is not None and secret.get_secret_value() != ""
 
 
 @lru_cache(maxsize=1)

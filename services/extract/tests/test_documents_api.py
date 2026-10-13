@@ -101,3 +101,32 @@ def test_busy_service_answers_503_so_the_caller_retries(api: TestClient) -> None
             analyzer.slots.release()
     assert response.status_code == 503  # type: ignore[attr-defined]
     assert response.json()["error"]["code"] == "dependency_unavailable"  # type: ignore[attr-defined]
+
+
+def test_response_carries_fields_with_provenance(api: TestClient) -> None:
+    body = _post(api).json()  # type: ignore[attr-defined]
+    fields = {f["name"]: f for f in body["fields"]}
+    gross = fields["amount_gross"]
+    assert gross["value"] == "49522.27"
+    assert gross["text"] == "49 522,27 zł"
+    assert gross["doc_id"] == DOC and gross["page"] == 1
+    assert gross["method"] == "label" and gross["status"] == "ok"
+    assert set(gross["bbox"]) == {"x0", "y0", "x1", "y1"}
+    assert body["extraction"] == {"dictionary_version": 2, "doc_type": "faktura", "llm_provider": None}
+
+
+def test_a_type_set_by_a_person_decides_which_fields_are_read(api: TestClient) -> None:
+    body = _post(api, doc_type="karta_produktu").json()  # type: ignore[attr-defined]
+    assert body["classification"]["doc_type"] == "faktura"
+    assert body["extraction"]["doc_type"] == "karta_produktu"
+    assert {f["name"] for f in body["fields"]} <= {
+        "product_manufacturer",
+        "product_model",
+        "product_power_kw",
+        "zum_id",
+        "serial_number",
+    }
+
+
+def test_unknown_document_type_is_rejected(api: TestClient) -> None:
+    assert _post(api, doc_type="paragon").status_code == 422  # type: ignore[attr-defined]

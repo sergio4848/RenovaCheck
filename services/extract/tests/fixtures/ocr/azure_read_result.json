@@ -1,0 +1,30 @@
+{
+  "status": "succeeded",
+  "createdDateTime": "2026-10-13T10:00:00Z",
+  "lastUpdatedDateTime": "2026-10-13T10:00:02Z",
+  "analyzeResult": {
+    "apiVersion": "2024-11-30",
+    "modelId": "prebuilt-read",
+    "content": "Faktura VAT nr FV/145/05/2026\nRazem brutto: 49 522,27 zł",
+    "pages": [
+      {
+        "pageNumber": 1,
+        "angle": 0.0,
+        "width": 1240,
+        "height": 1754,
+        "unit": "pixel",
+        "words": [
+          {"content": "Faktura", "polygon": [100, 100, 190, 100, 190, 125, 100, 125], "confidence": 0.995, "span": {"offset": 0, "length": 7}},
+          {"content": "VAT", "polygon": [198, 100, 240, 100, 240, 125, 198, 125], "confidence": 0.993, "span": {"offset": 8, "length": 3}},
+          {"content": "nr", "polygon": [248, 100, 270, 100, 270, 125, 248, 125], "confidence": 0.99, "span": {"offset": 12, "length": 2}},
+          {"content": "FV/145/05/2026", "polygon": [278, 100, 470, 100, 470, 125, 278, 125], "confidence": 0.97, "span": {"offset": 15, "length": 14}},
+          {"content": "Razem", "polygon": [880, 640, 940, 640, 940, 660, 880, 660], "confidence": 0.99, "span": {"offset": 30, "length": 5}},
+          {"content": "brutto:", "polygon": [946, 640, 1010, 640, 1010, 660, 946, 660], "confidence": 0.98, "span": {"offset": 36, "length": 7}},
+          {"content": "49", "polygon": [1050, 640, 1072, 640, 1072, 660, 1050, 660], "confidence": 0.96, "span": {"offset": 44, "length": 2}},
+          {"content": "522,27", "polygon": [1078, 640, 1150, 640, 1150, 660, 1078, 660], "confidence": 0.95, "span": {"offset": 47, "length": 6}},
+          {"content": "zł", "polygon": [1156, 640, 1180, 640, 1180, 660, 1156, 660], "confidence": 0.94, "span": {"offset": 54, "length": 2}}
+        ]
+      }
+    ]
+  }
+}

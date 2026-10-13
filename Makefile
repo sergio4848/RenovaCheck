@@ -45,10 +45,10 @@ data-dir:
 synth: data-dir  ## Generate 20 synthetic cases into data/synth and validate them
 	HOST_UID=$$(id -u) HOST_GID=$$(id -g) $(COMPOSE) run --rm --build synth
 
-eval: data-dir  ## Measure classification (and later extraction/rules) on data/synth
+eval: data-dir  ## Measure classification and field extraction on data/synth (data/eval/*.json)
 	@test -d data/synth || $(MAKE) synth
 	$(COMPOSE) run --rm --no-deps --user $$(id -u):$$(id -g) -v ./data:/work/data -w /work extract \
-		python -m renova_extract.eval classification --data /work/data/synth --out /work/data/eval
+		python -m renova_extract.eval all --data /work/data/synth --out /work/data/eval
 
 test: test-web test-extract test-synth  ## Run all test suites inside the containers
 

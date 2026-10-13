@@ -8,14 +8,20 @@ import threading
 from dataclasses import dataclass, field
 from urllib.parse import unquote, urlsplit
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from renova_extract.classify.classifier import DocTypeClassifier
 from renova_extract.core.config import Settings
 from renova_extract.core.errors import DependencyUnavailableError, ValidationFailedError
 from renova_extract.documents.loader import RENDER_DPI, load_document
 from renova_extract.documents.storage import ObjectStore
+from renova_extract.fields import llm
+from renova_extract.fields.dictionary import DOC_TYPES, FieldDictionary
+from renova_extract.fields.extractors import ExtractedField, FieldExtractor
+from renova_extract.fields.layout import PageLayout, layout
+from renova_extract.ocr.azure import AzureDocumentIntelligence
 from renova_extract.ocr.base import OcrAdapter
+from renova_extract.ocr.google import GoogleDocumentAI
 from renova_extract.ocr.tesseract import TesseractPol
 
 # org/<uuid>/cases/<uuid>/documents/<uuid>/ — assigned by the web application.
@@ -26,6 +32,15 @@ class AnalyzeRequest(BaseModel):
     document_id: str = Field(pattern=r"^[0-9a-f-]{36}$")
     source_url: str = Field(max_length=4096)
     output_prefix: str = Field(max_length=200)
+    # Type set by a person; it decides which fields are read instead of the classifier's guess.
+    doc_type: str | None = Field(default=None, max_length=32)
+
+    @field_validator("doc_type")
+    @classmethod
+    def _known_type(cls, value: str | None) -> str | None:
+        if value is not None and value not in DOC_TYPES:
+            raise ValueError("unknown document type")
+        return value
 
 
 class PageInfo(BaseModel):
@@ -47,6 +62,31 @@ class ClassificationInfo(BaseModel):
     method: str = "keywords"
 
 
+class BoxInfo(BaseModel):
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+
+
+class FieldInfo(BaseModel):
+    name: str
+    value: str | bool | None
+    text: str
+    doc_id: str
+    page: int
+    bbox: BoxInfo
+    method: str
+    confidence: float
+    status: str
+
+
+class ExtractionInfo(BaseModel):
+    dictionary_version: int
+    doc_type: str | None
+    llm_provider: str | None
+
+
 class AnalyzeResponse(BaseModel):
     document_id: str
     mime: str
@@ -54,6 +94,8 @@ class AnalyzeResponse(BaseModel):
     pages: list[PageInfo]
     classification: ClassificationInfo
     ocr_provider: str
+    fields: list[FieldInfo]
+    extraction: ExtractionInfo
 
 
 @dataclass
@@ -62,13 +104,16 @@ class Analyzer:
     classifier: DocTypeClassifier
     store: ObjectStore
     ocr: OcrAdapter | None
+    dictionary: FieldDictionary
+    helper: llm.FieldHelper | None = None
     slots: threading.BoundedSemaphore = field(default_factory=lambda: threading.BoundedSemaphore(2))
     slot_timeout_seconds: float = 30.0
 
     @classmethod
     def build(cls, settings: Settings, store: ObjectStore) -> Analyzer:
         classifier = DocTypeClassifier.from_yaml(settings.rules_dir / "doc_types.yaml")
-        return cls(settings, classifier, store, ocr_adapter(settings))
+        dictionary = FieldDictionary.from_yaml(settings.rules_dir / "fields.yaml")
+        return cls(settings, classifier, store, ocr_adapter(settings), dictionary, llm.build_helper(settings))
 
     def check_request(self, request: AnalyzeRequest) -> None:
         """The prefix must be the document's own, and the source must live under that prefix."""
@@ -110,6 +155,8 @@ class Analyzer:
                 )
             )
         result = self.classifier.classify(document.text)
+        doc_type = request.doc_type or result.doc_type
+        fields = self.extract_fields(layout(document.pages), doc_type)
         return AnalyzeResponse(
             document_id=request.document_id,
             mime=document.mime,
@@ -122,11 +169,42 @@ class Analyzer:
                 evidence=list(result.evidence),
             ),
             ocr_provider=self.ocr.name if self.ocr else "none",
+            fields=[FieldInfo.model_validate(f.as_dict(request.document_id)) for f in fields],
+            extraction=ExtractionInfo(
+                dictionary_version=self.dictionary.version,
+                doc_type=doc_type,
+                llm_provider=self.helper.name if self.helper else None,
+            ),
         )
+
+    def extract_fields(self, pages: list[PageLayout], doc_type: str | None) -> list[ExtractedField]:
+        fields = FieldExtractor(self.dictionary).extract_layout(pages, doc_type)
+        if self.helper is None:
+            return fields
+        found = {f.name for f in fields if f.status == "ok"}
+        # Signatures are visual; the helper only reads printed text.
+        missing = [s for s in self.dictionary.fields_for(doc_type) if s.name not in found and s.type != "bool"]
+        if not missing:
+            return fields
+        texts = [(p.page.number, "\n".join(line.span.text for line in p.lines)) for p in pages]
+        proposed = llm.accept(self.helper.propose(missing, texts), missing, pages)
+        replaced = {f.name for f in proposed}
+        return [f for f in fields if f.name not in replaced] + proposed
 
 
 def ocr_adapter(settings: Settings) -> OcrAdapter | None:
+    """The configured OCR engine; ``text_layer`` means no OCR (scans stay without text)."""
+    timeout = settings.cloud_ocr_timeout_seconds
     if settings.ocr_provider == "tesseract":
         return TesseractPol()
-    # Cloud adapters (azure, google) arrive with phase 4; text_layer means no OCR fallback.
+    if settings.ocr_provider == "azure" and settings.azure_di_key is not None:
+        return AzureDocumentIntelligence(settings.azure_di_endpoint, settings.azure_di_key.get_secret_value(), timeout)
+    if settings.ocr_provider == "google" and settings.google_access_token is not None:
+        return GoogleDocumentAI(
+            settings.google_project_id or "",
+            settings.google_location,
+            settings.google_processor_id or "",
+            settings.google_access_token.get_secret_value(),
+            timeout,
+        )
     return None
