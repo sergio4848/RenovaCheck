@@ -135,6 +135,7 @@ services:
         # Pre-installed vendor/ for networks where package archives cannot be downloaded.
         vendor-seed: ${WEB_VENDOR_SEED:-./infra/empty}
     image: renovacheck-web:dev
+    pull_policy: build
     command: ["sh", "-c", "php artisan migrate --database=migrator --force && php artisan db:seed --database=migrator --force"]
     environment: *web-env
     depends_on:
@@ -144,6 +145,7 @@ services:
 
   web:
     image: renovacheck-web:dev
+    pull_policy: never
     restart: unless-stopped
     environment: *web-env
     ports:
@@ -160,9 +162,15 @@ services:
     image: renovacheck-web:dev
     restart: unless-stopped
     command: ["php", "artisan", "queue:work", "redis", "--sleep=1", "--tries=3", "--max-time=3600"]
+    pull_policy: never
     environment: *web-env
     healthcheck:
-      disable: true
+      # PID 1 is the worker itself (exec-form command); it exits on failure and is restarted.
+      test: ["CMD-SHELL", "grep -qa 'queue:work' /proc/1/cmdline"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -174,6 +182,7 @@ services:
       context: ./services/extract
       <<: *build-common
     image: renovacheck-extract:dev
+    pull_policy: build
     restart: unless-stopped
     environment: *extract-env
     ports:
@@ -186,6 +195,7 @@ services:
 
   worker:
     image: renovacheck-extract:dev
+    pull_policy: never
     restart: unless-stopped
     command: ["python", "-m", "renova_extract.worker"]
     environment: *extract-env
