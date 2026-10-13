@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import unicodedata
 from decimal import Decimal
 
 import numpy as np
@@ -74,3 +75,24 @@ def test_bbox_transform_follows_pil_rotation(angle: float) -> None:
 def test_bbox_rejects_empty_boxes() -> None:
     with pytest.raises(ValueError):
         BBox(x0=0.5, y0=0.1, x1=0.5, y1=0.2)
+
+
+def _street_core(text: str) -> str:
+    # Street name without the prefix and the patron's first name or initial; case and diacritics kept.
+    tokens = [t for t in text.split() if t.lower() not in ("ul.", "al.")]
+    while len(tokens) > 1 and (tokens[0].endswith(".") or tokens[0] in data.PATRON_FIRST_NAMES):
+        tokens.pop(0)
+    return " ".join(tokens)
+
+
+def _fold(text: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", text.replace("ł", "l").replace("Ł", "L"))
+    return "".join(c for c in decomposed if not unicodedata.combining(c)).casefold()
+
+
+@pytest.mark.parametrize("key", sorted(data.STREETS))
+def test_ordinary_street_variants_differ_only_by_prefix_and_patron(key: str) -> None:
+    variants = data.STREETS[key]
+    assert len({_street_core(v) for v in variants[:3]}) == 1
+    assert _street_core(variants[3]) != _street_core(variants[0])
+    assert {_fold(_street_core(v)) for v in variants} == {key}

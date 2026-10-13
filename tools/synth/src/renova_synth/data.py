@@ -58,14 +58,19 @@ LOCALITIES = (
     ("Jaworzyn Stary", "Gmina Jaworzyn"),
 )
 
-# street key -> spelling variants (full patron name, short, initial, without diacritics)
+# street key -> spelling variants. 0-2 differ only by the street prefix and the patron's first name
+# or initial (ordinary variation); 3 is a visibly different spelling of the same street (no
+# diacritics, upper case) that a reviewer should notice but accept.
+# Patron first names used in STREETS (genitive).
+PATRON_FIRST_NAMES = ("Tadeusza", "Adama", "Juliusza", "Henryka", "Stefana")
+
 STREETS: dict[str, tuple[str, ...]] = {
     "kosciuszki": ("ul. Tadeusza Kościuszki", "ul. Kościuszki", "ul. T. Kościuszki", "ul. Kosciuszki"),
-    "mickiewicza": ("ul. Adama Mickiewicza", "ul. Mickiewicza", "ul. A. Mickiewicza", "Mickiewicza"),
+    "mickiewicza": ("ul. Adama Mickiewicza", "ul. Mickiewicza", "ul. A. Mickiewicza", "ul. MICKIEWICZA"),
     "slowackiego": ("ul. Juliusza Słowackiego", "ul. Słowackiego", "ul. J. Słowackiego", "ul. Slowackiego"),
-    "lesna": ("ul. Leśna", "ul. Lesna", "Leśna", "ul. Leśna"),
+    "lesna": ("ul. Leśna", "Leśna", "ul. Leśna", "ul. Lesna"),
     "polna": ("ul. Polna", "Polna", "ul. Polna", "ul. POLNA"),
-    "sienkiewicza": ("ul. Henryka Sienkiewicza", "ul. Sienkiewicza", "ul. H. Sienkiewicza", "Sienkiewicza"),
+    "sienkiewicza": ("ul. Henryka Sienkiewicza", "ul. Sienkiewicza", "ul. H. Sienkiewicza", "ul. SIENKIEWICZA"),
     "kwiatowa": ("ul. Kwiatowa", "Kwiatowa", "ul. Kwiatowa", "ul. KWIATOWA"),
     "zeromskiego": ("ul. Stefana Żeromskiego", "ul. Żeromskiego", "ul. S. Żeromskiego", "ul. Zeromskiego"),
 }
