@@ -28,6 +28,12 @@ class CaseReportController extends Controller
     {
         $report = $this->build($request, $caseFile, 'pdf', $audit);
         $pdf = Pdf::loadView('reports.case', ['report' => $report])->setPaper('a4');
+        $pdf->render();
+        // Page numbers are drawn on the canvas: dompdf's CSS has no total page counter.
+        $dompdf = $pdf->getDomPDF();
+        $canvas = $dompdf->getCanvas();
+        $font = $dompdf->getFontMetrics()->getFont('DejaVu Sans');
+        $canvas->page_text($canvas->get_width() - 70, $canvas->get_height() - 34, '{PAGE_NUM} / {PAGE_COUNT}', $font, 7, [0.4, 0.45, 0.51]);
 
         return $pdf->download($report->fileName('pdf'));
     }

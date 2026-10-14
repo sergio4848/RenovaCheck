@@ -9,7 +9,8 @@
         @page { margin: 22mm 14mm 18mm 14mm; }
         body { font-family: "DejaVu Sans", sans-serif; font-size: 8.5pt; color: #1d273b; }
         h1 { font-size: 15pt; margin: 0 0 2mm; }
-        h2 { font-size: 11pt; margin: 6mm 0 2mm; padding-bottom: 1mm; border-bottom: 0.4pt solid #9aa0ac; }
+        h2 { font-size: 11pt; margin: 6mm 0 2mm; padding-bottom: 1mm; border-bottom: 0.4pt solid #9aa0ac; page-break-after: avoid; }
+        tr { page-break-inside: avoid; }
         table { width: 100%; border-collapse: collapse; }
         th, td { text-align: left; vertical-align: top; padding: 1.2mm 1.5mm; border-bottom: 0.3pt solid #dadfe5; }
         th { background: #f1f3f6; font-size: 7.5pt; }
@@ -26,15 +27,11 @@
         .reason { margin-top: 0.8mm; }
         .nowrap { white-space: nowrap; }
         footer { position: fixed; bottom: -12mm; left: 0; right: 0; font-size: 7pt; color: #667382; }
-        footer .pages:after { content: counter(page) " / " counter(pages); }
     </style>
 </head>
 <body>
 <footer>
-    <table><tr>
-        <td style="border:none">{{ __('report.disclaimer') }}<br>{{ __('report.fingerprint') }}: {{ $report->fingerprint() }}</td>
-        <td style="border:none; text-align:right" class="nowrap pages"></td>
-    </tr></table>
+    {{ __('report.disclaimer') }}<br>{{ __('report.fingerprint') }}: {{ $report->fingerprint() }}
 </footer>
 
 <h1>{{ __('report.title') }}</h1>
