@@ -44,7 +44,7 @@ COPY . .
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer dump-autoload --optimize --no-interaction \
     && php artisan package:discover --ansi \
     && touch .env \
-    && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
+    && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs storage/fonts \
     && chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 80

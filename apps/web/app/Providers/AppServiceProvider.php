@@ -50,5 +50,7 @@ class AppServiceProvider extends ServiceProvider
         $limit('reprocess', 20, 60);
         $limit('evaluate', 6, 20);
         $limit('decisions', 60, 300);
+        // Reports read the whole case and render a PDF in the request.
+        $limit('reports', 10, 30);
     }
 }

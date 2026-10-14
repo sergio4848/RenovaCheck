@@ -79,9 +79,7 @@ class CaseFileController extends Controller
             'findings' => $findings,
             'evaluation' => $evaluation = $caseFile->evaluations()->latest('created_at')->first(),
             // Findings describe the current documents only when the latest run succeeded on them.
-            'evaluationCurrent' => $evaluation?->status === 'ok'
-                && ! $documents->contains(fn ($d) => in_array($d->status, ['uploaded', 'processing'], true))
-                && $evaluation->input_hash === EvaluateCase::currentInputHash($caseFile),
+            'evaluationCurrent' => EvaluateCase::isCurrent($caseFile, $evaluation),
         ]);
     }
 

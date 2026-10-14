@@ -24,6 +24,13 @@
                                 <dt class="col-5">{{ __('Created') }}</dt>
                                 <dd class="col-7 mb-0">{{ $case->created_at->format('Y-m-d H:i') }}</dd>
                             </dl>
+                            <div class="mt-3" data-report-links>
+                                <div class="form-label">{{ __('Download the control report') }}</div>
+                                <div class="btn-group w-100" role="group" aria-label="{{ __('Report') }}">
+                                    <a href="{{ route('cases.report.pdf', $case) }}" class="btn btn-outline-secondary"><x-icon name="file-text" /> PDF</a>
+                                    <a href="{{ route('cases.report.csv', $case) }}" class="btn btn-outline-secondary"><x-icon name="file-text" /> CSV</a>
+                                </div>
+                            </div>
                             @can('findings.decide')
                                 <div class="mt-3">
                                     @if ($case->status === 'closed')

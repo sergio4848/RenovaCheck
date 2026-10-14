@@ -100,6 +100,14 @@ class EvaluateCase implements ShouldQueue
         return self::hash(self::input($case, self::evaluatedDocuments($case)));
     }
 
+    /** True when the evaluation succeeded on exactly the documents and fields the case holds now. */
+    public static function isCurrent(CaseFile $case, ?CaseEvaluation $evaluation): bool
+    {
+        return $evaluation?->status === 'ok'
+            && ! $case->documents()->whereIn('status', ['uploaded', 'processing'])->exists()
+            && $evaluation->input_hash === self::currentInputHash($case);
+    }
+
     /** @param  array<string, mixed>  $input */
     private static function hash(array $input): string
     {

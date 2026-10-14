@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditEventController;
 use App\Http\Controllers\CaseFileController;
+use App\Http\Controllers\CaseReportController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FindingController;
 use App\Http\Controllers\MemberController;
@@ -16,6 +17,8 @@ Route::middleware(['auth', 'tenant'])->group(function () {
     Route::get('/cases/{caseFile}', [CaseFileController::class, 'show'])->name('cases.show')->can('cases.view');
     Route::post('/cases/{caseFile}/evaluate', [CaseFileController::class, 'evaluate'])->name('cases.evaluate')->can('cases.create')->middleware('throttle:evaluate');
     Route::post('/cases/{caseFile}/close', [CaseFileController::class, 'close'])->name('cases.close')->can('findings.decide');
+    Route::get('/cases/{caseFile}/report.csv', [CaseReportController::class, 'csv'])->name('cases.report.csv')->can('cases.view')->middleware('throttle:reports');
+    Route::get('/cases/{caseFile}/report.pdf', [CaseReportController::class, 'pdf'])->name('cases.report.pdf')->can('cases.view')->middleware('throttle:reports');
     Route::post('/cases/{caseFile}/reopen', [CaseFileController::class, 'reopen'])->name('cases.reopen')->can('findings.decide');
 
     Route::scopeBindings()->prefix('/cases/{caseFile}/findings')->name('findings.')->group(function () {
