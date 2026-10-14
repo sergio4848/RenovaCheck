@@ -99,3 +99,16 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 | H8 | Sprawa kapatma için: işlenen belge kalmamış, son değerlendirme başarılı ve güncel belgelere ait (girdi hash'i eşit), her güncel critical bulgu geçerli kararlı olmalı. Değerlendirme hatası kaydedilir ve sprawa sayfasında gösterilir. | İnceleme H2: eski/eksik bulgularla kapatmayı önlemek. |
 | H9 | Kabul edilen düşük riskler: (a) belge türü değişince kaybolan bir critical bulgu kapatmayı engellemez — tür değişikliği audit'lidir ve yeniden değerlendirme kaydı tutulur; (b) organizasyon başına günlük sayfa kotası ve OCR sonuç önbelleği yok, yerine kullanıcı ve organizasyon başına dakika limitleri var (yükleme 10/30, tür değişikliği 20/60, yeniden kontrol 6/20, karar 60/300). | Prototip kapsamı; TRL 4'te kota ve önbellek eklenir. |
 
+
+## I. Rapor ve ölçüm (Faz 7)
+
+| # | Varsayım | Gerekçe |
+|---|---|---|
+| I1 | Kontrol raporu talep anında üretilir, saklanmaz; dışa aktarma audit'e format, sayılar ve durum parmak iziyle yazılır. Saatler Europe/Warsaw. CSV: UTF-8 BOM, `;`, CRLF (Lehçe Excel). | Saklanan imzalı rapor TRL 4 işi; parmak izi aynı durumun raporlandığını kanıtlar. |
+| I2 | „Niezatwierdzone” = güncel, critical ve kararsız ya da `do_ponownej_weryfikacji` bulgular. Warning/info kararsız bulgular „pozostałe otwarte” bölümündedir (kapatmayı engellemezler). | PLAN satır 85; kapatma kuralıyla (H8) aynı tanım. |
+| I3 | Tüm roller `cases.view` iznine sahip olduğundan raporu her üye indirebilir; ayrı bir „rapor” izni tanımlanmadı. | Rapor, sprawa sayfasında görülenden fazlasını içermez. |
+| I4 | OCR kıyaslaması ayrı bir sentetik sette çalışır: 40 sprawa, seed 7300 (değerlendirme seti 2026, holdout 4242). Belgeler bütün olarak, sıralı biçimde 200 sayfa dolana kadar alınır. | Ana setin 118 sayfası 200'e yetmez; belge bütünlüğü alan F1 için gerekli. |
+| I5 | Fiyatlar liste fiyatıdır (stan na 2026-10, do weryfikacji): Azure Document Intelligence Read 1,50 USD/1000 sayfa (ayda ilk 1M), Google Document AI Enterprise Document OCR 1,50 USD/1000 sayfa (ayda 1–5M). Ücretsiz katman ve hacim indirimleri hesaba katılmaz. Tesseract: lisans ücreti yok; ölçülen CPU süresi × varsayılan 0,05 USD/vCPU-saat. | Karşılaştırılabilir sayfa başı maliyet; resmi fiyat sayfası bu ortamdan doğrudan okunamadı, kaynak bağlantıları kodda ve raporda. |
+| I6 | Kıyaslama kodu `tools/ocr_bench` yerine extract servisinde (`renova_extract.eval.ocr_bench`) durur; `tools/ocr_bench/README.md` yöntemi anlatır. | PLAN satır 88'den sapma: üretimdeki adaptör, render ve alan çıkarıcı aynen ölçülsün, testler ve tip kontrolü CI'da çalışsın. |
+| I7 | Kıyaslama yalnızca sentetik sayfa gönderdiği için organizasyon onayı (H7) aranmaz; bulut sağlayıcıları yalnızca anahtar ortamda varsa çalışır, yoksa „uruchomienie pominięte”. Bu ortamda anahtar yok: rapordaki bulut sütunları atlanmış, maliyet satırları liste fiyatını gösterir. | Prompt: anahtar yoksa sütun atlanmış olarak raporlanır. |
+| I8 | `docs/EVAL_REPORT.md` commit'lenir; süreler makineye bağlıdır ve yalnızca aynı makinedeki çalıştırmalar karşılaştırılmalıdır. | Değişikliklerin ölçüme etkisi diff'te görünsün. |

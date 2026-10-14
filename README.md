@@ -85,12 +85,19 @@ Each finding opens a review screen: the source pages with the boxes of the compa
 to the reason, the rule and its source. Reviewers decide *zgodne*, *rozbieżność*, *uzgodniona
 zmiana* or *nie dotyczy* (a comment is required for critical findings); decisions are
 append-only and audited, and a case closes only when every critical finding is decided
-([ADR-0009](docs/ADR/0009-review-decisions-and-csp.md)). A five-minute walkthrough is in
-[`docs/DEMO.md`](docs/DEMO.md).
+([ADR-0009](docs/ADR/0009-review-decisions-and-csp.md)). The case page exports a control
+report as PDF or CSV (`/cases/{id}/report.pdf|csv`): unapproved critical findings in their own
+section ("niezatwierdzone"), decided and other open findings, and the full decision history (who,
+when, comment) ([ADR-0010](docs/ADR/0010-control-report-and-measurement.md)). A five-minute
+walkthrough is in [`docs/DEMO.md`](docs/DEMO.md).
 
-`make eval` measures document type accuracy, per-field precision/recall (clean PDFs must reach
-95 %; scans are reported) and per-rule TP/FP/FN on ground-truth fields (must be exact) and on
-extracted fields, and writes `data/eval/{classification,extraction,rules}.json`.
+`make eval` writes [`docs/EVAL_REPORT.md`](docs/EVAL_REPORT.md) in one command: document type
+accuracy, per-field precision/recall (clean PDFs must reach 95 %; scans are reported), per-rule
+TP/FP/FN on ground-truth fields (must be exact) and on extracted fields, timings, and the OCR
+benchmark (Tesseract vs Azure vs Google on 200 synthetic pages with cost per page; a provider
+without credentials is reported as "uruchomienie pominięte";
+[`tools/ocr_bench`](tools/ocr_bench/README.md)). Raw results stay in `data/eval/*.json`.
+`make eval-quick` skips the benchmark; `make ocr-bench` runs only the benchmark.
 
 OCR and the optional LLM helper are chosen in `.env`: `RENOVA_OCR_PROVIDER` (`tesseract`,
 `text_layer`, `azure`, `google`) and `RENOVA_LLM_PROVIDER` (`off` by default, or `anthropic`;

@@ -15,3 +15,4 @@ Copyright (c) 2026 Sergen Şahin.)
 | [0007](0007-field-extraction-and-provenance.md) | Deterministic field extraction with provenance | Accepted |
 | [0008](0008-rule-engine.md) | Deterministic rule engine with dated, versioned rules | Accepted |
 | [0009](0009-review-decisions-and-csp.md) | Review decisions, re-verification and a strict content security policy | Accepted |
+| [0010](0010-control-report-and-measurement.md) | Control report export and reproducible measurement | Accepted |

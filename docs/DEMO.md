@@ -32,8 +32,9 @@ Giriş: <http://localhost:8080>, `weryfikator@alfa.test` / `renova-demo`.
 | 3:00 | **„Rozbieżność”** + yorum („Karta produktu dla modelu B; poproszono o właściwą kartę”) → „Zapisz decyzję” | Yorum critical'da zorunludur (boş bırakılırsa hata). Kayıttan sonra sıradaki açık bulguya geçer. |
 | 3:30 | Bilgi bulguları: **„Zgodne”** (yorumsuz) | Sokak yazımı: „ul. Kosciuszki” = „ul. Tadeusza Kościuszki”; korekta: düzeltilmiş toplam gösterilir. |
 | 4:00 | Sprawa'ya dön → **„Zamknij sprawę”** | Bu kez kapanır; yükleme ve tür değiştirme gizlenir. |
-| 4:20 | **Dziennik zdarzeń** (sprawa sayfasının altı) | Yükleme, analiz, kural çalıştırma, her karar (karar türüyle), durum değişiklikleri; kim ve ne zaman. Kayıtlar değiştirilemez (veritabanı tetikleyicileri + hash zinciri). |
-| 4:40 | Üst menü **Sprawy** | Listede ciddiyet rozetleri; „otwarte: krytyczne” filtresi kararsız kritik bulgusu olan sprawy'ları gösterir. |
+| 4:10 | **„Pobierz raport kontroli” → PDF** (ve CSV) | Bölümler: „Niezatwierdzone ustalenia krytyczne” (şimdi boş; 2:00'da indirilseydi PRD-01 burada olurdu), „Rozstrzygnięte” (karar, kim, ne zaman), „Historia decyzji” (yorumlarla), belgeler; altbilgide durum parmak izi. CSV aynı içeriği Excel için verir. |
+| 4:25 | **Dziennik zdarzeń** (sprawa sayfasının altı) | Yükleme, analiz, kural çalıştırma, her karar (karar türüyle), durum değişiklikleri; kim ve ne zaman. Kayıtlar değiştirilemez (veritabanı tetikleyicileri + hash zinciri). |
+| 4:45 | Üst menü **Sprawy** | Listede ciddiyet rozetleri; „otwarte: krytyczne” filtresi kararsız kritik bulgusu olan sprawy'ları gösterir. |
 
 ## Sık sorulanlar
 
