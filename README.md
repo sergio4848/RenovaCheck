@@ -94,7 +94,9 @@ extracted fields, and writes `data/eval/{classification,extraction,rules}.json`.
 
 OCR and the optional LLM helper are chosen in `.env`: `RENOVA_OCR_PROVIDER` (`tesseract`,
 `text_layer`, `azure`, `google`) and `RENOVA_LLM_PROVIDER` (`off` by default, or `anthropic`;
-its proposals are kept only when they occur verbatim in the page text).
+its proposals are kept only when they occur verbatim in the page text). Document content goes to
+these external services only for organizations that consented
+(`php artisan org:external-processing <slug> on`); otherwise local Tesseract is used.
 
 Object storage uses one account per service (created by `minio-init` from `S3_WEB_*` and
 `S3_EXTRACT_*` in `.env`); the MinIO root account is only used for that setup. If your `.env`

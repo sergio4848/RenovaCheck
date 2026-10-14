@@ -21,9 +21,16 @@ decided what must survive re-evaluation and stay tamper-evident.
   keeps showing the earlier decision; equal values restore `rozstrzygniete`.
 * **Rules for deciding:** only current findings, only in open cases, comment required for
   critical findings, any number of decisions (history kept). Permission `findings.decide`.
-* **Case lifecycle:** `new` → `in_review` on the first evaluation; `closed` only when every
-  current critical finding has a valid decision; reopening returns to `in_review`. Closed cases
-  reject document uploads, type changes, re-evaluation and decisions. All transitions are audited.
+* **Case lifecycle:** `new` → `in_review` on the first evaluation; `closed` only when no document
+  is being processed, the latest evaluation succeeded on the current documents (same input
+  hash) and every current critical finding has a valid decision; reopening returns to
+  `in_review`. Failed evaluations are recorded and shown. Closed cases reject document uploads,
+  type changes, re-evaluation and decisions. All transitions are audited.
+* **Concurrency:** decisions, evaluations and closing lock the case row first (then findings);
+  a decision carries the `evidence_hash` the reviewer saw and is refused if the values changed.
+  Type corrections are accepted only for processed documents, under a row lock.
+* **Abuse limits:** per-user and per-organization rate limits on uploads, type corrections,
+  re-checks and decisions; at most 40 documents per case.
 * **Review screen:** the finding next to the source pages (signed, short-lived image URLs) with
   boxes for every compared value (subject document emphasised, context dashed), evidence table
   with confidences, rule source link, decision form and history, previous/next navigation.
