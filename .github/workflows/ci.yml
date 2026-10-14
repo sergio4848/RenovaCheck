@@ -63,6 +63,8 @@ jobs:
         run: |
           composer install --no-interaction --prefer-dist --no-progress
           touch .env
+      - name: Security advisories (fails on any known vulnerability in composer.lock)
+        run: composer audit --locked --no-interaction
       - name: Pint
         run: vendor/bin/pint --test
       - name: Migrations apply, roll back and re-apply

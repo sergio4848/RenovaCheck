@@ -143,9 +143,10 @@ between remain valid under Laravel 11, so no data migration is involved.
 * Expected effort is small. The spike needed no code changes; the work is dependency updates,
   two config lines, the image rebuild and the end-to-end checks.
 * Users are signed out once when sessions switch to JSON.
-* Afterwards, minor Laravel releases carry security fixes. CI should run `composer audit` so a new
-  advisory fails the build instead of waiting for someone to notice. That is a small follow-up,
-  not part of this upgrade.
+* Afterwards, minor Laravel releases carry security fixes. The web CI job runs
+  `composer audit --locked`, so a new advisory against `composer.lock` fails the build instead of
+  waiting for someone to notice. On the old Laravel 11 lock this step reports the 4 advisories and
+  fails.
 
 ## Implementation (2026-10-14)
 
