@@ -48,20 +48,21 @@ synth: data-dir  ## Generate 20 synthetic cases into data/synth and validate the
 EVAL = $(COMPOSE) run --rm --no-deps --build --user $$(id -u):$$(id -g) -v ./data:/work/data -v ./docs:/work/docs \
 	-w /work extract python -m renova_extract.eval
 EVAL_REPORT = --out /work/data/eval --report /work/docs/EVAL_REPORT.md
+OCR_BENCH_PAGES ?= 200
 
 eval: data-dir  ## Measure everything and write docs/EVAL_REPORT.md (types, fields, rules, timings, OCR benchmark)
 	@test -d data/synth || $(MAKE) synth
 	@test -d data/ocr_bench/synth || $(MAKE) ocr-bench-data
 	$(EVAL) all --data /work/data/synth $(EVAL_REPORT); status=$$?; \
-		$(EVAL) ocr-bench --bench-data /work/data/ocr_bench/synth --pages 200 $(EVAL_REPORT) && exit $$status
+		$(EVAL) ocr-bench --bench-data /work/data/ocr_bench/synth --pages $(OCR_BENCH_PAGES) $(EVAL_REPORT) && exit $$status
 
 eval-quick: data-dir  ## As eval, without the OCR benchmark (keeps its last result in the report)
 	@test -d data/synth || $(MAKE) synth
 	$(EVAL) all --data /work/data/synth $(EVAL_REPORT)
 
-ocr-bench: data-dir  ## OCR benchmark only: Tesseract, Azure, Google on 200 synthetic pages
+ocr-bench: data-dir  ## OCR benchmark only: Tesseract, Azure, Google on OCR_BENCH_PAGES (200) synthetic pages
 	@test -d data/ocr_bench/synth || $(MAKE) ocr-bench-data
-	$(EVAL) ocr-bench --bench-data /work/data/ocr_bench/synth --pages 200 $(EVAL_REPORT)
+	$(EVAL) ocr-bench --bench-data /work/data/ocr_bench/synth --pages $(OCR_BENCH_PAGES) $(EVAL_REPORT)
 
 ocr-bench-data: data-dir  ## Generate the OCR benchmark page set (40 cases, seed 7300) into data/ocr_bench/synth
 	HOST_UID=$$(id -u) HOST_GID=$$(id -g) $(COMPOSE) run --rm --build synth \
