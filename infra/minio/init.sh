@@ -40,9 +40,10 @@ JSON
 ensure_account() { # name access_key secret_key
   mc admin policy create local "renova-$1" "$policies/$1.json" >/dev/null
   mc admin user add local "$2" "$3" >/dev/null
-  # The mc image has no grep; attaching an already attached policy is an error.
+  # The mc image has no grep; attaching an already attached policy is an error. Match the
+  # PolicyName line only: the access key itself may contain the policy name (renova-web).
   case "$(mc admin user info local "$2")" in
-    *"renova-$1"*) ;;
+    *"PolicyName: renova-$1"*) ;;
     *) mc admin policy attach local "renova-$1" --user "$2" >/dev/null ;;
   esac
   echo "account $2: policy renova-$1"
