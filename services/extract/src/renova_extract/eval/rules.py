@@ -28,6 +28,7 @@ from typing import Any
 from renova_extract.classify.classifier import DocTypeClassifier
 from renova_extract.documents.loader import load_document
 from renova_extract.documents.models import TextSource
+from renova_extract.eval.timing import summarize
 from renova_extract.fields.dictionary import FieldDictionary
 from renova_extract.fields.extractors import FieldExtractor
 from renova_extract.fields.normalize import normalize
@@ -57,6 +58,7 @@ class RulesReport:
     severity_mismatches: list[dict[str, Any]] = field(default_factory=list)
     cases: int = 0
     seconds: float = 0.0
+    engine_durations: list[float] = field(default_factory=list)
 
     @property
     def total(self) -> RuleCounts:
@@ -74,6 +76,7 @@ class RulesReport:
             "severity_mismatches": self.severity_mismatches,
             "errors": self.errors,
             "seconds": round(self.seconds, 1),
+            "engine_latency": summarize(self.engine_durations),
         }
 
 
@@ -235,6 +238,9 @@ def evaluate(
             if classifier is None:
                 raise ValueError("pipeline mode needs a classifier")
             case = pipeline_case(truth, truth_file.parent, classifier, extractor, ocr, max_pages)
-        score_case(report, rules, truth, engine.evaluate(case).findings)
+        engine_started = time.perf_counter()
+        findings = engine.evaluate(case).findings
+        report.engine_durations.append(time.perf_counter() - engine_started)
+        score_case(report, rules, truth, findings)
     report.seconds = time.perf_counter() - started
     return report

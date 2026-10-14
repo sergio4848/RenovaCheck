@@ -1,6 +1,6 @@
 # Convenience targets; each one is a thin wrapper around docker compose (see README.md).
 # Layout adapted from careos/Makefile — Copyright (c) 2026 Sergen Şahin.
-.PHONY: help env up down reset logs ps seed migrate data-dir synth eval test test-web test-extract test-synth lint lint-web lint-extract lint-synth
+.PHONY: help env up down reset logs ps seed migrate data-dir synth eval eval-quick ocr-bench ocr-bench-data test test-web test-extract test-synth lint lint-web lint-extract lint-synth
 
 COMPOSE ?= docker compose
 TEST_DB_ENV = -e DB_DATABASE=renova_test -e DB_USERNAME=renova_owner -e DB_PASSWORD=$${RENOVA_OWNER_PASSWORD}
@@ -45,10 +45,27 @@ data-dir:
 synth: data-dir  ## Generate 20 synthetic cases into data/synth and validate them
 	HOST_UID=$$(id -u) HOST_GID=$$(id -g) $(COMPOSE) run --rm --build synth
 
-eval: data-dir  ## Measure classification and field extraction on data/synth (data/eval/*.json)
+EVAL = $(COMPOSE) run --rm --no-deps --build --user $$(id -u):$$(id -g) -v ./data:/work/data -v ./docs:/work/docs \
+	-w /work extract python -m renova_extract.eval
+EVAL_REPORT = --out /work/data/eval --report /work/docs/EVAL_REPORT.md
+
+eval: data-dir  ## Measure everything and write docs/EVAL_REPORT.md (types, fields, rules, timings, OCR benchmark)
 	@test -d data/synth || $(MAKE) synth
-	$(COMPOSE) run --rm --no-deps --user $$(id -u):$$(id -g) -v ./data:/work/data -w /work extract \
-		python -m renova_extract.eval all --data /work/data/synth --out /work/data/eval
+	@test -d data/ocr_bench/synth || $(MAKE) ocr-bench-data
+	$(EVAL) all --data /work/data/synth $(EVAL_REPORT); status=$$?; \
+		$(EVAL) ocr-bench --bench-data /work/data/ocr_bench/synth --pages 200 $(EVAL_REPORT) && exit $$status
+
+eval-quick: data-dir  ## As eval, without the OCR benchmark (keeps its last result in the report)
+	@test -d data/synth || $(MAKE) synth
+	$(EVAL) all --data /work/data/synth $(EVAL_REPORT)
+
+ocr-bench: data-dir  ## OCR benchmark only: Tesseract, Azure, Google on 200 synthetic pages
+	@test -d data/ocr_bench/synth || $(MAKE) ocr-bench-data
+	$(EVAL) ocr-bench --bench-data /work/data/ocr_bench/synth --pages 200 $(EVAL_REPORT)
+
+ocr-bench-data: data-dir  ## Generate the OCR benchmark page set (40 cases, seed 7300) into data/ocr_bench/synth
+	HOST_UID=$$(id -u) HOST_GID=$$(id -g) $(COMPOSE) run --rm --build synth \
+		generate --out /work/data/ocr_bench/synth --cases 40 --seed 7300
 
 test: test-web test-extract test-synth  ## Run all test suites inside the containers
 

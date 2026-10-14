@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from renova_extract.documents.loader import load_document
+from renova_extract.eval.timing import by_quality
 from renova_extract.fields.dictionary import FieldDictionary
 from renova_extract.fields.extractors import ExtractedField, FieldExtractor
 from renova_extract.fields.layout import Box
@@ -67,6 +68,7 @@ class ExtractionReport:
     errors: list[dict[str, Any]] = field(default_factory=list)
     documents: dict[str, int] = field(default_factory=lambda: defaultdict(int))
     seconds: float = 0.0
+    durations: dict[str, list[float]] = field(default_factory=dict)
 
     def total(self, quality: str) -> Counts:
         total = Counts()
@@ -92,6 +94,7 @@ class ExtractionReport:
                 for name, per_quality in sorted(self.counts.items())
             },
             "seconds": round(self.seconds, 1),
+            "latency": by_quality(self.durations),
             "errors": self.errors,
         }
 
@@ -105,8 +108,11 @@ def evaluate(
     for truth_file in sorted(dataset.glob("SYN-*/ground_truth.json")):
         truth = json.loads(truth_file.read_text())
         for doc in truth["documents"]:
-            loaded = load_document((truth_file.parent / doc["file"]).read_bytes(), max_pages, ocr)
+            content = (truth_file.parent / doc["file"]).read_bytes()
+            doc_started = time.perf_counter()
+            loaded = load_document(content, max_pages, ocr)
             predicted = {f.name: f for f in extractor.extract(loaded.pages, doc["doc_type"])}
+            report.durations.setdefault(doc["quality"], []).append(time.perf_counter() - doc_started)
             report.documents[doc["quality"]] += 1
             _score(report, dictionary, doc, predicted)
     report.seconds = time.perf_counter() - started

@@ -11,6 +11,7 @@ from typing import Any
 
 from renova_extract.classify.classifier import DocTypeClassifier
 from renova_extract.documents.loader import load_document
+from renova_extract.eval.timing import by_quality
 from renova_extract.ocr.base import OcrAdapter
 
 
@@ -29,6 +30,7 @@ class ClassificationReport:
     ocr: str
     results: list[DocResult] = field(default_factory=list)
     seconds: float = 0.0
+    durations: dict[str, list[float]] = field(default_factory=dict)
 
     def accuracy(self, quality: str | None = None) -> tuple[int, int]:
         rows = [r for r in self.results if quality is None or r.quality == quality]
@@ -52,6 +54,7 @@ class ClassificationReport:
             },
             "confusion": self.confusion(),
             "seconds": round(self.seconds, 1),
+            "latency": by_quality(self.durations),
             "errors": [asdict(r) for r in self.results if r.predicted != r.expected],
         }
 
@@ -64,8 +67,11 @@ def evaluate(
     for truth_file in sorted(dataset.glob("SYN-*/ground_truth.json")):
         truth = json.loads(truth_file.read_text())
         for doc in truth["documents"]:
-            loaded = load_document((truth_file.parent / doc["file"]).read_bytes(), max_pages, ocr)
+            content = (truth_file.parent / doc["file"]).read_bytes()
+            doc_started = time.perf_counter()
+            loaded = load_document(content, max_pages, ocr)
             result = classifier.classify(loaded.text)
+            report.durations.setdefault(doc["quality"], []).append(time.perf_counter() - doc_started)
             report.results.append(
                 DocResult(
                     doc_id=doc["doc_id"],
