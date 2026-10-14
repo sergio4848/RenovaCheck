@@ -34,7 +34,7 @@ def api(store: MemoryObjectStore, monkeypatch: pytest.MonkeyPatch) -> Iterator[T
         yield client
 
 
-def _post(api: TestClient, token: str | None = TOKEN, **overrides: str) -> object:
+def _post(api: TestClient, token: str | None = TOKEN, **overrides: object) -> object:
     body = {"document_id": DOC, "source_url": URL, "output_prefix": PREFIX, **overrides}
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     return api.post("/v1/documents/analyze", json=body, headers=headers)
@@ -130,3 +130,21 @@ def test_a_type_set_by_a_person_decides_which_fields_are_read(api: TestClient) -
 
 def test_unknown_document_type_is_rejected(api: TestClient) -> None:
     assert _post(api, doc_type="paragon").status_code == 422  # type: ignore[attr-defined]
+
+
+def test_without_consent_no_external_processing_is_used(api: TestClient) -> None:
+    analyzer = api.app.state.analyzer  # type: ignore[attr-defined]
+    calls: list[str] = []
+
+    class External:
+        name = "fake"
+
+        def propose(self, specs: object, pages: object) -> list[object]:
+            calls.append("llm")
+            return []
+
+    analyzer.helper = External()
+    body = _post(api).json()  # type: ignore[attr-defined]
+    assert body["extraction"]["llm_provider"] is None and calls == []
+    body = _post(api, allow_external=True).json()  # type: ignore[attr-defined]
+    assert body["extraction"]["llm_provider"] == "fake"

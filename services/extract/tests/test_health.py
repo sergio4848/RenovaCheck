@@ -51,7 +51,7 @@ def test_unknown_route_uses_error_envelope(client: TestClient) -> None:
 
 
 def test_oversized_body_is_rejected(client: TestClient) -> None:
-    response = client.post("/health", content=b"x" * 2_000_000)
+    response = client.post("/health", content=b"x" * 5_000_000)
     assert response.status_code == 413
     assert response.json()["error"]["code"] == "payload_too_large"
 

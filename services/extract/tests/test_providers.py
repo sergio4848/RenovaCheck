@@ -193,3 +193,56 @@ def test_anthropic_helper_ignores_malformed_answers(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(llm.httpx, "post", fake_post)
     helper = llm.AnthropicFieldHelper("sk-test", "m", "https://api.anthropic.com", 5.0)
     assert helper.propose([DICTIONARY.get("serial_number")], [(1, "x")]) == []
+
+
+def test_llm_proposals_match_whole_words_only() -> None:
+    page = _page_of([Word("Kwota:", 0.1, 0.3, 0.15, 0.31), Word("1000,00", 0.16, 0.3, 0.22, 0.31)])
+    spec = DICTIONARY.get("serial_number")
+    assert llm.accept([llm.Proposal(name="serial_number", text="100", page=1)], [spec], layout([page])) == []
+
+
+def test_llm_input_is_capped_per_document() -> None:
+    pages = [(n, "x" * 20_000) for n in range(1, 6)]
+    limited = llm.limit_pages(pages)
+    assert sum(len(t) for _, t in limited) == llm.MAX_DOCUMENT_CHARS
+    assert all(len(t) <= llm.MAX_PAGE_CHARS for _, t in limited)
+
+
+def test_production_requires_https_provider_endpoints() -> None:
+    with pytest.raises(ValueError, match="RENOVA_ANTHROPIC_BASE_URL"):
+        make_settings(
+            environment="production",
+            internal_token="x" * 32,
+            s3_secret_key="s" * 20,
+            anthropic_base_url="http://proxy.internal",
+        )
+
+
+def test_azure_operation_url_must_keep_the_scheme() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            202, headers={"Operation-Location": "http://polandcentral.api.cognitive.microsoft.com/op"}
+        )
+
+    adapter = AzureDocumentIntelligence(ENDPOINT, "k", client=httpx.Client(transport=httpx.MockTransport(handler)))
+    with pytest.raises(OcrUnavailableError):
+        adapter.recognize(IMAGE)
+
+
+def test_azure_odd_payloads_become_ocr_unavailable() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST":
+            return httpx.Response(202, headers={"Operation-Location": f"{ENDPOINT}/op"})
+        return httpx.Response(
+            200,
+            json={
+                "status": "succeeded",
+                "analyzeResult": {
+                    "pages": [{"width": 0, "height": 0, "words": [{"content": "a", "polygon": [0] * 8}]}]
+                },
+            },
+        )
+
+    adapter = AzureDocumentIntelligence(ENDPOINT, "k", client=httpx.Client(transport=httpx.MockTransport(handler)))
+    with pytest.raises(OcrUnavailableError):
+        adapter.recognize(IMAGE)

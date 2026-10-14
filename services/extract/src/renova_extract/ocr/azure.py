@@ -49,7 +49,8 @@ class AzureDocumentIntelligence:
                 raise OcrUnavailableError(f"azure analyze returned {started.status_code}")
             operation = started.headers.get("Operation-Location", "")
             # The result is fetched with the key: never send it to another host than the endpoint.
-            if urlsplit(operation).netloc != urlsplit(self.endpoint).netloc:
+            target, base = urlsplit(operation), urlsplit(self.endpoint)
+            if (target.scheme, target.netloc) != (base.scheme, base.netloc):
                 raise OcrUnavailableError("azure returned an operation URL on another host")
             deadline = time.monotonic() + self.timeout_seconds
             while True:
@@ -58,7 +59,10 @@ class AzureDocumentIntelligence:
                 body = result.json()
                 status = body.get("status")
                 if status == "succeeded":
-                    return parse_result(body)
+                    try:
+                        return parse_result(body)
+                    except (KeyError, TypeError, ValueError, ZeroDivisionError) as exc:
+                        raise OcrUnavailableError("azure returned an unexpected result") from exc
                 if status == "failed" or time.monotonic() > deadline:
                     raise OcrUnavailableError(f"azure analysis {status or 'timed out'}")
                 time.sleep(self.poll_interval_seconds)

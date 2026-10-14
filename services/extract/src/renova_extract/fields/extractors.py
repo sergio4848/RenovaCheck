@@ -9,10 +9,12 @@ type, typically on a poor scan). A field that is not found at all is simply abse
 from __future__ import annotations
 
 import re
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal
 
+from renova_extract.core.errors import UnsupportedDocumentError
 from renova_extract.documents.models import Page, Word
 from renova_extract.fields import normalize as norm
 from renova_extract.fields.dictionary import ExtractRule, FieldDictionary, FieldSpec
@@ -51,6 +53,9 @@ ADDRESS_PARTS = {
     "postal_code": "address_postal_code",
     "city": "address_city",
 }
+MAX_ANCHOR_HITS_PER_LINE = 3
+# A printed field value is short; a longer "value" is a paragraph caught by a label word.
+MAX_VALUE_CHARS = 200
 HEADER_AREA = 0.25  # document numbers sit in the top quarter of page 1
 BLOCK_COLUMN_TOLERANCE = 0.03
 BLOCK_MAX_LINES_BELOW = 4.0
@@ -100,13 +105,17 @@ class FieldExtractor:
             "signature": self._signature,
         }
 
-    def extract(self, pages: list[Page], doc_type: str | None) -> list[ExtractedField]:
-        return self.extract_layout(layout(pages), doc_type)
+    def extract(self, pages: list[Page], doc_type: str | None, deadline: float | None = None) -> list[ExtractedField]:
+        return self.extract_layout(layout(pages), doc_type, deadline)
 
-    def extract_layout(self, pages: list[PageLayout], doc_type: str | None) -> list[ExtractedField]:
+    def extract_layout(
+        self, pages: list[PageLayout], doc_type: str | None, deadline: float | None = None
+    ) -> list[ExtractedField]:
         context = _Context(pages)
         results: list[ExtractedField] = []
         for spec in self.dictionary.fields_for(doc_type):
+            if deadline is not None and time.monotonic() > deadline:
+                raise UnsupportedDocumentError("The document took too long to analyse.")
             found: ExtractedField | None = None
             for rule in spec.extract:
                 candidate = self._methods[rule.method](spec, rule, context)
@@ -128,8 +137,11 @@ class FieldExtractor:
             for page in context.pages:
                 for line in page.lines:
                     start = 0
-                    while (end := find_anchor(line.words, tokens, start)) is not None:
+                    hits = 0
+                    # A line repeating an anchor word is not a form; look at its first few uses only.
+                    while hits < MAX_ANCHOR_HITS_PER_LINE and (end := find_anchor(line, tokens, start)) is not None:
                         start = end
+                        hits += 1
                         rest = line.span.after(end) or _continuation(page.lines, line, line.words[end - 1])
                         if rest is None:
                             continue
@@ -162,7 +174,7 @@ class FieldExtractor:
             tokens = anchor_tokens(anchor)
             for page in context.pages:
                 for index, line in enumerate(page.lines):
-                    if index == 0 or find_anchor(line.words, tokens) is None:
+                    if index == 0 or find_anchor(line, tokens) is None:
                         continue
                     x0 = line.words[0].x0
                     for segment in page.lines[index - 1].segments:
@@ -177,7 +189,7 @@ class FieldExtractor:
         for line in page.lines:
             if line.y0 > HEADER_AREA:
                 break
-            end = find_anchor(line.words, ["nr"])
+            end = find_anchor(line, ["nr"])
             if end is not None and end < len(line.words):
                 return _token_value(spec, line.span.after(end), page.page.number, "title_number")
         return None
@@ -231,6 +243,8 @@ def _value_in(spec: FieldSpec, rest: Span, line: Line, page_no: int, method: str
 def _from_match(spec: FieldSpec, span: Span, start: int, end: int, page_no: int, method: str) -> ExtractedField:
     text = span.text[start:end].strip()
     box, ocr_confidence = span.sub(start, end)
+    if len(text) > MAX_VALUE_CHARS:
+        return ExtractedField(spec.name, None, text[:MAX_VALUE_CHARS], page_no, box, method, 0.0, "unreadable")
     value = norm.normalize(spec.type, text)
     if value is None:
         return ExtractedField(spec.name, None, text, page_no, box, method, 0.0, "unreadable")

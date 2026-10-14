@@ -43,7 +43,7 @@ class GoogleDocumentAI:
             response = self.client.post(self.url, json=body, headers={"Authorization": f"Bearer {self.access_token}"})
             response.raise_for_status()
             return parse_document(response.json().get("document", {}))
-        except (httpx.HTTPError, ValueError) as exc:
+        except (httpx.HTTPError, KeyError, TypeError, ValueError, AttributeError) as exc:
             raise OcrUnavailableError(f"google request failed: {type(exc).__name__}") from exc
 
 

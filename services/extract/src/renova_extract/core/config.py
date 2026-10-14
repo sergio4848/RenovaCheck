@@ -33,7 +33,8 @@ class Settings(BaseSettings):
     environment: Environment = "development"
     log_level: str = "INFO"
     json_logs: bool = True
-    max_body_bytes: int = Field(default=1_048_576, ge=1024)
+    # Case evaluation requests carry every field of a case (up to 50 documents).
+    max_body_bytes: int = Field(default=4 * 1_048_576, ge=1024)
 
     # Shared secret for calls from the web application (Authorization: Bearer ...).
     internal_token: SecretStr = SecretStr(_DEV_TOKEN)
@@ -72,6 +73,8 @@ class Settings(BaseSettings):
     download_timeout_seconds: float = Field(default=20.0, gt=0, le=120)
     # Total OCR time per document; keeps a request well under the web job's HTTP timeout.
     ocr_budget_seconds: float = Field(default=120.0, gt=0, le=600)
+    # Whole analysis (render, OCR, layout, extraction); below the web job's HTTP timeout (180 s).
+    analysis_budget_seconds: float = Field(default=150.0, gt=0, le=600)
     # Hosts (host:port) the service may download documents from, besides the S3 endpoint itself.
     extra_source_hosts: tuple[str, ...] = ()
     rules_dir: Path = Field(default_factory=_default_rules_dir)
@@ -90,6 +93,12 @@ class Settings(BaseSettings):
             insecure.append("RENOVA_S3_SECRET_KEY")
         if self.llm_provider == "fake":
             insecure.append("RENOVA_LLM_PROVIDER")
+        for name, url in (
+            ("RENOVA_AZURE_DI_ENDPOINT", self.azure_di_endpoint),
+            ("RENOVA_ANTHROPIC_BASE_URL", self.anthropic_base_url),
+        ):
+            if not url.startswith("https://"):
+                insecure.append(name)
         if insecure:
             raise ValueError(f"insecure production settings: {', '.join(insecure)}")
         return self

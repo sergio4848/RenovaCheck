@@ -27,6 +27,7 @@ from renova_extract.fields.layout import PageLayout, Span
 log = get_logger("renova_extract.fields.llm")
 
 MAX_PAGE_CHARS = 12_000
+MAX_DOCUMENT_CHARS = 40_000
 MAX_PROPOSALS = 50
 
 
@@ -105,6 +106,18 @@ class AnthropicFieldHelper:
             return []
 
 
+def limit_pages(pages: list[tuple[int, str]]) -> list[tuple[int, str]]:
+    """Page texts within the per-page and per-document limits sent to the model."""
+    limited, budget = [], MAX_DOCUMENT_CHARS
+    for number, text in pages:
+        if budget <= 0:
+            break
+        chunk = text[: min(MAX_PAGE_CHARS, budget)]
+        limited.append((number, chunk))
+        budget -= len(chunk)
+    return limited
+
+
 def _json_object(answer: str) -> str:
     start, end = answer.find("{"), answer.rfind("}")
     if start < 0 or end < start:
@@ -160,12 +173,21 @@ def accept(proposals: list[Proposal], specs: list[FieldSpec], pages: list[PageLa
     return list(accepted.values())
 
 
+_WORD_END = " ,;:"
+
+
 def _locate(text: str, page: PageLayout) -> tuple[Span, int, int] | None:
+    """The proposal as whole words of a line: "100" must not match inside "1000"."""
     if not text:
         return None
     for line in page.lines:
         span = line.span
         start = span.text.find(text)
-        if start >= 0:
-            return span, start, start + len(text)
+        while start >= 0:
+            end = start + len(text)
+            before_ok = start == 0 or span.text[start - 1] == " "
+            after_ok = end == len(span.text) or span.text[end] in _WORD_END
+            if before_ok and after_ok:
+                return span, start, end
+            start = span.text.find(text, start + 1)
     return None

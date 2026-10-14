@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import re
 import threading
+import time
 from dataclasses import dataclass, field
 from urllib.parse import unquote, urlsplit
 
@@ -12,7 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from renova_extract.classify.classifier import DocTypeClassifier
 from renova_extract.core.config import Settings
-from renova_extract.core.errors import DependencyUnavailableError, ValidationFailedError
+from renova_extract.core.errors import DependencyUnavailableError, UnsupportedDocumentError, ValidationFailedError
 from renova_extract.documents.loader import RENDER_DPI, load_document
 from renova_extract.documents.storage import ObjectStore
 from renova_extract.fields import llm
@@ -34,6 +35,9 @@ class AnalyzeRequest(BaseModel):
     output_prefix: str = Field(max_length=200)
     # Type set by a person; it decides which fields are read instead of the classifier's guess.
     doc_type: str | None = Field(default=None, max_length=32)
+    # Whether the organization agreed to send document content to external services (cloud OCR,
+    # LLM helper). Without it only local OCR runs and the LLM helper stays off.
+    allow_external: bool = False
 
     @field_validator("doc_type")
     @classmethod
@@ -106,6 +110,8 @@ class Analyzer:
     ocr: OcrAdapter | None
     dictionary: FieldDictionary
     helper: llm.FieldHelper | None = None
+    # Local fallback used when the organization has not agreed to external processing.
+    local_ocr: OcrAdapter | None = None
     slots: threading.BoundedSemaphore = field(default_factory=lambda: threading.BoundedSemaphore(2))
     slot_timeout_seconds: float = 30.0
 
@@ -113,7 +119,8 @@ class Analyzer:
     def build(cls, settings: Settings, store: ObjectStore) -> Analyzer:
         classifier = DocTypeClassifier.from_yaml(settings.rules_dir / "doc_types.yaml")
         dictionary = FieldDictionary.from_yaml(settings.rules_dir / "fields.yaml")
-        return cls(settings, classifier, store, ocr_adapter(settings), dictionary, llm.build_helper(settings))
+        local = TesseractPol() if settings.ocr_provider in ("tesseract", "azure", "google") else None
+        return cls(settings, classifier, store, ocr_adapter(settings), dictionary, llm.build_helper(settings), local)
 
     def check_request(self, request: AnalyzeRequest) -> None:
         """The prefix must be the document's own, and the source must live under that prefix."""
@@ -135,7 +142,12 @@ class Analyzer:
             self.slots.release()
 
     def _analyze(self, request: AnalyzeRequest, data: bytes) -> AnalyzeResponse:
-        document = load_document(data, self.settings.max_pages, self.ocr, self.settings.ocr_budget_seconds)
+        deadline = time.monotonic() + self.settings.analysis_budget_seconds
+        ocr = self.ocr if request.allow_external or not _is_external(self.ocr) else self.local_ocr
+        helper = self.helper if request.allow_external else None
+        document = load_document(data, self.settings.max_pages, ocr, self.settings.ocr_budget_seconds)
+        if time.monotonic() > deadline:
+            raise UnsupportedDocumentError("The document took too long to analyse.")
         pages = []
         for page in document.pages:
             key = f"{request.output_prefix}pages/{page.number:03d}.png"
@@ -156,7 +168,7 @@ class Analyzer:
             )
         result = self.classifier.classify(document.text)
         doc_type = request.doc_type or result.doc_type
-        fields = self.extract_fields(layout(document.pages), doc_type)
+        fields = self.extract_fields(layout(document.pages), doc_type, helper, deadline)
         return AnalyzeResponse(
             document_id=request.document_id,
             mime=document.mime,
@@ -168,28 +180,38 @@ class Analyzer:
                 scores=result.scores,
                 evidence=list(result.evidence),
             ),
-            ocr_provider=self.ocr.name if self.ocr else "none",
+            ocr_provider=ocr.name if ocr else "none",
             fields=[FieldInfo.model_validate(f.as_dict(request.document_id)) for f in fields],
             extraction=ExtractionInfo(
                 dictionary_version=self.dictionary.version,
                 doc_type=doc_type,
-                llm_provider=self.helper.name if self.helper else None,
+                llm_provider=helper.name if helper else None,
             ),
         )
 
-    def extract_fields(self, pages: list[PageLayout], doc_type: str | None) -> list[ExtractedField]:
-        fields = FieldExtractor(self.dictionary).extract_layout(pages, doc_type)
-        if self.helper is None:
+    def extract_fields(
+        self,
+        pages: list[PageLayout],
+        doc_type: str | None,
+        helper: llm.FieldHelper | None = None,
+        deadline: float | None = None,
+    ) -> list[ExtractedField]:
+        fields = FieldExtractor(self.dictionary).extract_layout(pages, doc_type, deadline)
+        if helper is None:
             return fields
         found = {f.name for f in fields if f.status == "ok"}
         # Signatures are visual; the helper only reads printed text.
         missing = [s for s in self.dictionary.fields_for(doc_type) if s.name not in found and s.type != "bool"]
         if not missing:
             return fields
-        texts = [(p.page.number, "\n".join(line.span.text for line in p.lines)) for p in pages]
-        proposed = llm.accept(self.helper.propose(missing, texts), missing, pages)
+        texts = llm.limit_pages([(p.page.number, "\n".join(line.span.text for line in p.lines)) for p in pages])
+        proposed = llm.accept(helper.propose(missing, texts), missing, pages)
         replaced = {f.name for f in proposed}
         return [f for f in fields if f.name not in replaced] + proposed
+
+
+def _is_external(ocr: OcrAdapter | None) -> bool:
+    return isinstance(ocr, AzureDocumentIntelligence | GoogleDocumentAI)
 
 
 def ocr_adapter(settings: Settings) -> OcrAdapter | None:

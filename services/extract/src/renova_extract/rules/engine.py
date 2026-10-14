@@ -89,8 +89,13 @@ def _pln(value: Decimal) -> str:
     return f"{sign}{' '.join(groups)},{frac} zł"
 
 
+MAX_SHOWN_CHARS = 80
+MAX_REASON_CHARS = 1900
+
+
 def _shown(field: FieldIn) -> str:
-    return field.raw_text or field.value or ""
+    text = field.raw_text or field.value or ""
+    return text if len(text) <= MAX_SHOWN_CHARS else text[: MAX_SHOWN_CHARS - 1] + "…"
 
 
 def _label(doc: DocumentIn) -> str:
@@ -187,7 +192,7 @@ class _Builder:
                 outcome=outcome,
                 severity="info" if outcome in EXPLANATORY else self.rule.severity,
                 title_pl=self.rule.title_pl,
-                reason_pl=reason,
+                reason_pl=reason if len(reason) <= MAX_REASON_CHARS else reason[: MAX_REASON_CHARS - 1] + "…",
                 subject_doc_ids=subject_ids,
                 context_doc_ids=context_ids,
                 fields=tuple(fields),

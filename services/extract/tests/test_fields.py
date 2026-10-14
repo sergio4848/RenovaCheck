@@ -6,6 +6,7 @@ import pytest
 from PIL import Image, ImageDraw
 
 from renova_extract.core.config import Settings
+from renova_extract.core.errors import UnsupportedDocumentError
 from renova_extract.documents.loader import load_document
 from renova_extract.documents.models import Page, TextSource, Word
 from renova_extract.fields import normalize as norm
@@ -235,3 +236,26 @@ def _signature_page(signed: bool) -> tuple[Page, Box]:
 def test_signature_is_ink_above_the_caption(signed: bool) -> None:
     page, caption = _signature_page(signed)
     assert signature_region(page, caption) == (signed, 1.0)
+
+
+# ---------------------------------------------------------------------------- resource limits
+def test_a_line_repeating_an_anchor_is_bounded() -> None:
+    words = [_w("vat:", 0.01 + i * 0.0001, 0.3, 0.011 + i * 0.0001) for i in range(4000)]
+    fields = FieldExtractor(DICTIONARY).extract([_page(words)], "faktura")
+    assert all(f.status == "unreadable" for f in fields if f.name == "amount_vat")
+
+
+def test_paragraph_after_a_label_is_not_a_value() -> None:
+    words = [_w("Producent:", 0.1, 0.3, 0.15)] + [
+        _w("słowo", 0.16 + i * 0.001, 0.3, 0.1605 + i * 0.001) for i in range(60)
+    ]
+    field = next(
+        f for f in FieldExtractor(DICTIONARY).extract([_page(words)], "faktura") if f.name == "product_manufacturer"
+    )
+    assert field.status == "unreadable" and len(field.text) <= 200
+
+
+def test_analysis_stops_at_the_deadline() -> None:
+    words = [_w("Razem", 0.6, 0.3, 0.65), _w("netto:", 0.66, 0.3, 0.71), _w("100,00", 0.8, 0.3, 0.86)]
+    with pytest.raises(UnsupportedDocumentError):
+        FieldExtractor(DICTIONARY).extract([_page(words)], "faktura", deadline=0.0)

@@ -95,6 +95,10 @@ class Line:
     words: list[Word]
     segments: list[Span]
 
+    def __post_init__(self) -> None:
+        # Anchor comparison keys, computed once per line rather than on every lookup.
+        self.keys = [_key(w.text) for w in self.words]
+
     @property
     def y0(self) -> float:
         return min(w.y0 for w in self.words)
@@ -120,15 +124,16 @@ def build_lines(words: list[Word]) -> list[Line]:
     heights = [w.y1 - w.y0 for w in words if w.y1 > w.y0]
     line_height = median(heights) if heights else 0.01
     rows: list[list[Word]] = []
+    row_centre_sum = 0.0
     for word in sorted(words, key=lambda w: ((w.y0 + w.y1) / 2, w.x0)):
         centre = (word.y0 + word.y1) / 2
-        if rows:
-            last = rows[-1]
-            last_centre = median((w.y0 + w.y1) / 2 for w in last)
-            if abs(centre - last_centre) <= line_height * 0.5:
-                last.append(word)
-                continue
+        # Compare with the running mean centre of the current row: linear in the number of words.
+        if rows and abs(centre - row_centre_sum / len(rows[-1])) <= line_height * 0.5:
+            rows[-1].append(word)
+            row_centre_sum += centre
+            continue
         rows.append([word])
+        row_centre_sum = centre
     lines = []
     for row in rows:
         row.sort(key=lambda w: w.x0)
@@ -160,9 +165,9 @@ def _key(token: str) -> str:
     return fold(token).rstrip(".,;:")
 
 
-def find_anchor(words: list[Word], tokens: list[str], start: int = 0) -> int | None:
-    """Index just past the first occurrence of the token sequence in words[start:]."""
-    keys = [_key(w.text) for w in words]
+def find_anchor(words: list[Word] | Line, tokens: list[str], start: int = 0) -> int | None:
+    """Index just past the first occurrence of the token sequence in words[start:] (or a line)."""
+    keys = words.keys if isinstance(words, Line) else [_key(w.text) for w in words]
     n = len(tokens)
     for i in range(start, len(keys) - n + 1):
         if keys[i : i + n] == tokens:

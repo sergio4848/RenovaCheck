@@ -24,6 +24,10 @@ MIN_TEXT_LAYER_CHARS = 20
 MAX_PAGE_PIXELS = 25_000_000
 MAX_IMAGE_PIXELS = 40_000_000
 MAX_CHARS_PER_PAGE = 100_000
+# Per-page and per-document budgets that keep layout analysis and memory bounded.
+MAX_WORDS_PER_PAGE = 5_000
+MAX_CHARS_PER_DOCUMENT = 300_000
+MAX_DOCUMENT_PIXELS = 120_000_000  # ~50 A4 pages at 150 dpi, held as 8-bit images
 MIN_DPI, MAX_DPI = 30, 1200
 Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS  # Pillow's own check; _load_image also checks before decoding
 
@@ -60,12 +64,21 @@ def _load_pdf(data: bytes, max_pages: int) -> list[Page]:
                 f"The PDF has more than {max_pages} pages.", details={"max_pages": max_pages}
             )
         pages = []
+        pixels = 0
+        total_chars = 0
         for index in range(len(pdf)):
             page = pdf[index]
             width, height = page.get_size()
-            image = page.render(scale=render_scale(width, height), grayscale=True).to_pil().convert("L")
+            scale = render_scale(width, height)
+            pixels += int(width * scale) * int(height * scale)
+            if pixels > MAX_DOCUMENT_PIXELS:
+                raise UnsupportedDocumentError("The document's pages are too large in total.")
+            image = page.render(scale=scale, grayscale=True).to_pil().convert("L")
             words = text_layer_words(page, width, height)
             chars = sum(len(w.text) for w in words)
+            total_chars += chars
+            if len(words) > MAX_WORDS_PER_PAGE or total_chars > MAX_CHARS_PER_DOCUMENT:
+                raise UnsupportedDocumentError("The document holds more text than a document of this kind can.")
             source = TextSource.TEXT_LAYER if chars >= MIN_TEXT_LAYER_CHARS else TextSource.NONE
             pages.append(Page(index + 1, width, height, image, words if chars else [], source))
             page.close()
@@ -141,8 +154,10 @@ def _load_image(data: bytes) -> Page:
 
 def _ocr_page(page: Page, ocr: OcrAdapter) -> None:
     try:
-        page.words = ocr.recognize(page.image)
+        words = ocr.recognize(page.image)
     except OcrUnavailableError:
         return
+    # OCR noise on a hostile image can produce any number of "words"; keep layout analysis bounded.
+    page.words = words[:MAX_WORDS_PER_PAGE]
     if page.words:
         page.source = TextSource.OCR
