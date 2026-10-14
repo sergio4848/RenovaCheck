@@ -144,7 +144,6 @@ class CaseReportTest extends TestCase
         $response = $this->actingAs($this->owner->user)->get("/cases/{$this->case->id}/report.pdf")->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
         $this->assertStringStartsWith('%PDF-', $response->getContent());
-        $this->assertStringContainsString('/Subtype /Image', $response->getContent(), 'the logo is embedded');
 
         $html = $this->asTenant(fn () => view('reports.case', ['report' => CaseReport::build($this->case, $this->owner->user)])->render());
         $this->assertStringContainsString('Niezatwierdzone ustalenia krytyczne (1)', $html);
@@ -153,6 +152,9 @@ class CaseReportTest extends TestCase
         $this->assertStringContainsString('Raport pomocniczy', $html);
         $this->assertStringNotContainsString('Ocena nieaktualna', $html);
         $this->assertStringNotContainsString('<script', $html);
+        // The web image has no GD extension: dompdf can only place vector (SVG) images there.
+        $this->assertMatchesRegularExpression('#<img src="[^"]+/reports/assets/logo-horizontal\.svg"#', $html);
+        $this->assertDoesNotMatchRegularExpression('#<img src="[^"]+\.(png|jpe?g|gif)"#i', $html);
     }
 
     public function test_outdated_evaluation_is_flagged(): void
