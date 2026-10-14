@@ -81,6 +81,13 @@ as "do sprawdzenia" with the reason and links to the fields; "Sprawdź ponownie"
 A rule change is a new rule version (`python -m renova_extract.rules lock --write` records it;
 published versions are immutable).
 
+Each finding opens a review screen: the source pages with the boxes of the compared values next
+to the reason, the rule and its source. Reviewers decide *zgodne*, *rozbieżność*, *uzgodniona
+zmiana* or *nie dotyczy* (a comment is required for critical findings); decisions are
+append-only and audited, and a case closes only when every critical finding is decided
+([ADR-0009](docs/ADR/0009-review-decisions-and-csp.md)). A five-minute walkthrough is in
+[`docs/DEMO.md`](docs/DEMO.md).
+
 `make eval` measures document type accuracy, per-field precision/recall (clean PDFs must reach
 95 %; scans are reported) and per-rule TP/FP/FN on ground-truth fields (must be exact) and on
 extracted fields, and writes `data/eval/{classification,extraction,rules}.json`.

@@ -85,3 +85,14 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 | G7 | Sokak yazım bulgusu (ADR-02), önek ve patron adı/baş harfi dışındaki farkları (diakritik, büyük harf) bildirir. Bu tanımla tutarlı olsun diye sentetik veri tablosu düzeltildi (bazı „olağan” varyantlar farklı yazılıyordu). | Temiz vakalarda sahte bulguyu önlemek; düzeltme `fix:` commit'inde. |
 | G8 | Değerlendirme, sprawa'daki son belge işlendiğinde otomatik ve „Sprawdź ponownie” ile elle çalışır; girdi değişmediyse otomatik çalıştırma atlanır. Bulgular silinmez: artık üretilmeyen bulgu `is_current=false` olur. | Faz 6 kararlarının kaybolmaması. |
 
+## H. İnceleme ve kararlar (Faz 6)
+
+| # | Varsayım | Gerekçe |
+|---|---|---|
+| H1 | Karar değerleri `zgodne`, `rozbieznosc`, `uzgodniona_zmiana`, `nie_dotyczy` (ASCII anahtar, ekranda Lehçe etiket). Yorum yalnızca critical bulgularda zorunlu, en çok 2000 karakter. | Prompt satır 24; PLAN satır 33. |
+| H2 | Bir bulguya birden çok kez karar verilebilir; son karar geçerlidir, öncekiler „Historia decyzji”de ve değiştirilemez tabloda kalır. | Düzeltilebilir ama izlenebilir karar. |
+| H3 | Kararın verildiği değerler (`evidence_hash`) değişirse bulgu „do ponownej weryfikacji” olur; kapatma bu durumdaki critical bulgularla da engellenir. | Eski karar yeni değerleri onaylamış sayılmasın. |
+| H4 | Sprawa kapatma yetkisi `findings.decide` (owner ve reviewer). Kapalı sprawa'da yükleme, tür değişikliği, yeniden değerlendirme ve karar yoktur; „Otwórz ponownie” ile açılır. | Rapor (Faz 7) kapalı ve onaylı duruma dayanır. |
+| H5 | Audit olayına karar yorumu yazılmaz (yalnızca uzunluğu); yorum `finding_decisions`'ta değiştirilemez olarak durur. | Audit payload'ında serbest metin/kişisel veri tutmamak. |
+| H6 | Alpine.js kaldırıldı (PLAN'daki UI satırından sapma); tek bir same-origin betik CSP'yi `script-src 'self'; style-src 'self'` düzeyinde tutmayı sağlar. | Güvenlik başlığı ve sadelik. |
+
