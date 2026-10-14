@@ -12,7 +12,7 @@ Decisions: [`docs/ADR/`](docs/ADR/README.md).
 
 ```
                  ┌─────────────────────────── docker compose ───────────────────────────┐
-  browser ──────►│ web    Laravel 11 · PHP 8.3 · Blade + Tabler · Fortify (sign-in)      │
+  browser ──────►│ web    Laravel 13 · PHP 8.3 · Blade + Tabler · Fortify (sign-in)      │
   :8080          │  │     queue  (same image, php artisan queue:work redis)              │
                  │  │        │                                                          │
                  │  ▼        ▼                                                          │

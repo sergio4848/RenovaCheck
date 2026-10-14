@@ -24,7 +24,7 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 
 | # | Varsayım | Gerekçe |
 |---|---|---|
-| C1 | Laravel **11** sabit karar olarak kullanılır (promptta "tartışma yok"). Laravel 11'in güvenlik desteği 2026 Mart'ında bitti; bu bir prototip riski olarak `PLAN.md`'de kayıtlı, 12'ye yükseltme ayrı bir karar. | Sabit mimari kararı. |
+| C1 | Laravel **11** sabit karar olarak kullanıldı (promptta "tartışma yok"). Laravel 11'in güvenlik desteği 2026 Mart'ında bitti; kullanıcı onayıyla ADR-0011 kapsamında Laravel 13'e geçildi (bkz. J). | Sabit mimari kararı; sonradan onaylı değişiklik. |
 | C2 | PDF işleme yalnızca izin verici lisanslı kütüphanelerle yapılır (pdfplumber/pdfminer MIT, pypdfium2 Apache-2.0/BSD, reportlab BSD, Pillow HPND). **PyMuPDF (AGPL) kullanılmaz.** | SaaS'ta AGPL yükümlülüğünden kaçınma. |
 | C3 | "Temiz metin modu" = PDF metin katmanından kelime + bbox okuma (`PdfTextLayer` adaptörü). OCR adaptörü tanımlı olmasa da test suite bu modda geçer. | Promptun OCR şartı. |
 | C4 | Bulut OCR (Azure DI Poland Central, Google Document AI) anahtarları bu ortamda yok; adaptörler kayıtlı yanıt fixture'larıyla birim testinden geçer, gerçek kıyaslama anahtar verildiğinde çalışır. | Gizli anahtarlar yalnızca env. |
@@ -118,5 +118,5 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 | # | Varsayım | Gerekçe |
 |---|---|---|
 | J1 | Destek tarihleri 2026-10-14'te laravel.com release notes'tan alındı: 11 güvenlik desteği 2026-03-12'de bitti, 12 → 2027-02-24, 13 → 2028-03-17. | Geçiş hedefinin seçimi (13) bu tarihlere dayanır. |
-| J2 | ADR-0011 kabul edilene kadar Laravel 11 kalır. `composer audit`'in bildirdiği 4 açık bugünkü kod yollarından erişilemez (yalnızca giriş formu, S3 presigned URL'ler, debug kapalı); bu, sentetik veriyle çalışan prototip için kabul edilmiş bir risktir. E-posta doğrulama, imzalı route ya da parola sıfırlama gibi bir özellik eklenmeden önce geçiş yapılmalıdır. | Promptun sabit mimarisi kullanıcı onayı olmadan değiştirilmez. |
-| J3 | Geçişin kanıtı depo dışındaki bir denemedir: Laravel 12.70 ve 13.36'da kod değişikliği gerekmedi, testler, Pint, migration'lar ve S3/HTTP canlı smoke testi geçti, audit temiz çıktı. Docker imajı ve Playwright demosu Laravel 13 ile henüz doğrulanmadı; bunlar geçiş dalının kabul kriterleridir. | Ölçülmüş ve ölçülmemiş olanı ayırmak. |
+| J2 | ADR-0011 2026-10-14'te kullanıcı tarafından kabul edildi; web uygulaması Laravel 13.36'ya (PHP ^8.3) taşındı. Laravel 11'deki 4 `composer audit` açığı kapandı. | Promptun sabit mimarisi yalnızca kullanıcı onayıyla değişti. |
+| J3 | Geçiş önce depo dışındaki bir denemede doğrulandı: Laravel 12.70 ve 13.36'da kod değişikliği gerekmedi, testler, Pint, migration'lar ve S3/HTTP canlı smoke testi geçti, audit temiz çıktı. Docker imajı, `make test`/`make eval` ve Playwright demosu ADR-0011'in kabul kriterleridir; sonuçları ADR'ın "Implementation" bölümüne yazılır. | Kabul kriterleri (ADR-0011). |

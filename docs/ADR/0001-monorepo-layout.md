@@ -11,7 +11,7 @@ The stack was fixed up front (Laravel + Python + PostgreSQL + Redis + S3-compati
 
 | Path | Content |
 |---|---|
-| `apps/web` | Laravel 11 (PHP 8.3), Blade + Tabler 1.6 (vendored, MIT), Alpine.js, Fortify sign-in. No SPA. |
+| `apps/web` | Laravel 11 (PHP 8.3; upgraded to Laravel 13 by [ADR-0011](0011-laravel-upgrade-to-13.md)), Blade + Tabler 1.6 (vendored, MIT), Alpine.js, Fortify sign-in. No SPA. |
 | `services/extract` | Python 3.12, FastAPI API + Redis-list batch worker, one image with two entrypoints. |
 | `packages/rules` | YAML rule set, field dictionary and their JSON Schemas (from phase 2/4). |
 | `tools/synth` | Synthetic document and ground-truth generator (phase 2). |

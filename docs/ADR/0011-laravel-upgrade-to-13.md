@@ -1,7 +1,7 @@
 # ADR-0011: Upgrade the web application from Laravel 11 to Laravel 13 (via 12)
 
-* Status: **Proposed** · 2026-10-14
-* Supersedes, once accepted: the "Laravel 11" entry of the fixed stack (`docs/PLAN.md`, prompt
+* Status: **Accepted** · 2026-10-14 (proposed and accepted the same day; implemented in the same branch)
+* Supersedes: the "Laravel 11" entry of the fixed stack (`docs/PLAN.md`, prompt
   section "Architecture") and the matching risk row in `docs/PLAN.md` §4.
 
 ## Context

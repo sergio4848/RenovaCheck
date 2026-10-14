@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "renovacheck/web",
     "type": "project",
-    "description": "RenovaCheck web application (Laravel 11)",
+    "description": "RenovaCheck web application (Laravel 13)",
     "keywords": [],
     "license": "proprietary",
     "require": {

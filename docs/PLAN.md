@@ -8,7 +8,7 @@
 
 ```
             ┌──────────────── docker compose ─────────────────────────────────┐
- tarayıcı ─►│ web (Laravel 11, PHP 8.3, Blade+Tabler, Fortify auth)           │
+ tarayıcı ─►│ web (Laravel 13, PHP 8.3, Blade+Tabler, Fortify auth)           │
             │   │  ├─ queue (aynı image, `php artisan queue:work redis`)        │
             │   │  └─ Postgres 16  (RLS: organization_id = app.organization_id)│
             │   ▼                                                            │
@@ -96,7 +96,7 @@ Enerji hesabı, audyt/świadectwo üretimi, hibe kararı, GWD/kurum entegrasyonu
 | Risk | Etki | Önlem |
 |---|---|---|
 | Kaynak dokümanlar (03–08) yok | Alan sözlüğü/kurallar gerçek belge setinden sapabilir | Prompt özetleriyle ilerle; dokümanlar gelince fark listesi çıkar (`ASSUMPTIONS.md`) |
-| Laravel 11 güvenlik desteği bitti (Mart 2026) | Prototip için kabul edilebilir, üretim için değil | Sabit karar korunur; 11 → 12 → 13 geçişi [ADR-0011](ADR/0011-laravel-upgrade-to-13.md) ile önerildi (Proposed, onay bekliyor) |
+| ~~Laravel 11 güvenlik desteği bitti (Mart 2026)~~ | Kapandı | 11 → 12 → 13 geçişi yapıldı ([ADR-0011](ADR/0011-laravel-upgrade-to-13.md), kabul 2026-10-14); 13'ün güvenlik desteği 2028-03-17'ye kadar |
 | Kural `source_url`/`valid_from` gerçek program belgesine dayanmalı | Yanlış kural tarihi | Resmi Czyste Powietrze sayfaları kaynak gösterilir, her kural `notes: do weryfikacji` ile işaretlenir |
 | Sentetik veri ezberi (synth ile çıkarıcı aynı şablonu bilir) | %95 metriği şişebilir | Üreteçte şablon varyantları (≥3/tür), ayrı "holdout" seed; eval raporunda açıkça belirtilir |
 | Bulut OCR anahtarları yok | Faz 7 kıyaslaması eksik kalır | Tesseract gerçek ölçülür; Azure/Google anahtar verilince aynı script |
@@ -108,7 +108,7 @@ Enerji hesabı, audyt/świadectwo üretimi, hibe kararı, GWD/kurum entegrasyonu
 
 1. **Kendi repolarından kod kopyalama izni.** careos/emlakpro/konstela "Copyright (c) 2026 Sergen Şahin. All rights reserved." taşıyor. Bunlar senin; RenovaCheck'e kopyalamama/uyarlamama izin veriyor musun? *Varsayılan: evet — dosya başına kaynak satırı + kökte `NOTICE.md`.*
 2. **Kaynak dokümanlar.** 03/05/06/07/08 dosyalarını bu repoya (`docs/`) ekleyebilir misin? *Varsayılan: prompt özetleriyle devam; gelince fark analizi.*
-3. **Laravel sürümü.** Prompt Laravel 11 diyor; 11'in güvenlik desteği bitti. 11'de mi kalayım, 12'ye mi geçeyim? *Varsayılan: 11 (sabit karar).*
+3. **Laravel sürümü.** Prompt Laravel 11 diyor; 11'in güvenlik desteği bitti. 11'de mi kalayım, 12'ye mi geçeyim? *Varsayılan: 11 (sabit karar).* → Sonra: 13'e geçildi (ADR-0011).
 
 ## 6. Skill/plugin envanteri
 

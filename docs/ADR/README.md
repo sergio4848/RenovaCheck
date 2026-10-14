@@ -16,4 +16,4 @@ Copyright (c) 2026 Sergen Şahin.)
 | [0008](0008-rule-engine.md) | Deterministic rule engine with dated, versioned rules | Accepted |
 | [0009](0009-review-decisions-and-csp.md) | Review decisions, re-verification and a strict content security policy | Accepted |
 | [0010](0010-control-report-and-measurement.md) | Control report export and reproducible measurement | Accepted |
-| [0011](0011-laravel-upgrade-to-13.md) | Upgrade the web application from Laravel 11 to Laravel 13 (via 12) | Proposed |
+| [0011](0011-laravel-upgrade-to-13.md) | Upgrade the web application from Laravel 11 to Laravel 13 (via 12) | Accepted |
