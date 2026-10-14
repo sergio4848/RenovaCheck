@@ -1,7 +1,8 @@
 # RenovaCheck brand kit
 
-The mark is a house whose interior holds a check mark: documents of a renovation project, checked.
-The wordmark is set in Inter Bold. All logo files are vector outlines and need no installed font.
+The mark is a house drawn as one sharp line, open at the bottom like a page corner, with a check mark
+inside: documents of a renovation project, checked. The wordmark is set in Geist SemiBold and outlined,
+so logo files need no installed font. Style, colours and rules for everything else: [`DESIGN.md`](DESIGN.md).
 
 ## Files
 
@@ -11,33 +12,19 @@ The wordmark is set in Inter Bold. All logo files are vector outlines and need n
 | `logo/logo-inverse.svg` | On dark backgrounds (ink, photos, video) |
 | `logo/logo-mono.svg` | One colour (ink); print, stamps, fax-like documents |
 | `logo/logo-mark.svg` | The mark alone, when the name is already visible |
-| `logo/favicon.svg` | Browser tab and app icon (mark on a teal tile, heavier strokes) |
+| `logo/favicon.svg` | Browser tab and app icon (mark on an ink tile, heavier strokes) |
 | `logo/png/` | PNG exports: horizontal and inverse 1600 px wide, mark and app icon 512/1024 px, transparent |
 | `social/social-card-1200x630.png` | Link preview (Open Graph, LinkedIn) |
 
-Film graphics (title card, end card, callouts, cursor) are in `marketing/film/graphics/`.
+Film graphics (title and end card, margin notes, trust list, hand-drawn marks; PNG and animated
+ProRes 4444 overlays) are in `marketing/film/graphics/`.
+
+`fonts/`: Geist and Geist Mono (OFL, `fonts/OFL-Geist.txt`), needed to render and edit the graphics.
 
 ## Colours
 
-| Name | Hex | Role |
-|---|---|---|
-| Teal | `#0F766E` | Primary: the mark, "Check", links, primary actions |
-| Ink | `#0B1F33` | Text, dark backgrounds |
-| Amber | `#F59E0B` | Accent: the check mark, highlights, call to action |
-| Teal light | `#5EEAD4` | "Check" on dark backgrounds |
-| Paper | `#F6F8FB` | Light surfaces |
-
-WCAG contrast (normal text needs 4.5, large text and graphics 3.0):
-
-| Foreground | Background | Ratio | Use |
-|---|---|---|---|
-| Ink | White | 16.7 | any text |
-| Teal | White | 5.5 | text and icons |
-| White | Teal | 5.5 | button labels |
-| Teal light | Ink | 11.3 | text on dark |
-| Amber | Ink | 7.8 | text and graphics on dark |
-| Ink | Amber | 7.8 | call-to-action label |
-| Amber | White | 2.2 | **decoration only**: never text, never the only carrier of meaning on white |
+Palette, roles and contrast ratios: [`DESIGN.md` §2](DESIGN.md#2-colour-palette-and-roles). The logo
+uses Ink `#111418` and Teal `#0F766E` on light backgrounds, Paper `#FAFAF7` and `#5FBFB2` on dark ones.
 
 ## Rules
 
@@ -47,13 +34,14 @@ WCAG contrast (normal text needs 4.5, large text and graphics 3.0):
 * Do not recolour, stretch, rotate, outline or add effects to the logo. Do not set "RenovaCheck"
   in another font next to the mark.
 * "RenovaCheck" is one word with a capital R and C.
-* Interface typography: system sans-serif (Tabler). Marketing and video: Inter (SIL Open Font
-  License 1.1).
+* Interface typography: system sans-serif (Tabler). Marketing and video: Geist and Geist Mono
+  (SIL Open Font License 1.1, `fonts/`).
 
 ## Regenerating
 
 ```sh
 pip install fonttools==4.60.1
-python brand/tools/build_brand.py          # SVGs (needs Inter: /usr/share/fonts/opentype/inter)
-node brand/tools/render_graphics.js        # PNG exports and film graphics (Playwright + Chromium)
+python brand/tools/build_brand.py          # SVGs (wordmark font: fonts/Geist-SemiBold.ttf)
+node brand/tools/render_graphics.js        # PNG exports, film graphics and animated overlays
+                                           # (Playwright + Chromium, ffmpeg; install fonts/*.ttf first)
 ```

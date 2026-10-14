@@ -1,0 +1,95 @@
+# RenovaCheck – DESIGN.md
+
+Design system for the brand, the promo film and marketing material, in the DESIGN.md format
+(VoltAgent/awesome-claude-design). The product interface keeps its Tabler theme; it only uses the logo.
+
+## 1. Visual theme and atmosphere
+Editorial, document-like and quiet: the look of a well-set report, not of a software landing page.
+The product checks documents, so the brand looks like one: paper, ink, hairlines, page numbers,
+margin notes and the marks a careful reviewer makes with a pen. Dense where it informs, empty where
+it does not. Nothing glows.
+
+## 2. Colour palette and roles
+| Name | Hex | Role |
+|---|---|---|
+| Paper | `#FAFAF7` | Backgrounds of cards, notes and the end card (a neutral warm white, not cream) |
+| Ink | `#111418` | Text, the house of the mark, rules that carry weight |
+| Graphite | `#5B6470` | Secondary text, mono references, English lines |
+| Rule | `#D9DCE1` | Hairlines and borders (decoration only) |
+| Teal | `#0F766E` | The one brand accent: the check of the mark, links, the CTA, the "agreed" underline |
+| Teal on ink | `#5FBFB2` | The check on dark backgrounds |
+| Correction | `#D9480F` | Only for discrepancies: the reviewer's pen (rings, underlines) |
+
+Contrast (WCAG; text needs 4.5, large text and marks 3.0):
+
+| Pair | Ratio |
+|---|---|
+| Ink on Paper | 17.7 |
+| Graphite on Paper | 5.7 |
+| Teal on Paper | 5.2 |
+| Paper on Teal | 5.2 |
+| Teal on ink on Ink | 8.4 |
+| Correction on Paper | 4.1 (large text and marks only) |
+| Rule on Paper | 1.3 (decoration only) |
+
+No gradients, no glows, no coloured shadows, no transparency effects on text.
+
+## 3. Typography
+* **Geist** (Regular, Medium, SemiBold) for text and headlines; **Geist Mono** (Regular, Medium) for
+  references, page numbers and codes. SIL Open Font License; files in `brand/fonts/`.
+  Both cover every Polish letter (checked: ąćęłńóśźż ĄĆĘŁŃÓŚŹŻ).
+* Headlines SemiBold, tight tracking (−0.5 to −1 px at 28–56 px), sentence case, left aligned.
+* Mono labels 13–15 px, graphite, often upper case: `03 — PRD-01 · KRYTYCZNE`, `RenovaCheck — 01`.
+* Film scale (1280×720): 104 px logo · 44 px end-card headline · 36 px tagline · 28 px note headline
+  · 15 px secondary · subtitles 34 px Geist Medium.
+
+## 4. Component stylings
+* **Margin note** (film callouts): square paper slip, 1 px rule border, 3 px ink bar on the left,
+  mono reference, Polish headline, English line in graphite, and a hand-drawn underline in teal
+  (or correction red when it marks a discrepancy). Builds in over 15 frames: slip slides 16 px,
+  then the underline is drawn.
+* **Numbered list** (trust points): `01`–`03` in teal mono, lines separated by hairlines.
+* **CTA**: text and an arrow, underlined by hand in teal. Never a filled pill button.
+* **Hand-drawn marks**: seeded, slightly irregular paths: a ring of a little more than one turn whose
+  end overshoots the start, an underline with a small arc and a lifted end. Round caps, 3–5 px.
+  Animated by drawing (stroke-dashoffset), never by fading or scaling.
+* **Header and footer** of full-frame cards: mono, graphite, between the frame edge and a hairline.
+
+## 5. Layout principles
+* Left-aligned on a 12-column grid with 96 px outer margins (80 px on 1200×630). Nothing centred
+  except the subtitles.
+* Generous empty space; one idea per frame.
+* Square corners (0–2 px). Hairlines are 1 px; weight comes from type, not from boxes.
+
+## 6. Depth and elevation
+Flat. Separation comes from paper against footage, a hairline border and the ink bar. No drop
+shadows, no blur, no glass.
+
+## 7. Do's and don'ts
+**Do**: paper and ink; page numbers and mono references; reviewer marks; real product screens;
+left alignment; one accent colour per frame (teal, or correction red for a discrepancy).
+
+**Don't** (these read as generated):
+* Inter or Roboto as the brand face;
+* purple, violet or teal gradients, radial glows, gradient text;
+* pills with glowing dots, soft-shadowed cards, glassmorphism;
+* a centred hero with one big button, rows of three icon cards, emoji;
+* cream background with a serif headline as the "tasteful" default;
+* identical large corner radii on everything.
+
+## 8. Responsive behaviour
+* Film: 1280×720 master; graphics are full-frame layers with transparent backgrounds, so the edit
+  only places them.
+* Social card 1200×630 keeps the same grid with 80 px margins.
+* The logo below 24 px height uses the mark alone; the favicon is the mark on an ink tile with
+  heavier strokes.
+
+## 9. Agent prompt guide
+> Design in the RenovaCheck editorial style (brand/DESIGN.md): paper `#FAFAF7` and ink `#111418`,
+> Geist and Geist Mono, left aligned on a 12-column grid with 96 px margins, hairlines `#D9DCE1`,
+> square corners, mono page references, one accent (teal `#0F766E`; correction red `#D9480F` only
+> for discrepancies), hand-drawn underline or ring as the only emphasis. No gradients, glows,
+> shadows, pills, emoji, centred heroes or Inter.
+
+Generated by `brand/tools/build_brand.py` (logo) and `brand/tools/render_graphics.js` (exports, film
+graphics, animated overlays).
