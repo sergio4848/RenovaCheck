@@ -7,7 +7,7 @@
       "id": "VO01",
       "shot": "S01",
       "start": 0.5,
-      "end": 4.5,
+      "end": 4.3,
       "pl": "Wniosek. Umowa. Faktura. Protokół odbioru.",
       "en": "Application. Contract. Invoice. Acceptance report."
     },
@@ -15,15 +15,15 @@
       "id": "VO02",
       "shot": "S02",
       "start": 5.0,
-      "end": 9.8,
+      "end": 10.0,
       "pl": "Każda sprawa to kilka dokumentów – każdy może różnić się jednym znakiem.",
       "en": "Every case means several documents – any of them can differ by one character."
     },
     {
       "id": "VO03",
       "shot": "S03",
-      "start": 10.2,
-      "end": 14.0,
+      "start": 10.6,
+      "end": 14.35,
       "pl": "Jedna literówka w modelu – i rozliczenie wraca do poprawki.",
       "en": "One typo in the model – and the settlement goes back for fixes."
     },
@@ -31,7 +31,7 @@
       "id": "VO04",
       "shot": "S04",
       "start": 14.4,
-      "end": 18.2,
+      "end": 18.1,
       "pl": "RenovaCheck sprawdzi je za Ciebie – zanim zrobi to urząd.",
       "en": "RenovaCheck cross-checks them – before the authority does."
     },
@@ -39,14 +39,14 @@
       "id": "VO05",
       "shot": "S05",
       "start": 18.6,
-      "end": 23.8,
+      "end": 24.3,
       "pl": "Wgrywasz pliki, a system odczytuje adresy, kwoty, modele, daty i podpisy.",
       "en": "Upload the files – it reads addresses, amounts, models, dates and signatures."
     },
     {
       "id": "VO06",
       "shot": "S06",
-      "start": 24.0,
+      "start": 24.4,
       "end": 29.6,
       "pl": "Rozbieżności widzisz od razu – z wagą, uzasadnieniem i regułą, która je wykryła.",
       "en": "Discrepancies appear at once – with severity, reason and rule."
@@ -55,7 +55,7 @@
       "id": "VO07",
       "shot": "S07",
       "start": 30.0,
-      "end": 35.6,
+      "end": 33.8,
       "pl": "Każde ustalenie wskazuje dokładne miejsce na stronie dokumentu.",
       "en": "Every finding points to the exact spot on the document page."
     },
@@ -63,7 +63,7 @@
       "id": "VO08",
       "shot": "S08",
       "start": 36.0,
-      "end": 40.8,
+      "end": 40.7,
       "pl": "Decyzję podejmuje człowiek – z komentarzem i pełną historią: kto i kiedy.",
       "en": "A person makes the call – with a comment and a full who-and-when history."
     },
@@ -71,7 +71,7 @@
       "id": "VO09",
       "shot": "S09",
       "start": 41.2,
-      "end": 45.6,
+      "end": 45.8,
       "pl": "Na koniec raport kontroli – PDF lub CSV, gotowy do akt.",
       "en": "Then a control report – PDF or CSV, ready for the case file."
     },
@@ -79,7 +79,7 @@
       "id": "VO10",
       "shot": "S10",
       "start": 46.2,
-      "end": 50.8,
+      "end": 50.4,
       "pl": "Mniej ręcznego porównywania. Więcej czasu na klientów.",
       "en": "Less manual cross-checking. More time for your clients."
     },
@@ -87,7 +87,7 @@
       "id": "VO11",
       "shot": "S11",
       "start": 52.2,
-      "end": 55.8,
+      "end": 56.0,
       "pl": "RenovaCheck. Spójne dokumenty, spokojna głowa.",
       "en": "RenovaCheck. Consistent documents, peace of mind."
     }
