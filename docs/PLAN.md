@@ -96,7 +96,7 @@ Enerji hesabı, audyt/świadectwo üretimi, hibe kararı, GWD/kurum entegrasyonu
 | Risk | Etki | Önlem |
 |---|---|---|
 | Kaynak dokümanlar (03–08) yok | Alan sözlüğü/kurallar gerçek belge setinden sapabilir | Prompt özetleriyle ilerle; dokümanlar gelince fark listesi çıkar (`ASSUMPTIONS.md`) |
-| Laravel 11 güvenlik desteği bitti (Mart 2026) | Prototip için kabul edilebilir, üretim için değil | Sabit karar korunur; 12'ye geçiş ayrı ADR adayı |
+| Laravel 11 güvenlik desteği bitti (Mart 2026) | Prototip için kabul edilebilir, üretim için değil | Sabit karar korunur; 11 → 12 → 13 geçişi [ADR-0011](ADR/0011-laravel-upgrade-to-13.md) ile önerildi (Proposed, onay bekliyor) |
 | Kural `source_url`/`valid_from` gerçek program belgesine dayanmalı | Yanlış kural tarihi | Resmi Czyste Powietrze sayfaları kaynak gösterilir, her kural `notes: do weryfikacji` ile işaretlenir |
 | Sentetik veri ezberi (synth ile çıkarıcı aynı şablonu bilir) | %95 metriği şişebilir | Üreteçte şablon varyantları (≥3/tür), ayrı "holdout" seed; eval raporunda açıkça belirtilir |
 | Bulut OCR anahtarları yok | Faz 7 kıyaslaması eksik kalır | Tesseract gerçek ölçülür; Azure/Google anahtar verilince aynı script |

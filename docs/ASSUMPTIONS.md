@@ -112,3 +112,11 @@ Her madde: **varsayım** → gerekçe → doğrulanınca ne değişir.
 | I6 | Kıyaslama kodu `tools/ocr_bench` yerine extract servisinde (`renova_extract.eval.ocr_bench`) durur; `tools/ocr_bench/README.md` yöntemi anlatır. | PLAN satır 88'den sapma: üretimdeki adaptör, render ve alan çıkarıcı aynen ölçülsün, testler ve tip kontrolü CI'da çalışsın. |
 | I7 | Kıyaslama yalnızca sentetik sayfa gönderdiği için organizasyon onayı (H7) aranmaz; bulut sağlayıcıları yalnızca anahtar ortamda varsa çalışır, yoksa „uruchomienie pominięte”. Bu ortamda anahtar yok: rapordaki bulut sütunları atlanmış, maliyet satırları liste fiyatını gösterir. | Prompt: anahtar yoksa sütun atlanmış olarak raporlanır. |
 | I8 | `docs/EVAL_REPORT.md` commit'lenir; süreler makineye bağlıdır ve yalnızca aynı makinedeki çalıştırmalar karşılaştırılmalıdır. | Değişikliklerin ölçüme etkisi diff'te görünsün. |
+
+## J. Çerçeve sürümü (ADR-0011)
+
+| # | Varsayım | Gerekçe |
+|---|---|---|
+| J1 | Destek tarihleri 2026-10-14'te laravel.com release notes'tan alındı: 11 güvenlik desteği 2026-03-12'de bitti, 12 → 2027-02-24, 13 → 2028-03-17. | Geçiş hedefinin seçimi (13) bu tarihlere dayanır. |
+| J2 | ADR-0011 kabul edilene kadar Laravel 11 kalır. `composer audit`'in bildirdiği 4 açık bugünkü kod yollarından erişilemez (yalnızca giriş formu, S3 presigned URL'ler, debug kapalı); bu, sentetik veriyle çalışan prototip için kabul edilmiş bir risktir. E-posta doğrulama, imzalı route ya da parola sıfırlama gibi bir özellik eklenmeden önce geçiş yapılmalıdır. | Promptun sabit mimarisi kullanıcı onayı olmadan değiştirilmez. |
+| J3 | Geçişin kanıtı depo dışındaki bir denemedir: Laravel 12.70 ve 13.36'da kod değişikliği gerekmedi, testler, Pint, migration'lar ve S3/HTTP canlı smoke testi geçti, audit temiz çıktı. Docker imajı ve Playwright demosu Laravel 13 ile henüz doğrulanmadı; bunlar geçiş dalının kabul kriterleridir. | Ölçülmüş ve ölçülmemiş olanı ayırmak. |
