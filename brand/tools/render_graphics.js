@@ -49,7 +49,10 @@ add('brand/social/social-card-1200x630.png', 1200, 630, page(1200, 630, `<div cl
 const titleCss = `.t{background:radial-gradient(900px 500px at 50% 45%,#12403f 0%,${C.ink} 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
 .t .tag{font-size:30px;color:#CFE9E5;margin-top:26px;letter-spacing:.2px}`;
 add('marketing/film/graphics/G04_title_card.png', 1280, 720, page(1280, 720, `<div class="frame t">${sized(svg('logo-inverse.svg'), 92)}<div class="tag">${script.tagline.pl}</div></div>`, titleCss), false);
-add('marketing/film/graphics/G04_logo_transparent.png', 1280, 720, page(1280, 720, `<div class="frame" style="display:flex;align-items:center;justify-content:center">${sized(svg('logo-inverse.svg'), 92)}</div>`));
+// Logo reveal: an empty background (V1) and the logo with the tagline on a transparent layer (V2) to animate.
+add('marketing/film/graphics/G04_title_bg.png', 1280, 720, page(1280, 720, `<div class="frame t"></div>`, titleCss), false);
+add('marketing/film/graphics/G04_logo_transparent.png', 1280, 720, page(1280, 720, `<div class="frame" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+  ${sized(svg('logo-inverse.svg'), 92)}<div class="tag">${script.tagline.pl}</div></div>`, `.tag{font-size:30px;color:#CFE9E5;margin-top:26px;letter-spacing:.2px}`));
 add('marketing/film/graphics/G12_end_card.png', 1280, 720, page(1280, 720, `<div class="frame t">${sized(svg('logo-inverse.svg'), 84)}
   <div class="tag">${script.tagline.pl}</div><div class="cta">${script.cta.pl} <span>→</span></div>
   <div class="small">${script.small_print.pl}</div></div>`, titleCss + `

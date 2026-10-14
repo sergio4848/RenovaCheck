@@ -139,6 +139,12 @@ php artisan migrate --database=migrator && php artisan db:seed --database=migrat
 php artisan test && vendor/bin/pint --test
 ```
 
+## Brand and promo film
+
+Logo, colours and usage rules: [`brand/README.md`](brand/README.md). A 60-second promo film package
+(Polish voice-over, English subtitles) with script, shot list, video-generation prompts, real UI
+recordings, graphics, a Premiere Pro assembly and an animatic: [`marketing/film/`](marketing/film/README.md).
+
 ## Decision log
 
 Architecture decisions are recorded in [`docs/ADR/`](docs/ADR/README.md). Reused code from the

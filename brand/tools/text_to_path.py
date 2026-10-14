@@ -37,4 +37,8 @@ def outline(font_path: str, text: str, size: float, tracking: float = 0.0) -> di
 
 
 if __name__ == "__main__":
-    print(json.dumps(outline(sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4]) if len(sys.argv) > 4 else 0.0)))
+    print(
+        json.dumps(
+            outline(sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4]) if len(sys.argv) > 4 else 0.0)
+        )
+    )

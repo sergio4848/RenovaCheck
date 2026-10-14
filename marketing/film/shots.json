@@ -1,0 +1,37 @@
+{
+  "sequence": {"name": "RenovaCheck_promo_60s", "width": 1280, "height": 720, "fps": 25, "audio_rate": 48000, "duration_s": 60.0},
+  "media_root": "C:/Users/serge/OneDrive/Documents/Adobe/Premiere Pro/26.0/renovaCheck/media",
+  "shots": [
+    {"id": "S01", "start": 0.0,  "end": 5.0,  "source": "ai",  "file": "ai/S01.mp4", "in": 0.0, "vo": "VO01", "transition_in": "fade from black 12f", "note": "Hook: documents spread across the desk"},
+    {"id": "S02", "start": 5.0,  "end": 10.0, "source": "ai",  "file": "ai/S02.mp4", "in": 0.0, "vo": "VO02", "transition_in": "cut", "note": "Problem: late-evening cross-checking"},
+    {"id": "S03", "start": 10.0, "end": 14.2, "source": "ai",  "file": "ai/S03.mp4", "in": 0.4, "vo": "VO03", "transition_in": "cut", "note": "Tension: the one-character difference"},
+    {"id": "S04", "start": 14.2, "end": 18.4, "source": "gfx", "file": "gfx/G04_title_bg.png", "in": 0.0, "vo": "VO04", "transition_in": "dip to black 8f + whoosh", "overlay": "gfx/G04_logo_transparent.png", "note": "Logo reveal: overlay (logo + tagline) scale 92%->100% and opacity 0->100% over 15f; G04_title_card.png is the finished frame for reference"},
+    {"id": "S05", "start": 18.4, "end": 24.0, "source": "ui",  "file": "ui/UI01_upload.mp4", "in": 0.6, "vo": "VO05", "transition_in": "cross dissolve 8f", "note": "Upload six PDFs; 108% scale push-in"},
+    {"id": "S06", "start": 24.0, "end": 29.5, "source": "ui",  "file": "ui/UI02_findings.mp4", "in": 0.0, "vo": "VO06", "transition_in": "cut", "overlay": "gfx/G06_callout_discrepancy.png", "note": "Findings with severity; callout from 25.0 s"},
+    {"id": "S07", "start": 29.5, "end": 35.8, "source": "ui",  "file": "ui/UI03_evidence.mp4", "in": 0.6, "vo": "VO07", "transition_in": "cut", "overlay": "gfx/G07_callout_evidence.png", "note": "Evidence boxes on the page image; 115% zoom towards the page"},
+    {"id": "S08", "start": 35.8, "end": 41.0, "source": "ui",  "file": "ui/UI04_decision_2x.mp4", "in": 0.0, "vo": "VO08", "transition_in": "cut", "overlay": "gfx/G08_callout_decision.png", "note": "Decision with comment (already 2x speed)"},
+    {"id": "S09", "start": 41.0, "end": 44.6, "source": "ui",  "file": "ui/UI05_close_report.mp4", "in": 0.4, "vo": "VO09", "transition_in": "cut", "overlay": "gfx/G09_callout_report.png", "note": "Close the case, download the report"},
+    {"id": "S09b","start": 44.6, "end": 46.0, "source": "ui",  "file": "ui/UI05_report_p1.png", "in": 0.0, "vo": null, "transition_in": "cross dissolve 6f", "note": "PDF report page 1: scale-to-fit then slow zoom 100%->112%"},
+    {"id": "S10", "start": 46.0, "end": 51.0, "source": "ai",  "file": "ai/S10.mp4", "in": 0.0, "vo": "VO10", "transition_in": "cross dissolve 10f", "overlay": "gfx/G10_trust_chips.png", "note": "Relief: next morning, case handed over; trust chips 46.6-50.6 s"},
+    {"id": "S11", "start": 51.0, "end": 56.0, "source": "ai",  "file": "ai/S11.mp4", "in": 0.0, "vo": "VO11", "transition_in": "cut", "note": "Payoff: house with heat pump, handshake"},
+    {"id": "S12", "start": 56.0, "end": 60.0, "source": "gfx", "file": "gfx/G12_end_card.png", "in": 0.0, "vo": null, "transition_in": "cross dissolve 12f", "note": "End card; add contact line as text; fade to black last 10f"}
+  ],
+  "alternates": [
+    {"file": "ui/UI06_case_list.mp4", "note": "Case list with severity badges: B-roll if an AI shot fails (e.g. under VO02 or VO10)"},
+    {"file": "ui/UI02_findings_still.png", "note": "2x still for push-ins"},
+    {"file": "ui/UI03_evidence_still.png", "note": "2x still, evidence row hovered"},
+    {"file": "ui/UI05_closed_still.png", "note": "2x still, case closed"},
+    {"file": "ui/UI05_report_p2.png", "note": "PDF report page 2 (decision history)"}
+  ],
+  "audio": {
+    "vo": {"track": "A1", "dir": "vo", "pattern": "{id}.wav", "level_lufs": -16},
+    "music": {"track": "A2", "file": "music/music.mp3", "level_db": -18, "duck_under_vo_db": -8},
+    "sfx": [
+      {"at": 14.2, "file": "sfx/whoosh.wav", "note": "Logo reveal"},
+      {"at": 19.6, "file": "sfx/click.wav", "note": "Upload click"},
+      {"at": 37.3, "file": "sfx/click.wav", "note": "Decision radio"},
+      {"at": 41.6, "file": "sfx/click.wav", "note": "Close case"},
+      {"at": 0.0, "file": "sfx/paper.wav", "note": "Paper shuffle under S01"}
+    ]
+  }
+}
