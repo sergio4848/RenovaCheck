@@ -272,6 +272,8 @@ class Finding(_Frozen):
     fingerprint: str
     # Changes when the values behind the finding change (a past decision may need a second look).
     evidence_hash: str
+    # Where the rule comes from (programme document), shown to the reviewer next to the reason.
+    source_url: str = ""
     status: Literal["do_sprawdzenia"] = "do_sprawdzenia"
 
 

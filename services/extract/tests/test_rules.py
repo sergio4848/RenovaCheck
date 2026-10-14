@@ -193,6 +193,7 @@ def test_findings_are_born_to_be_checked_with_reasons_and_evidence() -> None:
     findings = ENGINE.evaluate(build_case({"set": {"D3": {"address_building_no": ["52", "52"]}}})).findings
     finding = findings[0]
     assert finding.status == "do_sprawdzenia"
+    assert finding.source_url == "https://czystepowietrze.gov.pl/"
     assert "„52”" in finding.reason_pl and "„25”" in finding.reason_pl
     assert {(e.doc_id, e.value) for e in finding.evidence} >= {("D3", "52"), ("D1", "25")}
 

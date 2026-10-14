@@ -194,6 +194,7 @@ class _Builder:
                 evidence=evidence,
                 fingerprint=_hash([self.rule.id, outcome, list(subject_ids), sorted(fields), key]),
                 evidence_hash=_hash(sorted((e.doc_id, e.field, e.value) for e in evidence)),
+                source_url=str(self.rule.source_url),
             )
         )
 
