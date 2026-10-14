@@ -163,7 +163,7 @@ class DocumentAccessTest extends TestCase
             ->assertSee('49 522,27 zł')
             ->assertSee('49522.27')
             ->assertSee('nieczytelne')
-            ->assertSee('left:82.000%;top:36.000%;width:11.000%;height:1.000%', false)
+            ->assertSee('data-box="0.82000,0.36000,0.93000,0.37000"', false)
             ->assertSee("/cases/{$case->id}/documents/{$document->id}/pages/1", false);
         $this->actingAs($owner->user)->get("/cases/{$case->id}")->assertSee('pola: 2');
     }

@@ -122,6 +122,7 @@ class EvaluateCase implements ShouldQueue
         $existing = $case->findings()->get()->keyBy('fingerprint');
         $reported = [];
         $new = 0;
+        $reopened = 0;
         foreach ($result['findings'] as $item) {
             $reported[] = $item['fingerprint'];
             $attributes = [
@@ -137,6 +138,7 @@ class EvaluateCase implements ShouldQueue
                 'fields' => $item['fields'],
                 'evidence' => $item['evidence'],
                 'evidence_hash' => $item['evidence_hash'],
+                'rule_source_url' => $item['source_url'] ?: null,
                 'is_current' => true,
                 'last_evaluated_at' => $now,
             ];
@@ -145,6 +147,12 @@ class EvaluateCase implements ShouldQueue
                 $case->findings()->create($attributes + ['fingerprint' => $item['fingerprint'], 'first_seen_at' => $now]);
                 $new++;
             } else {
+                if ($finding->decision !== null) {
+                    // A decision holds for the values it was made on; changed values need a second look.
+                    $changed = $finding->decided_evidence_hash !== $item['evidence_hash'];
+                    $attributes['review_status'] = $changed ? 'do_ponownej_weryfikacji' : 'rozstrzygniete';
+                    $reopened += (int) ($changed && $finding->review_status === 'rozstrzygniete');
+                }
                 $finding->fill($attributes)->save();
             }
         }
@@ -153,6 +161,10 @@ class EvaluateCase implements ShouldQueue
             'last_evaluated_at' => $now,
             'updated_at' => $now,
         ]);
+        if ($case->status === 'new') {
+            $case->forceFill(['status' => 'in_review'])->save();
+            $audit->record('case.status_changed', $case, ['from' => 'new', 'to' => 'in_review']);
+        }
         CaseEvaluation::query()->create([
             'case_file_id' => $case->id,
             'input_hash' => $inputHash,
@@ -165,6 +177,7 @@ class EvaluateCase implements ShouldQueue
             'findings' => count($result['findings']),
             'new' => $new,
             'no_longer_reported' => $resolved,
+            'needs_second_look' => $reopened,
             'reference_date' => $result['reference_date'],
             'ruleset' => array_map(fn ($r) => $r['id'].'@'.$r['version'], $result['ruleset']),
         ]);

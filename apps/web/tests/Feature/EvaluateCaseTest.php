@@ -71,6 +71,7 @@ class EvaluateCaseTest extends TestCase
             ],
             'fingerprint' => $fingerprint ?? str_repeat('a', 64),
             'evidence_hash' => hash('sha256', $value),
+            'source_url' => 'https://czystepowietrze.gov.pl/',
             'status' => 'do_sprawdzenia',
         ];
     }
@@ -185,6 +186,7 @@ class EvaluateCaseTest extends TestCase
             'bad fingerprint' => [fn ($f) => array_replace($f, ['fingerprint' => 'abc'])],
             'decided by the engine' => [fn ($f) => array_replace($f, ['status' => 'zgodne'])],
             'unknown severity' => [fn ($f) => array_replace($f, ['severity' => 'fatal'])],
+            'script as source' => [fn ($f) => array_replace($f, ['source_url' => 'javascript:alert(1)'])],
         ];
     }
 
@@ -239,5 +241,38 @@ class EvaluateCaseTest extends TestCase
 
         $this->assertSame(0, app(TenantContext::class)->run($other, fn () => Finding::query()->count()));
         $this->actingAs($other->user)->post("/cases/{$this->case->id}/evaluate")->assertNotFound();
+    }
+
+    public function test_changed_values_send_a_decided_finding_back_for_a_second_look(): void
+    {
+        Http::fake(['extract:8000/*' => Http::sequence()
+            ->push($this->response([$this->finding()]))
+            ->push($this->response([$this->finding()]))
+            ->push($this->response([$this->finding(value: '53')]))]);
+        $this->evaluate();
+        $finding = $this->findings()->sole();
+        $this->actingAs($this->owner->user)->post("/cases/{$this->case->id}/findings/{$finding->id}/decisions", [
+            'decision' => 'rozbieznosc', 'comment' => 'Numer 52 na fakturze jest błędny.',
+        ])->assertSessionHasNoErrors();
+
+        $this->evaluate(force: true);
+        $this->assertSame('rozstrzygniete', $this->findings()->sole()->review_status);
+
+        $this->evaluate(force: true);
+        $again = $this->findings()->sole();
+        $this->assertSame('do_ponownej_weryfikacji', $again->review_status);
+        $this->assertSame('rozbieznosc', $again->decision);
+        $event = app(TenantContext::class)->run($this->owner, fn () => AuditEvent::query()
+            ->where('event_type', 'case.evaluated')->orderByDesc('id')->first());
+        $this->assertSame(1, $event->payload['needs_second_look']);
+    }
+
+    public function test_first_evaluation_puts_the_case_in_review(): void
+    {
+        Http::fake(['extract:8000/*' => Http::response($this->response([]))]);
+
+        $this->evaluate();
+
+        $this->assertSame('in_review', app(TenantContext::class)->run($this->owner, fn () => $this->case->refresh()->status));
     }
 }

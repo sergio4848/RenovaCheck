@@ -9,6 +9,9 @@
             @if (session('status'))
                 <div class="alert alert-success" role="status">{{ session('status') }}</div>
             @endif
+            @error('case')
+                <div class="alert alert-danger" role="alert">{{ $message }}</div>
+            @enderror
             <div class="row row-cards">
                 <div class="col-lg-4">
                     <div class="card">
@@ -21,6 +24,20 @@
                                 <dt class="col-5">{{ __('Created') }}</dt>
                                 <dd class="col-7 mb-0">{{ $case->created_at->format('Y-m-d H:i') }}</dd>
                             </dl>
+                            @can('findings.decide')
+                                <div class="mt-3">
+                                    @if ($case->status === 'closed')
+                                        <form method="POST" action="{{ route('cases.reopen', $case) }}">@csrf
+                                            <button type="submit" class="btn btn-outline-secondary w-100">{{ __('Reopen case') }}</button>
+                                        </form>
+                                    @else
+                                        <form method="POST" action="{{ route('cases.close', $case) }}">@csrf
+                                            <button type="submit" class="btn btn-outline-primary w-100">{{ __('Close case') }}</button>
+                                        </form>
+                                        <div class="form-hint">{{ __('Possible when every critical finding has a decision.') }}</div>
+                                    @endif
+                                </div>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -28,9 +45,10 @@
                     <div class="card">
                         <div class="card-header"><h3 class="card-title">{{ __('Upload documents') }}</h3></div>
                         <div class="card-body">
-                            @if ($errors->any())
+                            @php($uploadErrors = collect($errors->getMessages())->filter(fn ($messages, $key) => str_starts_with($key, 'files'))->flatten())
+                            @if ($uploadErrors->isNotEmpty())
                                 <div class="alert alert-danger" role="alert">
-                                    @foreach ($errors->all() as $error)<div>{{ $error }}</div>@endforeach
+                                    @foreach ($uploadErrors as $error)<div>{{ $error }}</div>@endforeach
                                 </div>
                             @endif
                             @if (session('upload_results'))
@@ -38,14 +56,14 @@
                                     @foreach (session('upload_results') as $message)<li>{{ $message }}</li>@endforeach
                                 </ul>
                             @endif
-                            @can('cases.create')
+                            @if ($case->status !== 'closed' && auth()->user()->can('cases.create'))
                                 <form method="POST" action="{{ route('documents.store', $case) }}" enctype="multipart/form-data" class="d-flex gap-2 flex-wrap align-items-start">
                                     @csrf
                                     <input type="file" name="files[]" multiple required accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" class="form-control w-auto flex-grow-1">
                                     <button type="submit" class="btn btn-primary"><x-icon name="plus" /> {{ __('Upload') }}</button>
                                 </form>
                                 <div class="form-text">{{ __('PDF, PNG or JPEG, up to :size MB per file, :count files at once.', ['size' => intdiv(config('documents.max_file_kb'), 1024), 'count' => config('documents.max_files_per_upload')]) }}</div>
-                            @endcan
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -60,12 +78,12 @@
                                         {{ __('Checked :when · rules valid on :date (:count)', ['when' => $evaluation->created_at->format('Y-m-d H:i'), 'date' => $evaluation->reference_date->format('d.m.Y'), 'count' => count($evaluation->ruleset)]) }}
                                     </span>
                                 @endif
-                                @can('cases.create')
+                                @if ($case->status !== 'closed' && auth()->user()->can('cases.create'))
                                     <form method="POST" action="{{ route('cases.evaluate', $case) }}">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-secondary">{{ __('Check again') }}</button>
                                     </form>
-                                @endcan
+                                @endif
                             </div>
                         </div>
                         @if ($findings->isEmpty())
@@ -78,9 +96,14 @@
                                     <div class="list-group-item" id="finding-{{ $finding->id }}">
                                         <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
                                             <x-finding-severity :severity="$finding->severity" />
-                                            <strong>{{ $finding->title_pl }}</strong>
+                                            <a href="{{ route('findings.show', [$case, $finding]) }}" class="fw-bold">{{ $finding->title_pl }}</a>
                                             <span class="small text-secondary font-mono">{{ $finding->rule_id }} v{{ $finding->rule_version }}</span>
-                                            <span class="badge bg-secondary-subtle text-secondary-emphasis ms-auto">{{ __('review_status.'.$finding->review_status) }}</span>
+                                            <span class="ms-auto d-flex gap-1">
+                                                @if ($finding->decision)
+                                                    <span class="badge bg-success-subtle text-success-emphasis">{{ __('decision.'.$finding->decision) }}</span>
+                                                @endif
+                                                <span class="badge {{ $finding->review_status === 'rozstrzygniete' ? 'bg-secondary-subtle text-secondary-emphasis' : 'bg-warning-subtle text-warning-emphasis' }}">{{ __('review_status.'.$finding->review_status) }}</span>
+                                            </span>
                                         </div>
                                         <div>{{ $finding->reason_pl }}</div>
                                         @if ($finding->subject_doc_ids)
@@ -125,7 +148,7 @@
                                                         @endif
                                                     </div>
                                                 </td>
-                                                <td style="min-width: 15rem">
+                                                <td class="col-doc-type">
                                                     @if ($document->doc_type)
                                                         <span class="badge bg-primary-subtle text-primary-emphasis">{{ $document->doc_type->label() }}</span>
                                                         <span class="small text-secondary">
@@ -140,7 +163,7 @@
                                                     @else
                                                         <span class="text-secondary">—</span>
                                                     @endif
-                                                    @can('cases.create')
+                                                    @if ($case->status !== 'closed' && auth()->user()->can('cases.create'))
                                                         @if ($document->status === 'processed')
                                                             <form method="POST" action="{{ route('documents.type', [$case, $document]) }}" class="d-flex gap-1 mt-1">
                                                                 @csrf @method('PATCH')
@@ -152,7 +175,7 @@
                                                                 <button type="submit" class="btn btn-sm btn-outline-secondary">{{ __('Save') }}</button>
                                                             </form>
                                                         @endif
-                                                    @endcan
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     @forelse ($document->pages as $page)
@@ -177,7 +200,7 @@
                     </div>
                     @if ($documents->contains(fn ($d) => in_array($d->status, ['uploaded', 'processing'], true)))
                         {{-- Refresh while documents are being processed. --}}
-                        <script>setTimeout(() => window.location.reload(), 4000);</script>
+                        <div data-refresh="4000" hidden></div>
                     @endif
                 </div>
                 <div class="col-12">
@@ -188,7 +211,15 @@
                                 <div class="list-group-item">
                                     <div class="row align-items-center">
                                         <div class="col-auto text-secondary small">{{ $event->created_at->format('Y-m-d H:i:s') }}</div>
-                                        <div class="col">{{ __('event.'.$event->event_type) }} <span class="text-secondary">· {{ $event->actor?->name ?? __('System') }}</span></div>
+                                        <div class="col">
+                                            {{ __('event.'.$event->event_type) }}
+                                            @if ($event->event_type === 'finding.decided')
+                                                <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ __('decision.'.($event->payload['decision'] ?? '')) }}</span>
+                                            @elseif ($event->event_type === 'case.status_changed')
+                                                <span class="text-secondary">({{ __('status.'.($event->payload['from'] ?? '')) }} → {{ __('status.'.($event->payload['to'] ?? '')) }})</span>
+                                            @endif
+                                            <span class="text-secondary">· {{ $event->actor?->name ?? __('System') }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             @empty

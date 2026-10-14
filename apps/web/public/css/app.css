@@ -11,3 +11,12 @@
 .field-box.is-active, .field-box:target { border-width: 2px; border-color: var(--tblr-primary); background: rgba(var(--tblr-primary-rgb), .2); }
 .field-row.is-active > td, .field-row:target > td { background: rgba(var(--tblr-primary-rgb), .07); }
 .field-raw { max-width: 14rem; display: inline-block; vertical-align: bottom; }
+
+.org-name { max-width: 16rem; }
+.col-doc-type { min-width: 15rem; }
+/* Review screen: context boxes thin, the boxes of the document under review emphasised. */
+.field-box.is-context { border-style: dashed; background: transparent; }
+.evidence-row.is-active > td { background: rgba(var(--tblr-primary-rgb), .07); }
+.decision-option { display: block; padding: .5rem .75rem; border: 1px solid var(--tblr-border-color); border-radius: var(--tblr-border-radius); cursor: pointer; }
+.decision-option:has(input:checked) { border-color: var(--tblr-primary); background: rgba(var(--tblr-primary-rgb), .06); }
+.page-view.is-sticky { position: sticky; top: 1rem; }

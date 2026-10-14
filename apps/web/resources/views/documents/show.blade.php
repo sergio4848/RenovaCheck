@@ -6,7 +6,7 @@
         </x-slot:actions>
     </x-page-header>
     <div class="page-body">
-        <div class="container-xl" x-data="{ active: null }">
+        <div class="container-xl">
             <div class="row row-cards">
                 <div class="col-lg-5 order-lg-2">
                     <div class="card">
@@ -28,9 +28,7 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($fields as $field)
-                                            <tr class="field-row" id="field-{{ $field->name }}"
-                                                :class="active === '{{ $field->name }}' && 'is-active'"
-                                                @mouseenter="active = '{{ $field->name }}'" @focusin="active = '{{ $field->name }}'">
+                                            <tr class="field-row" id="field-{{ $field->name }}" data-field-key="{{ $field->name }}">
                                                 <td>
                                                     <a href="#box-{{ $field->name }}" class="text-reset">{{ $field->label() }}</a>
                                                     <div class="small text-secondary">{{ __('field_method.'.$field->method) }} · {{ __('page :n', ['n' => $field->page_no]) }}</div>
@@ -67,9 +65,7 @@
                                 <img src="{{ route('documents.page', [$case, $document, $page->page_no]) }}" alt="{{ __('Page :n', ['n' => $page->page_no]) }}" width="{{ $page->image_width_px }}" height="{{ $page->image_height_px }}" loading="lazy">
                                 @foreach ($fields->where('page_no', $page->page_no) as $field)
                                     <a href="#field-{{ $field->name }}" id="box-{{ $field->name }}" class="field-box {{ $field->status === 'unreadable' ? 'is-unreadable' : '' }}"
-                                       style="{{ $field->boxStyle() }}" title="{{ $field->label() }}"
-                                       :class="active === '{{ $field->name }}' && 'is-active'"
-                                       @mouseenter="active = '{{ $field->name }}'"><span class="visually-hidden">{{ $field->label() }}</span></a>
+                                       data-box="{{ $field->boxData() }}" data-field-key="{{ $field->name }}" title="{{ $field->label() }}"><span class="visually-hidden">{{ $field->label() }}</span></a>
                                 @endforeach
                             </div>
                         </div>

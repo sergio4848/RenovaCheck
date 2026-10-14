@@ -18,14 +18,24 @@ class CaseFileController extends Controller
     public function index(Request $request): View
     {
         $status = $request->query('status');
+        $severity = $request->query('severity');
+        $open = fn ($q, string $level) => $q->where('severity', $level)->where('is_current', true)
+            ->where('review_status', '!=', 'rozstrzygniete');
         $cases = CaseFile::query()
             ->with('creator:id,name')
+            ->withCount([
+                'findings as open_critical_count' => fn ($q) => $open($q, 'critical'),
+                'findings as open_warning_count' => fn ($q) => $open($q, 'warning'),
+                'findings as open_info_count' => fn ($q) => $open($q, 'info'),
+            ])
             ->when(in_array($status, CaseFile::STATUSES, true), fn ($q) => $q->where('status', $status))
+            ->when(in_array($severity, ['critical', 'warning', 'info'], true),
+                fn ($q) => $q->whereHas('findings', fn ($f) => $open($f, $severity)))
             ->latest()
             ->paginate(25)
             ->withQueryString();
 
-        return view('cases.index', ['cases' => $cases, 'status' => $status]);
+        return view('cases.index', ['cases' => $cases, 'status' => $status, 'severity' => $severity]);
     }
 
     public function store(StoreCaseFileRequest $request, AuditLog $audit): RedirectResponse
@@ -51,7 +61,9 @@ class CaseFileController extends Controller
             ->where(fn ($q) => $q
                 ->where(fn ($q) => $q->where('subject_type', 'CaseFile')->where('subject_id', $caseFile->getKey()))
                 ->orWhere(fn ($q) => $q->where('subject_type', 'Document')
-                    ->whereIn('subject_id', $caseFile->documents()->select('id'))))
+                    ->whereIn('subject_id', $caseFile->documents()->select('id')))
+                ->orWhere(fn ($q) => $q->where('subject_type', 'Finding')
+                    ->whereIn('subject_id', $caseFile->findings()->select('id'))))
             ->orderBy('id')
             ->get();
 
@@ -69,9 +81,44 @@ class CaseFileController extends Controller
         ]);
     }
 
+    /** Closing confirms the review: every current critical finding needs a (still valid) decision. */
+    public function close(CaseFile $caseFile, AuditLog $audit): RedirectResponse
+    {
+        $undecided = $caseFile->findings()->open()->where('severity', 'critical')->count();
+        if ($undecided > 0) {
+            return redirect()->route('cases.show', $caseFile)
+                ->withErrors(['case' => trans_choice('Cannot close: :count critical finding still needs a decision.|Cannot close: :count critical findings still need a decision.', $undecided, ['count' => $undecided])]);
+        }
+        if ($caseFile->status !== 'closed') {
+            DB::transaction(function () use ($caseFile, $audit) {
+                $from = $caseFile->status;
+                $caseFile->forceFill(['status' => 'closed'])->save();
+                $audit->record('case.status_changed', $caseFile, ['from' => $from, 'to' => 'closed']);
+            });
+        }
+
+        return redirect()->route('cases.show', $caseFile)->with('status', __('Case closed.'));
+    }
+
+    public function reopen(CaseFile $caseFile, AuditLog $audit): RedirectResponse
+    {
+        if ($caseFile->status === 'closed') {
+            DB::transaction(function () use ($caseFile, $audit) {
+                $caseFile->forceFill(['status' => 'in_review'])->save();
+                $audit->record('case.status_changed', $caseFile, ['from' => 'closed', 'to' => 'in_review']);
+            });
+        }
+
+        return redirect()->route('cases.show', $caseFile)->with('status', __('Case reopened.'));
+    }
+
     /** Runs the rules again on demand (e.g. after rules were updated). */
     public function evaluate(CaseFile $caseFile): RedirectResponse
     {
+        if ($caseFile->status === 'closed') {
+            return redirect()->route('cases.show', $caseFile)
+                ->withErrors(['case' => __('The case is closed. Reopen it to change decisions.')]);
+        }
         EvaluateCase::dispatch($caseFile->organization_id, $caseFile->id, force: true);
 
         return redirect()->route('cases.show', $caseFile)->with('status', __('Checking the case again.'));

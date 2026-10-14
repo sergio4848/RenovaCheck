@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\ResolveTenant;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Tenancy\MissingTenantContext;
 use Illuminate\Foundation\Application;
@@ -15,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->web(append: [SetLocale::class]);
+        $middleware->web(append: [SetLocale::class, SecurityHeaders::class]);
         $middleware->alias(['tenant' => ResolveTenant::class]);
         // Route model binding must run inside the tenant context so RLS scopes the lookup.
         $middleware->prependToPriorityList(SubstituteBindings::class, ResolveTenant::class);

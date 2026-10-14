@@ -22,6 +22,9 @@ class DocumentController extends Controller
 {
     public function store(StoreDocumentsRequest $request, CaseFile $caseFile, DocumentIntake $intake): RedirectResponse
     {
+        if ($caseFile->status === 'closed') {
+            return self::closed($caseFile);
+        }
         $results = [];
         foreach ($request->file('files') as $file) {
             $results[] = $intake->accept($caseFile, $file, $request->user());
@@ -47,6 +50,9 @@ class DocumentController extends Controller
 
     public function updateType(Request $request, CaseFile $caseFile, Document $document, AuditLog $audit): RedirectResponse
     {
+        if ($caseFile->status === 'closed') {
+            return self::closed($caseFile);
+        }
         $validated = $request->validate(['doc_type' => ['required', Rule::enum(DocType::class)]]);
         $previous = $document->doc_type?->value;
 
@@ -102,6 +108,12 @@ class DocumentController extends Controller
             ->toString();
 
         return ($stem !== '' ? $stem : 'document').'.'.FileSniffer::EXTENSIONS[$document->mime];
+    }
+
+    private static function closed(CaseFile $caseFile): RedirectResponse
+    {
+        return redirect()->route('cases.show', $caseFile)
+            ->withErrors(['case' => __('The case is closed. Reopen it to change its documents.')]);
     }
 
     /** @param  array<string, string>  $options */

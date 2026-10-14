@@ -39,14 +39,11 @@ class DocumentField extends Model
         return $this->value !== null && $plain($this->value) !== $plain($this->raw_text);
     }
 
-    /** CSS position of the box on its page image, in percent. */
-    public function boxStyle(): string
+    /** Box as "x0,y0,x1,y1" (fractions of the page) for the data-box attribute. */
+    public function boxData(): string
     {
         $b = $this->bbox;
 
-        return sprintf(
-            'left:%.3f%%;top:%.3f%%;width:%.3f%%;height:%.3f%%',
-            $b['x0'] * 100, $b['y0'] * 100, ($b['x1'] - $b['x0']) * 100, ($b['y1'] - $b['y0']) * 100,
-        );
+        return implode(',', array_map(fn ($k) => sprintf('%.5f', (float) $b[$k]), ['x0', 'y0', 'x1', 'y1']));
     }
 }

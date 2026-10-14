@@ -16,7 +16,7 @@
                 @if ($tenant->organization())
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link px-2" data-bs-toggle="dropdown" aria-label="{{ __('Organization') }}">
-                            <span class="d-none d-sm-inline text-truncate" style="max-width: 16rem">{{ $tenant->organization()->name }}</span>
+                            <span class="d-none d-sm-inline text-truncate org-name">{{ $tenant->organization()->name }}</span>
                             <span class="badge bg-secondary-subtle text-secondary-emphasis ms-2">{{ $tenant->role()->label() }}</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">

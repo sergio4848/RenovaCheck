@@ -13,6 +13,6 @@
 <body class="{{ $bodyClass ?? '' }}">
     {{ $slot }}
     <script src="{{ asset('vendor/tabler/tabler.min.js') }}" defer></script>
-    <script src="{{ asset('vendor/alpinejs/alpine.min.js') }}" defer></script>
+    <script src="{{ asset('js/review.js') }}" defer></script>
 </body>
 </html>

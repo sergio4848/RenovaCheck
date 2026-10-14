@@ -42,11 +42,19 @@
             <div class="card">
                 <div class="card-header">
                     <ul class="nav nav-pills card-header-pills" aria-label="{{ __('Filter by status') }}">
-                        <li class="nav-item"><a class="nav-link {{ $status ? '' : 'active' }}" href="{{ route('cases.index') }}">{{ __('All') }}</a></li>
+                        <li class="nav-item"><a class="nav-link {{ $status ? '' : 'active' }}" href="{{ route('cases.index', array_filter(['severity' => $severity])) }}">{{ __('All') }}</a></li>
                         @foreach (\App\Models\CaseFile::STATUSES as $s)
-                            <li class="nav-item"><a class="nav-link {{ $status === $s ? 'active' : '' }}" href="{{ route('cases.index', ['status' => $s]) }}">{{ __('status.'.$s) }}</a></li>
+                            <li class="nav-item"><a class="nav-link {{ $status === $s ? 'active' : '' }}" href="{{ route('cases.index', array_filter(['status' => $s, 'severity' => $severity])) }}">{{ __('status.'.$s) }}</a></li>
                         @endforeach
                     </ul>
+                    <div class="card-actions">
+                        <ul class="nav nav-pills card-header-pills" aria-label="{{ __('Filter by open findings') }}">
+                            <li class="nav-item"><a class="nav-link {{ $severity ? '' : 'active' }}" href="{{ route('cases.index', array_filter(['status' => $status])) }}">{{ __('Any findings') }}</a></li>
+                            @foreach (['critical', 'warning', 'info'] as $level)
+                                <li class="nav-item"><a class="nav-link {{ $severity === $level ? 'active' : '' }}" href="{{ route('cases.index', array_filter(['status' => $status, 'severity' => $level])) }}">{{ __('open: :level', ['level' => __('severity.'.$level)]) }}</a></li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
                 @if ($cases->isEmpty())
                     <div class="empty">
@@ -62,6 +70,7 @@
                                     <th>{{ __('Reference') }}</th>
                                     <th>{{ __('Title') }}</th>
                                     <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Open findings') }}</th>
                                     <th>{{ __('Created by') }}</th>
                                     <th class="text-end">{{ __('Created') }}</th>
                                 </tr>
@@ -72,6 +81,16 @@
                                         <td><a href="{{ route('cases.show', $case) }}" class="font-mono">{{ $case->reference }}</a></td>
                                         <td>{{ $case->title }}</td>
                                         <td><x-status-badge :status="$case->status" /></td>
+                                        <td>
+                                            @foreach (['critical' => $case->open_critical_count, 'warning' => $case->open_warning_count, 'info' => $case->open_info_count] as $level => $count)
+                                                @if ($count)
+                                                    <x-finding-severity :severity="$level" class="me-1">{{ $count }}</x-finding-severity>
+                                                @endif
+                                            @endforeach
+                                            @if (! $case->open_critical_count && ! $case->open_warning_count && ! $case->open_info_count)
+                                                <span class="text-secondary">—</span>
+                                            @endif
+                                        </td>
                                         <td class="text-secondary">{{ $case->creator?->name ?? "—" }}</td>
                                         <td class="text-end text-secondary">{{ $case->created_at->format('Y-m-d H:i') }}</td>
                                     </tr>

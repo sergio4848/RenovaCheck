@@ -5,7 +5,6 @@ Components committed to this repository in built form. Their licence texts are k
 | Component | Version | Licence | Location | Licence file |
 |---|---|---|---|---|
 | Tabler (`@tabler/core`) | 1.6.0 | MIT | `apps/web/public/vendor/tabler/` | `apps/web/public/vendor/tabler/LICENSE` |
-| Alpine.js | 3.14.9 | MIT | `apps/web/public/vendor/alpinejs/` | `apps/web/public/vendor/alpinejs/LICENSE.md` |
 | Tabler Icons (outline glyph paths) | 3.35.0 | MIT | `apps/web/resources/views/components/icon.blade.php` | `apps/web/resources/icons/LICENSE` |
 | DejaVu Sans (regular, bold) | 2.37 | Bitstream Vera licence + public-domain changes | `tools/synth/src/renova_synth/fonts/` | `tools/synth/src/renova_synth/fonts/LICENSE-DejaVu.txt` |
 | Liberation Sans (regular, bold) | 2.1 | SIL Open Font License 1.1 | `tools/synth/src/renova_synth/fonts/` | `tools/synth/src/renova_synth/fonts/LICENSE-Liberation.txt` |

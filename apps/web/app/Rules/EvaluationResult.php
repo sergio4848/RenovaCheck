@@ -57,6 +57,7 @@ final class EvaluationResult
             'findings.*.evidence.*.text' => ['present', 'nullable', 'string', 'max:500'],
             'findings.*.fingerprint' => ['required', 'string', 'distinct', 'regex:/^[0-9a-f]{64}$/'],
             'findings.*.evidence_hash' => ['required', 'string', 'regex:/^[0-9a-f]{64}$/'],
+            'findings.*.source_url' => ['present', 'nullable', 'string', 'max:500', 'regex:/^(https:\/\/\S+)?$/'],
             'findings.*.status' => ['required', 'in:do_sprawdzenia'],
         ]);
         if ($validator->fails()) {
