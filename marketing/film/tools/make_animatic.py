@@ -1,7 +1,7 @@
 """Build preview/animatic.mp4: the 60 s cut with real UI clips and graphics at their final times, a placeholder card
 for each AI shot (its description), the overlays, and burned-in English subtitles. No audio.
 
-python marketing/film/tools/make_animatic.py   (ffmpeg with libass; Inter font installed)
+python marketing/film/tools/make_animatic.py   (ffmpeg with libass; Geist from brand/fonts installed)
 """
 
 from __future__ import annotations
@@ -12,7 +12,9 @@ import tempfile
 from pathlib import Path
 
 FILM = Path(__file__).resolve().parents[1]
-FONT = "/usr/share/fonts/opentype/inter/Inter-SemiBold.otf"
+FONTS = FILM.parents[1] / "brand" / "fonts"
+FONT = FONTS / "Geist-Medium.ttf"
+MONO = FONTS / "GeistMono-Regular.ttf"
 W, H, FPS = 1280, 720, 25
 
 
@@ -34,13 +36,15 @@ def segment(shot: dict, out: Path) -> None:
     duration = shot["end"] - shot["start"]
     base = ["-t", f"{duration:.3f}"]
     if shot["source"] == "ai":
-        title = escape(f"{shot['id']}  ·  AI (Seedance 2.5)")
-        note = escape(shot["note"])
+        title = escape(f"{shot['id']} — Seedance 2.5 · {duration:.1f} s")
+        note = escape(shot["note"].split(";")[0])
+        x = 660 if shot.get("overlay") else 96  # clear of a left-hand overlay
         draw = (
-            f"drawtext=fontfile={FONT}:text='{title}':fontcolor=0xF59E0B:fontsize=34:x=(w-tw)/2:y=h/2-50,"
-            f"drawtext=fontfile={FONT}:text='{note}':fontcolor=0xCFE9E5:fontsize=28:x=(w-tw)/2:y=h/2+10"
+            f"drawbox=x=96:y=92:w=1088:h=1:color=0xD9DCE1:t=fill,"
+            f"drawtext=fontfile={MONO}:text='{title}':fontcolor=0x5B6470:fontsize=18:x=96:y=60,"
+            f"drawtext=fontfile={FONT}:text='{note}':fontcolor=0x111418:fontsize=30:x={x}:y=h/2-40"
         )
-        run("-f", "lavfi", "-i", f"color=c=0x0B1F33:s={W}x{H}:r={FPS}", *base, "-vf", draw, *encode(out))
+        run("-f", "lavfi", "-i", f"color=c=0xFAFAF7:s={W}x{H}:r={FPS}", *base, "-vf", draw, *encode(out))
     elif (source := media(shot["file"])).suffix == ".png":
         # Stills: fit the frame; the report page gets a slow zoom like in the edit plan.
         zoom = "zoompan=z='min(1+0.0009*on,1.12)':d=1:s=1280x720:fps=25," if "report" in source.name else ""
@@ -59,18 +63,26 @@ def segment(shot: dict, out: Path) -> None:
             *encode(out),
         )
     if overlay := shot.get("overlay"):
-        start = 0 if overlay.endswith("logo_transparent.png") else 0.6
-        end = duration - (0 if start == 0 else 0.4)
+        start = overlay["offset"]
+        built = start + overlay["build_frames"] / FPS
+        end = duration - overlay["trim"]
         layered = out.with_suffix(".o.mp4")
+        graph = (
+            f"[1]setpts=PTS-STARTPTS+{start}/TB[anim];"
+            f"[0][anim]overlay=0:0:eof_action=pass:enable='between(t,{start},{built:.3f})'[a];"
+            f"[a][2]overlay=0:0:enable='between(t,{built:.3f},{end:.3f})':shortest=1,format=yuv420p"
+        )
         run(
             "-i",
             str(out),
+            "-i",
+            str(media(overlay["build_in"])),
             "-loop",
             "1",
             "-i",
-            str(media(overlay)),
+            str(media(overlay["hold"])),
             "-filter_complex",
-            f"[0][1]overlay=0:0:enable='between(t,{start},{end:.2f})':shortest=1,format=yuv420p",
+            graph,
             "-t",
             f"{duration:.3f}",
             *encode(layered),
@@ -96,7 +108,8 @@ def main() -> None:
         listing.write_text("".join(f"file '{p}'\n" for p in parts))
         joined = Path(tmp) / "joined.mp4"
         run("-f", "concat", "-safe", "0", "-i", str(listing), "-c", "copy", str(joined))
-        style = "FontName=Inter SemiBold,FontSize=16,PrimaryColour=&H00FFFFFF,BackColour=&H4D331F0B,BorderStyle=4,Outline=6,Shadow=0,MarginV=34"
+        # Caption bar: paper text on a square ink box, legible on paper, UI and footage alike.
+        style = "FontName=Geist Medium,FontSize=16,PrimaryColour=&H00F7FAFA,OutlineColour=&H1A181411,BackColour=&H1A181411,BorderStyle=3,Outline=5,Shadow=0,MarginV=26"
         srt = FILM / "subtitles" / "en.srt"
         run(
             "-i",

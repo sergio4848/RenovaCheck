@@ -1,6 +1,6 @@
 """Write edit/renovacheck_assembly.xml: a first assembly as Final Cut Pro 7 XML (xmeml), importable by Premiere Pro.
 
-Tracks: V1 picture (AI shots, UI clips, title and end card), V2 overlays (logo, callouts, chips), A1 voice-over
+Tracks: V1 picture (AI shots, UI clips, title and end card), V2 overlays (animated build-in, then the still), A1 voice-over
 segments at their script times, A2 music, A3 sound effects. Media paths point to `media_root` from shots.json;
 missing files import as offline clips and are relinked in Premiere. Subtitles come from subtitles/*.srt.
 
@@ -107,17 +107,12 @@ def build(shots: dict, script: dict, media_root: str) -> ET.ElementTree:
     for shot in shots["shots"]:
         b.clip(v1, shot["id"], shot["file"], "video", shot["start"], shot["end"], shot["in"])
         if overlay := shot.get("overlay"):
-            # Callouts appear 0.6 s after the cut and leave 0.4 s before the next one.
-            start = shot["start"] if overlay.endswith("logo_transparent.png") else shot["start"] + 0.6
-            b.clip(
-                v2,
-                f"{shot['id']} overlay",
-                overlay,
-                "video",
-                start,
-                shot["end"] - (0 if start == shot["start"] else 0.4),
-                0,
-            )
+            # Build-in animation (ProRes 4444 with alpha), then the matching still for the rest of the shot.
+            start = shot["start"] + overlay["offset"]
+            built = start + overlay["build_frames"] / fps
+            end = shot["end"] - overlay["trim"]
+            b.clip(v2, f"{shot['id']} build-in", overlay["build_in"], "video", start, built, 0)
+            b.clip(v2, f"{shot['id']} hold", overlay["hold"], "video", built, end, 0)
 
     audio = sub(media, "audio")
     a1, a2, a3 = sub(audio, "track"), sub(audio, "track"), sub(audio, "track")

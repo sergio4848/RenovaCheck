@@ -15,11 +15,17 @@
 - **Ton:** sakin, güven veren, net. Korku satmıyoruz; gece mesaisinin yorgunluğunu tanıtıp
   rahatlamayla kapatıyoruz.
 - **İki dünya:**
-  - AI sahneleri (insan, ofis, ev): sinematik, doğal ışık, 35 mm hissi, sığ alan derinliği.
-    Renk: hafif soğuk gölgeler, sıcak amber vurgu (masa lambası, gün batımı); marka renkleriyle
-    (teal #0F766E, amber #F59E0B) uyumlu.
-  - Ürün sahneleri: gerçek arayüz kayıtları. Temiz, beyaz, okunur; yavaş push-in, imleç ve tıklama
-    halkası; amber vurgu balonları.
+  - **Hikâye sahneleri (Seedance):** belgesel gerçekliği, reklam parlaklığı değil. 35 mm film
+    hissi, doğal grain, hafif el kamerası, pratik ışık (masa lambası, pencere), dağınık ve
+    yaşanmış bir ofis, doğal cilt dokusu. Pürüzsüz/plastik cilt, HDR, aşırı doygunluk ve kusursuz
+    simetri yok: „AI görüntüsü" hissini veren her şeyden kaçınılır.
+  - **Ürün sahneleri:** gerçek arayüz kayıtları. Temiz, beyaz, okunur; yavaş push-in.
+- **Grafik dili** (`brand/DESIGN.md`): editoryal, belge gibi.
+  - Kâğıt beyazı (#FAFAF7) ve mürekkep siyahı (#111418); Geist ve Geist Mono.
+  - Sola yaslı düzen, ince çizgiler, `03 — PRD-01` gibi mono sayfa/kod etiketleri.
+  - Vurgu yalnızca bir denetçinin kalemi gibi: el çizimi alt çizgi ya da halka. Teal olağan,
+    düzeltme kırmızısı (#D9480F) yalnızca uyuşmazlık için.
+  - Gradyan, parıltı (glow), gölgeli kart, yuvarlak „pill" etiket, ortalanmış büyük başlık yok.
 - **Kurallar:**
   - AI sahnelerinde okunur metin, logo ya da marka yok. Belgeler bulanık, ekranlar görünmez açıda.
   - Arayüz yalnızca gerçek kayıtlardan gelir.

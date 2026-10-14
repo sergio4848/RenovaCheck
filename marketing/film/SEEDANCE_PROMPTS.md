@@ -16,6 +16,16 @@ arayüz `ui/` klasöründeki gerçek kayıtlardan gelir.
 
 Dosya adları: indirilen klipler `S01.mp4`, `S02.mp4`, … olarak `media\ai\` klasörüne konur.
 
+## Gerçeklik eki (her çekimde)
+Seedance çıktılarının „AI işi" gibi görünmemesi için aşağıdaki iki ek her prompt'a eklenir.
+**Prompt sonuna:**
+> Shot on 35mm film, natural film grain, subtle handheld camera drift, practical lighting only, real lived-in space with ordinary clutter, natural skin texture with pores and small imperfections, slightly muted colours, documentary realism, not a commercial.
+
+**Negatif prompt'a:**
+> plastic skin, airbrushed, glossy, HDR, oversaturated, CGI, 3D render, perfect symmetry, stock photo look, lens flare, glow, bokeh balls, morphing objects
+
+Kurguda tüm AI çekimlerine aynı ince grain ve tek renk görünümü uygulanır (`EDIT_PLAN.md` §4).
+
 ## Kredi bütçesi (7185 kredi mevcut)
 Dreamina'nın Seedance 2.5 720p oranı bu hazırlık sırasında resmi olarak doğrulanamadı. Kaynaklarda
 saniyede ~26–37 kredi geçiyor; **gerçek oran her üretimden önce arayüzdeki maliyet etiketinden
@@ -51,7 +61,7 @@ Biri seçilir ve `REF_marta.png` adıyla kaydedilir. Aynı kıyafet ve saç tüm
 
 ## S01 – Belgeler (0:00–0:05) · referanssız
 **Prompt**
-> Cinematic close-up, top-down angle slowly tilting to a low angle: a pair of hands spreads a thick stack of printed documents across a wooden desk in the evening — application forms, contracts, invoices and handover protocols, some with stamps and signatures, papers sliding and overlapping. Warm desk lamp light from the right, cool blue dusk light from a window, slow dolly push-in, shallow depth of field, all printed text soft and unreadable, realistic paper texture, gentle dust in the light beam. Commercial look, muted teal shadows and warm amber highlights.
+> Cinematic close-up, top-down angle slowly tilting to a low angle: a pair of hands spreads a thick stack of printed documents across a wooden desk in the evening — application forms, contracts, invoices and handover protocols, some with stamps and signatures, papers sliding and overlapping. Warm desk lamp light from the right, cool blue dusk light from a window, slow dolly push-in, shallow depth of field, all printed text soft and unreadable, realistic paper texture, gentle dust in the light beam. Documentary realism, slightly muted colours.
 
 **Negatif:** readable text, letters in focus, logos, brand names, watermark, extra fingers, warped hands, flicker
 
@@ -86,5 +96,6 @@ Biri seçilir ve `REF_marta.png` adıyla kaydedilir. Aynı kıyafet ve saç tüm
 - [ ] Okunur metin, logo ve marka yok
 - [ ] Eller ve yüzler doğal; parmak sayısı doğru
 - [ ] Marta: S02, S03 ve S10'da aynı kişi ve kıyafet
-- [ ] Işık ve renk: akşam (S01–S03) soğuk/amber; sabah (S10) ve gün batımı (S11) sıcak
+- [ ] Işık ve renk: akşam (S01–S03) soğuk pencere + sıcak lamba; sabah (S10) ve gün batımı (S11) sıcak
+- [ ] „AI görüntüsü" işareti yok: plastik/pürüzsüz cilt, parlak HDR, aşırı doygunluk, kusursuz simetri, kayan/eriyen nesneler, fazla kusursuz düzen
 - [ ] Dosya `media\ai\Sxx.mp4` olarak kaydedildi; kullanılan kredi `PRODUCTION.md` tablosuna yazıldı

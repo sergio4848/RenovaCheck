@@ -143,7 +143,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-6">
+          <clipitem id="clip-7">
             <name>S05</name>
             <enabled>TRUE</enabled>
             <duration>155</duration>
@@ -173,7 +173,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-7">
+          <clipitem id="clip-8">
             <name>S06</name>
             <enabled>TRUE</enabled>
             <duration>138</duration>
@@ -203,7 +203,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-9">
+          <clipitem id="clip-11">
             <name>S07</name>
             <enabled>TRUE</enabled>
             <duration>172</duration>
@@ -233,7 +233,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-11">
+          <clipitem id="clip-14">
             <name>S08</name>
             <enabled>TRUE</enabled>
             <duration>130</duration>
@@ -263,7 +263,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-13">
+          <clipitem id="clip-17">
             <name>S09</name>
             <enabled>TRUE</enabled>
             <duration>100</duration>
@@ -293,7 +293,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-15">
+          <clipitem id="clip-20">
             <name>S09b</name>
             <enabled>TRUE</enabled>
             <duration>15000</duration>
@@ -324,7 +324,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-16">
+          <clipitem id="clip-21">
             <name>S10</name>
             <enabled>TRUE</enabled>
             <duration>125</duration>
@@ -354,7 +354,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-18">
+          <clipitem id="clip-24">
             <name>S11</name>
             <enabled>TRUE</enabled>
             <duration>125</duration>
@@ -384,7 +384,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-19">
+          <clipitem id="clip-25">
             <name>S12</name>
             <enabled>TRUE</enabled>
             <duration>15000</duration>
@@ -418,21 +418,51 @@
         </track>
         <track>
           <clipitem id="clip-5">
-            <name>S04 overlay</name>
+            <name>S04 build-in</name>
+            <enabled>TRUE</enabled>
+            <duration>25</duration>
+            <rate>
+              <timebase>25</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>355</start>
+            <end>380</end>
+            <in>0</in>
+            <out>25</out>
+            <file id="file-gfx-G04_title_logo_in.mov">
+              <name>G04_title_logo_in.mov</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G04_title_logo_in.mov</pathurl>
+              <rate>
+                <timebase>25</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>25</duration>
+              <media>
+                <video>
+                  <samplecharacteristics>
+                    <width>1280</width>
+                    <height>720</height>
+                  </samplecharacteristics>
+                </video>
+              </media>
+            </file>
+          </clipitem>
+          <clipitem id="clip-6">
+            <name>S04 hold</name>
             <enabled>TRUE</enabled>
             <duration>15000</duration>
             <rate>
               <timebase>25</timebase>
               <ntsc>FALSE</ntsc>
             </rate>
-            <start>355</start>
+            <start>380</start>
             <end>460</end>
             <in>0</in>
-            <out>105</out>
+            <out>80</out>
             <stillframe>TRUE</stillframe>
-            <file id="file-gfx-G04_logo_transparent.png">
-              <name>G04_logo_transparent.png</name>
-              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G04_logo_transparent.png</pathurl>
+            <file id="file-gfx-G04_title_logo.png">
+              <name>G04_title_logo.png</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G04_title_logo.png</pathurl>
               <rate>
                 <timebase>25</timebase>
                 <ntsc>FALSE</ntsc>
@@ -448,27 +478,26 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-8">
-            <name>S06 overlay</name>
+          <clipitem id="clip-9">
+            <name>S06 build-in</name>
             <enabled>TRUE</enabled>
-            <duration>15000</duration>
+            <duration>15</duration>
             <rate>
               <timebase>25</timebase>
               <ntsc>FALSE</ntsc>
             </rate>
             <start>615</start>
-            <end>727</end>
+            <end>630</end>
             <in>0</in>
-            <out>112</out>
-            <stillframe>TRUE</stillframe>
-            <file id="file-gfx-G06_callout_discrepancy.png">
-              <name>G06_callout_discrepancy.png</name>
-              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G06_callout_discrepancy.png</pathurl>
+            <out>15</out>
+            <file id="file-gfx-G06_note_discrepancy_in.mov">
+              <name>G06_note_discrepancy_in.mov</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G06_note_discrepancy_in.mov</pathurl>
               <rate>
                 <timebase>25</timebase>
                 <ntsc>FALSE</ntsc>
               </rate>
-              <duration>15000</duration>
+              <duration>15</duration>
               <media>
                 <video>
                   <samplecharacteristics>
@@ -480,21 +509,21 @@
             </file>
           </clipitem>
           <clipitem id="clip-10">
-            <name>S07 overlay</name>
+            <name>S06 hold</name>
             <enabled>TRUE</enabled>
             <duration>15000</duration>
             <rate>
               <timebase>25</timebase>
               <ntsc>FALSE</ntsc>
             </rate>
-            <start>752</start>
-            <end>884</end>
+            <start>630</start>
+            <end>727</end>
             <in>0</in>
-            <out>132</out>
+            <out>97</out>
             <stillframe>TRUE</stillframe>
-            <file id="file-gfx-G07_callout_evidence.png">
-              <name>G07_callout_evidence.png</name>
-              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G07_callout_evidence.png</pathurl>
+            <file id="file-gfx-G06_note_discrepancy.png">
+              <name>G06_note_discrepancy.png</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G06_note_discrepancy.png</pathurl>
               <rate>
                 <timebase>25</timebase>
                 <ntsc>FALSE</ntsc>
@@ -511,21 +540,112 @@
             </file>
           </clipitem>
           <clipitem id="clip-12">
-            <name>S08 overlay</name>
+            <name>S07 build-in</name>
+            <enabled>TRUE</enabled>
+            <duration>15</duration>
+            <rate>
+              <timebase>25</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>752</start>
+            <end>767</end>
+            <in>0</in>
+            <out>15</out>
+            <file id="file-gfx-G07_note_evidence_in.mov">
+              <name>G07_note_evidence_in.mov</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G07_note_evidence_in.mov</pathurl>
+              <rate>
+                <timebase>25</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>15</duration>
+              <media>
+                <video>
+                  <samplecharacteristics>
+                    <width>1280</width>
+                    <height>720</height>
+                  </samplecharacteristics>
+                </video>
+              </media>
+            </file>
+          </clipitem>
+          <clipitem id="clip-13">
+            <name>S07 hold</name>
             <enabled>TRUE</enabled>
             <duration>15000</duration>
+            <rate>
+              <timebase>25</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>768</start>
+            <end>885</end>
+            <in>0</in>
+            <out>117</out>
+            <stillframe>TRUE</stillframe>
+            <file id="file-gfx-G07_note_evidence.png">
+              <name>G07_note_evidence.png</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G07_note_evidence.png</pathurl>
+              <rate>
+                <timebase>25</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>15000</duration>
+              <media>
+                <video>
+                  <samplecharacteristics>
+                    <width>1280</width>
+                    <height>720</height>
+                  </samplecharacteristics>
+                </video>
+              </media>
+            </file>
+          </clipitem>
+          <clipitem id="clip-15">
+            <name>S08 build-in</name>
+            <enabled>TRUE</enabled>
+            <duration>15</duration>
             <rate>
               <timebase>25</timebase>
               <ntsc>FALSE</ntsc>
             </rate>
             <start>910</start>
+            <end>925</end>
+            <in>0</in>
+            <out>15</out>
+            <file id="file-gfx-G08_note_decision_in.mov">
+              <name>G08_note_decision_in.mov</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G08_note_decision_in.mov</pathurl>
+              <rate>
+                <timebase>25</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>15</duration>
+              <media>
+                <video>
+                  <samplecharacteristics>
+                    <width>1280</width>
+                    <height>720</height>
+                  </samplecharacteristics>
+                </video>
+              </media>
+            </file>
+          </clipitem>
+          <clipitem id="clip-16">
+            <name>S08 hold</name>
+            <enabled>TRUE</enabled>
+            <duration>15000</duration>
+            <rate>
+              <timebase>25</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>925</start>
             <end>1015</end>
             <in>0</in>
-            <out>105</out>
+            <out>90</out>
             <stillframe>TRUE</stillframe>
-            <file id="file-gfx-G08_callout_decision.png">
-              <name>G08_callout_decision.png</name>
-              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G08_callout_decision.png</pathurl>
+            <file id="file-gfx-G08_note_decision.png">
+              <name>G08_note_decision.png</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G08_note_decision.png</pathurl>
               <rate>
                 <timebase>25</timebase>
                 <ntsc>FALSE</ntsc>
@@ -541,22 +661,52 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-14">
-            <name>S09 overlay</name>
+          <clipitem id="clip-18">
+            <name>S09 build-in</name>
             <enabled>TRUE</enabled>
-            <duration>15000</duration>
+            <duration>15</duration>
             <rate>
               <timebase>25</timebase>
               <ntsc>FALSE</ntsc>
             </rate>
             <start>1040</start>
+            <end>1055</end>
+            <in>0</in>
+            <out>15</out>
+            <file id="file-gfx-G09_note_report_in.mov">
+              <name>G09_note_report_in.mov</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G09_note_report_in.mov</pathurl>
+              <rate>
+                <timebase>25</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>15</duration>
+              <media>
+                <video>
+                  <samplecharacteristics>
+                    <width>1280</width>
+                    <height>720</height>
+                  </samplecharacteristics>
+                </video>
+              </media>
+            </file>
+          </clipitem>
+          <clipitem id="clip-19">
+            <name>S09 hold</name>
+            <enabled>TRUE</enabled>
+            <duration>15000</duration>
+            <rate>
+              <timebase>25</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>1055</start>
             <end>1105</end>
             <in>0</in>
-            <out>65</out>
+            <out>50</out>
             <stillframe>TRUE</stillframe>
-            <file id="file-gfx-G09_callout_report.png">
-              <name>G09_callout_report.png</name>
-              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G09_callout_report.png</pathurl>
+            <file id="file-gfx-G09_note_report.png">
+              <name>G09_note_report.png</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G09_note_report.png</pathurl>
               <rate>
                 <timebase>25</timebase>
                 <ntsc>FALSE</ntsc>
@@ -572,22 +722,52 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-17">
-            <name>S10 overlay</name>
+          <clipitem id="clip-22">
+            <name>S10 build-in</name>
+            <enabled>TRUE</enabled>
+            <duration>40</duration>
+            <rate>
+              <timebase>25</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>1160</start>
+            <end>1200</end>
+            <in>0</in>
+            <out>40</out>
+            <file id="file-gfx-G10_trust_in.mov">
+              <name>G10_trust_in.mov</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G10_trust_in.mov</pathurl>
+              <rate>
+                <timebase>25</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>40</duration>
+              <media>
+                <video>
+                  <samplecharacteristics>
+                    <width>1280</width>
+                    <height>720</height>
+                  </samplecharacteristics>
+                </video>
+              </media>
+            </file>
+          </clipitem>
+          <clipitem id="clip-23">
+            <name>S10 hold</name>
             <enabled>TRUE</enabled>
             <duration>15000</duration>
             <rate>
               <timebase>25</timebase>
               <ntsc>FALSE</ntsc>
             </rate>
-            <start>1165</start>
-            <end>1265</end>
+            <start>1200</start>
+            <end>1268</end>
             <in>0</in>
-            <out>100</out>
+            <out>68</out>
             <stillframe>TRUE</stillframe>
-            <file id="file-gfx-G10_trust_chips.png">
-              <name>G10_trust_chips.png</name>
-              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G10_trust_chips.png</pathurl>
+            <file id="file-gfx-G10_trust.png">
+              <name>G10_trust.png</name>
+              <pathurl>file://localhost/C:/Users/serge/OneDrive/Documents/Adobe/Premiere%20Pro/26.0/renovaCheck/media/gfx/G10_trust.png</pathurl>
               <rate>
                 <timebase>25</timebase>
                 <ntsc>FALSE</ntsc>
@@ -607,7 +787,7 @@
       </video>
       <audio>
         <track>
-          <clipitem id="clip-20">
+          <clipitem id="clip-26">
             <name>VO01</name>
             <enabled>TRUE</enabled>
             <duration>110</duration>
@@ -637,7 +817,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-21">
+          <clipitem id="clip-27">
             <name>VO02</name>
             <enabled>TRUE</enabled>
             <duration>130</duration>
@@ -667,7 +847,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-22">
+          <clipitem id="clip-28">
             <name>VO03</name>
             <enabled>TRUE</enabled>
             <duration>105</duration>
@@ -697,7 +877,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-23">
+          <clipitem id="clip-29">
             <name>VO04</name>
             <enabled>TRUE</enabled>
             <duration>105</duration>
@@ -727,7 +907,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-24">
+          <clipitem id="clip-30">
             <name>VO05</name>
             <enabled>TRUE</enabled>
             <duration>135</duration>
@@ -757,7 +937,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-25">
+          <clipitem id="clip-31">
             <name>VO06</name>
             <enabled>TRUE</enabled>
             <duration>150</duration>
@@ -787,7 +967,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-26">
+          <clipitem id="clip-32">
             <name>VO07</name>
             <enabled>TRUE</enabled>
             <duration>150</duration>
@@ -817,7 +997,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-27">
+          <clipitem id="clip-33">
             <name>VO08</name>
             <enabled>TRUE</enabled>
             <duration>130</duration>
@@ -847,7 +1027,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-28">
+          <clipitem id="clip-34">
             <name>VO09</name>
             <enabled>TRUE</enabled>
             <duration>120</duration>
@@ -877,7 +1057,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-29">
+          <clipitem id="clip-35">
             <name>VO10</name>
             <enabled>TRUE</enabled>
             <duration>125</duration>
@@ -907,7 +1087,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-30">
+          <clipitem id="clip-36">
             <name>VO11</name>
             <enabled>TRUE</enabled>
             <duration>100</duration>
@@ -939,7 +1119,7 @@
           </clipitem>
         </track>
         <track>
-          <clipitem id="clip-31">
+          <clipitem id="clip-37">
             <name>music</name>
             <enabled>TRUE</enabled>
             <duration>1500</duration>
@@ -971,7 +1151,7 @@
           </clipitem>
         </track>
         <track>
-          <clipitem id="clip-32">
+          <clipitem id="clip-38">
             <name>sfx 1</name>
             <enabled>TRUE</enabled>
             <duration>30</duration>
@@ -1001,7 +1181,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-33">
+          <clipitem id="clip-39">
             <name>sfx 2</name>
             <enabled>TRUE</enabled>
             <duration>30</duration>
@@ -1031,7 +1211,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-34">
+          <clipitem id="clip-40">
             <name>sfx 3</name>
             <enabled>TRUE</enabled>
             <duration>30</duration>
@@ -1061,7 +1241,7 @@
               </media>
             </file>
           </clipitem>
-          <clipitem id="clip-35">
+          <clipitem id="clip-41">
             <name>sfx 4</name>
             <enabled>TRUE</enabled>
             <duration>30</duration>
@@ -1075,7 +1255,7 @@
             <out>30</out>
             <file id="file-sfx-click.wav" />
           </clipitem>
-          <clipitem id="clip-36">
+          <clipitem id="clip-42">
             <name>sfx 5</name>
             <enabled>TRUE</enabled>
             <duration>30</duration>

@@ -8,7 +8,9 @@ adımları bu sırayla yapılır.
 1. Repo'yu güncelle: `git pull` (dal: `claude/loving-meitner-q1lxqh`).
 2. Premiere proje klasöründe medya yapısını kur:
    `C:\Users\serge\OneDrive\Documents\Adobe\Premiere Pro\26.0\renovaCheck\media\{ai,ui,gfx,vo,music,sfx}`
-3. Kopyala: `marketing/film/ui/*` → `media\ui\`, `marketing/film/graphics/*` → `media\gfx\`.
+3. Kopyala: `marketing/film/ui/*` → `media\ui\`, `marketing/film/graphics/*` → `media\gfx\`
+   (`.png` ve `.mov` hepsi).
+4. Fontları kur: `brand/fonts/*.ttf` (Geist, Geist Mono; OFL). Premiere'i yeniden başlat.
 
 ## 1. Dreamina (Seedance 2.5) – `SEEDANCE_PROMPTS.md`
 1. Bakiyeyi not et (başlangıç: 7185 kredi).
@@ -47,10 +49,8 @@ adımları bu sırayla yapılır.
 
 ## 4. Açık kararlar (kullanıcı)
 - Kapanış kartındaki iletişim satırı: web adresi / e-posta / telefon.
-- Filme „Niektóre ujęcia wygenerowano przy pomocy AI / Some shots are AI-generated" notu konacak
-  mı? AB yapay zekâ düzenlemesi, gerçek kişilere benzeyen üretilmiş görüntülerde açıklama ister;
-  bu filmdeki kişiler kurgusal olsa da notun kapanış kartının küçük yazısına eklenmesi
-  önerilir.
+- ~~AI notu~~: **konmayacak** (kullanıcı kararı, 2026-10-14). Filmdeki kişiler kurgusaldır;
+  gerçek bir kişiye benzeyen görüntü üretilmez.
 - Müzik kaynağı: ElevenLabs Music ya da lisanslı stok parça (lisans notu buraya).
 
 ## Dosya haritası
@@ -66,7 +66,7 @@ adımları bu sırayla yapılır.
 | `edit/renovacheck_assembly.xml` | İlk montaj (FCP7 XML, `tools/make_xml.py`) |
 | `ui/` | Gerçek arayüz kayıtları ve durağan görüntüler (`tools/capture_ui.js`) |
 | `preview/animatic.mp4` | Ön izleme: son zamanlamalar, AI yerine yer tutucu kartlar (`tools/make_animatic.py`) |
-| `graphics/` | Başlık ve kapanış kartı, vurgu balonları, güven etiketleri, imleç efektleri (`brand/tools/render_graphics.js`) |
+| `graphics/` | Editoryal grafikler: başlık ve kapanış kartı, kenar notları, numaralı ilkeler, el çizimi işaretler; PNG ve animasyonlu ProRes 4444 `.mov` (`brand/tools/render_graphics.js`, stil: `brand/DESIGN.md`) |
 
 Bir metin ya da zaman değişirse: `script.json`/`shots.json` düzenlenir, ardından
 `tools/make_srt.py`, `tools/make_docs.py`, `tools/make_xml.py` ve `tools/make_animatic.py` çalıştırılır.

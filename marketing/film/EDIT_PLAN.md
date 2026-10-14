@@ -25,9 +25,9 @@ birebir aynıdır.
 | İz | İçerik |
 |---|---|
 | V1 | Ana görüntü: AI çekimleri, arayüz klipleri, logo arka planı, kapanış kartı |
-| V2 | Üst katmanlar: logo+slogan (S04), vurgu balonları (S06–S09), güven etiketleri (S10) |
+| V2 | Üst katmanlar: önce animasyonlu giriş (`*_in.mov`, ProRes 4444 alfa), hemen ardından aynı grafiğin durağanı (`*.png`). S04 logo+slogan, S06–S09 kenar notları, S10 numaralı ilkeler |
 | V3 | Altyazı (Captions): `subtitles\en.srt` |
-| V4 | Opsiyonel: imleç/halka efektleri (`gfx\FX_*`). Kayıtlarda imleç zaten var; yalnızca vurgu için |
+| V4 | Opsiyonel: el çizimi halka `gfx\FX_ring_draw.mov` (+ `FX_ring.png` ile tutma), örn. S07'de PH-08B kutusunun etrafına. Kayıtlarda imleç zaten var |
 | A1 | Seslendirme `vo\VO01…VO11.wav` |
 | A2 | Müzik `music\music.mp3` |
 | A3 | Efektler `sfx\*.wav` |
@@ -37,33 +37,39 @@ birebir aynıdır.
 |---|---|
 | S01 | Siyahtan açılış 12 kare. Kâğıt efekti 0:00'da |
 | S02–S03 | Düz kesme. S03'te kalem durduğu an VO03'teki „literówka" kelimesine denk gelsin; gerekirse klibin girişini ±10 kare kaydır |
-| S04 | V1 `G04_title_bg.png`; V2 `G04_logo_transparent.png`: Scale 92→100 % ve Opacity 0→100 %, 15 kare, ease-out. 14.2 sn'de whoosh. Girişte 8 karelik siyaha dip |
+| S04 | V1 `G04_title_bg.png` (kâğıt, üst/alt mono satırlar). V2 `G04_title_logo_in.mov` (25 kare: çizgi çizilir, logo ve slogan gelir) → `G04_title_logo.png`. Ek hareket yok. 14.2 sn'de whoosh; girişte 8 karelik beyaza dip (Dip to White) |
 | S05 | Cross dissolve 8 kare. Scale 100→108 %, tüm çekim boyunca yavaş push-in (anchor üst-orta). 19.6 sn civarı tık sesi, „Wgraj" tıklamasıyla eşleşir |
-| S06 | Vurgu balonu 25.0 sn'de girer (Opacity 0→100 %, 8 kare); 0.4 sn önce çıkar. Push-in hedefi „krytyczne" satırı |
+| S06 | Kenar notu 24.6 sn'de animasyonla girer (`G06_note_discrepancy_in.mov`, 15 kare, kırmızı alt çizgi çizilir), sonra PNG tutar; kesmeden 0.4 sn önce 6 karelik Opacity ile çıkar. Push-in hedefi „krytyczne" satırı |
 | S07 | Scale 100→115 %, anchor sol yarı (sayfa görüntüsü), kanıt kutusu vurgusu kadrajda kalsın |
 | S08 | Klip zaten 2× hızlı (`UI04_decision_2x.mp4`). Tık sesi radyo seçiminde |
 | S09 | „Zamknij sprawę" tıklamasında tık sesi. 44.6 sn'de `UI05_report_p1.png`: kadraja sığdır, sonra Scale 100→112 % (Ken Burns), cross dissolve 6 kare |
-| S10 | Cross dissolve 10 kare. `G10_trust_chips.png` 46.6–50.6 sn |
+| S10 | Cross dissolve 10 kare. 46.4 sn'de kâğıt sütun soldan gelir, üç ilke sırayla belirir (`G10_trust_in.mov`, 40 kare), sonra `G10_trust.png` tutar |
 | S11 | Düz kesme; müzik yükselişi burada |
-| S12 | Cross dissolve 12 kare. İletişim satırı Essential Graphics metni olarak eklenir (Inter Bold 24 px, #CFE9E5, logonun 140 px altında, ortalı). Son 10 karede siyaha geçiş |
+| S12 | Cross dissolve 12 kare. İletişim satırı Essential Graphics metni: Geist Regular 18 px, #5B6470, sola yaslı x=100, y=530 (CTA'nın altı). Son 10 karede siyaha geçiş |
 
 ## 4. Renk
-- **AI çekimleri:** Lumetri ile tek bir ortak görünüm. Hafif kontrast (+5), gölgelerde teal
-  (Shadow tint), vurgularda amber; doygunluk 95 %. Çekimler arası ton farkı *Color Match* ile
+- **AI çekimleri:** amaç belgesel gerçekliği; „AI görüntüsü" hissini kırmak.
+  - Lumetri ile tek bir ortak görünüm: kontrast +5, doygunluk 90 %, gölgeler hafif soğuk,
+    vurgular nötr-sıcak.
+  - Sharpen 0 (AI klipleri zaten fazla keskin).
+  - Hepsine aynı ince film grain: Noise ~4 % ya da bir 35 mm grain overlay, Overlay modunda
+    % 15–20.
+  - Gerekirse Seedance çıktısı 24/25 fps'e conform ve hafif motion blur.
+  - Aşırı pürüzsüz yüzlere hafif Unsharp yerine grain. Çekimler arası ton farkı *Color Match* ile
   eşitlenir.
 - **Arayüz klipleri:** renk düzeltmesi yok (beyaz beyaz kalmalı); yalnızca push-in.
-- **Geçiş:** S04 ve S12 kartlarının lacivert tonu (#0B1F33) AI çekimlerinin gölgeleriyle uyumlu.
+- **Grafikler:** kâğıt (#FAFAF7) ve mürekkep (#111418); renk düzeltmesi uygulanmaz. Grain yalnızca AI çekimlerinde, grafik ve arayüz katmanlarında değil.
 
 ## 5. Altyazı (İngilizce, gömülü)
 - `subtitles\en.srt` *File → Import* ile Captions izine alınır. Seslendirme kaydedildikten sonra
   zamanlama gerçek sese göre kaydırılır (ya da `script.json` güncellenip `tools/make_srt.py` ile
   yeniden üretilir).
 - Stil:
-  - Inter SemiBold 30 px, beyaz.
-  - Arka plan kutusu #0B1F33 % 70, köşe 6 px, iç boşluk 8/14 px.
+  - Geist Medium 32 px, kâğıt rengi (#FAFAF7), mürekkep (#111418) zeminli düz kutu, % 90
+    opaklık, köşe 0 px, iç boşluk 6/12 px. Kâğıt, arayüz ve görüntü üzerinde aynı okunurluk.
   - Alt kenardan 56 px yukarıda, ortalı.
   - En fazla 2 satır.
-- S04 ve S12'de ekrandaki metinle çakışırsa altyazı yine altta kalır; kartlar buna göre tasarlandı.
+- Fontlar: `brand/fonts/*.ttf` Windows'a kurulur (sağ tık → Tüm kullanıcılar için yükle), sonra Premiere yeniden başlatılır.
 
 ## 6. Ses
 | Kanal | Ayar |

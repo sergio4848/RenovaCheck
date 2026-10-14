@@ -54,7 +54,8 @@ olarak eklenir; uydurma bir adres kullanılmaz.
 def shotlist_md(shots: dict, script: dict) -> str:
     rows = []
     for s in shots["shots"]:
-        overlay = f"`{s['overlay']}`" if s.get("overlay") else "—"
+        o = s.get("overlay")
+        overlay = f"`{o['build_in']}` → `{o['hold']}` (+{o['offset']:.1f} sn)" if o else "—"
         rows.append(
             f"| {s['id']} | {s['start']:.1f}–{s['end']:.1f} | {s['end'] - s['start']:.1f} | {KIND[s['source']]} | "
             f"`{s['file']}` (in {s['in']:.1f}) | {overlay} | {s['transition_in']} | {s['vo'] or '—'} | {s['note']} |"
