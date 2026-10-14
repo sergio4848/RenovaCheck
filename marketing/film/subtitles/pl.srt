@@ -1,53 +1,53 @@
 1
-00:00:00,500 --> 00:00:04,500
+00:00:00,500 --> 00:00:04,300
 Wniosek. Umowa. Faktura. Protokół odbioru.
 
 2
-00:00:05,000 --> 00:00:09,800
+00:00:05,000 --> 00:00:10,000
 Każda sprawa to kilka dokumentów –
 każdy może różnić się jednym znakiem.
 
 3
-00:00:10,200 --> 00:00:14,000
+00:00:10,600 --> 00:00:14,350
 Jedna literówka w modelu – i
 rozliczenie wraca do poprawki.
 
 4
-00:00:14,400 --> 00:00:18,200
+00:00:14,400 --> 00:00:18,100
 RenovaCheck sprawdzi je za
 Ciebie – zanim zrobi to urząd.
 
 5
-00:00:18,600 --> 00:00:23,800
+00:00:18,600 --> 00:00:24,300
 Wgrywasz pliki, a system odczytuje
 adresy, kwoty, modele, daty i podpisy.
 
 6
-00:00:24,000 --> 00:00:29,600
+00:00:24,400 --> 00:00:29,600
 Rozbieżności widzisz od razu – z wagą,
 uzasadnieniem i regułą, która je wykryła.
 
 7
-00:00:30,000 --> 00:00:35,600
+00:00:30,000 --> 00:00:33,800
 Każde ustalenie wskazuje dokładne
 miejsce na stronie dokumentu.
 
 8
-00:00:36,000 --> 00:00:40,800
+00:00:36,000 --> 00:00:40,700
 Decyzję podejmuje człowiek – z komentarzem
 i pełną historią: kto i kiedy.
 
 9
-00:00:41,200 --> 00:00:45,600
+00:00:41,200 --> 00:00:45,800
 Na koniec raport kontroli –
 PDF lub CSV, gotowy do akt.
 
 10
-00:00:46,200 --> 00:00:50,800
+00:00:46,200 --> 00:00:50,400
 Mniej ręcznego porównywania.
 Więcej czasu na klientów.
 
 11
-00:00:52,200 --> 00:00:55,800
+00:00:52,200 --> 00:00:56,000
 RenovaCheck. Spójne
 dokumenty, spokojna głowa.
