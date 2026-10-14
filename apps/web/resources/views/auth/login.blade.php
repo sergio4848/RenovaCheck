@@ -2,7 +2,7 @@
 <div class="page page-center">
     <div class="container container-tight py-4">
         <div class="text-center mb-4">
-            <span class="fs-2 fw-bold">Renova<span class="text-primary">Check</span></span>
+            <x-brand-logo height="44" />
             <div class="text-secondary mt-1">{{ __('Document consistency checks for thermal modernisation projects') }}</div>
         </div>
         <div class="card card-md">

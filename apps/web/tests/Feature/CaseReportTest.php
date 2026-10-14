@@ -144,6 +144,7 @@ class CaseReportTest extends TestCase
         $response = $this->actingAs($this->owner->user)->get("/cases/{$this->case->id}/report.pdf")->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
         $this->assertStringStartsWith('%PDF-', $response->getContent());
+        $this->assertStringContainsString('/Subtype /Image', $response->getContent(), 'the logo is embedded');
 
         $html = $this->asTenant(fn () => view('reports.case', ['report' => CaseReport::build($this->case, $this->owner->user)])->render());
         $this->assertStringContainsString('Niezatwierdzone ustalenia krytyczne (1)', $html);
@@ -210,5 +211,16 @@ class CaseReportTest extends TestCase
             ->assertOk()
             ->assertSee("/cases/{$this->case->id}/report.pdf", false)
             ->assertSee("/cases/{$this->case->id}/report.csv", false);
+    }
+
+    public function test_pages_carry_the_logo_and_favicon(): void
+    {
+        $this->get('/login')->assertOk()
+            ->assertSee('favicon.svg', false)
+            ->assertSee('images/logo-horizontal.svg', false);
+
+        $this->actingAs($this->owner->user)->get("/cases/{$this->case->id}")->assertOk()
+            ->assertSee('images/logo-horizontal.svg', false)
+            ->assertSee('images/logo-inverse.svg', false);
     }
 }

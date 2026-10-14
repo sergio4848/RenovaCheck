@@ -34,6 +34,8 @@
     {{ __('report.disclaimer') }}<br>{{ __('report.fingerprint') }}: {{ $report->fingerprint() }}
 </footer>
 
+{{-- The logo is read from the dompdf chroot (this directory); remote and data URLs are disabled. --}}
+<img src="{{ resource_path('views/reports/assets/logo-horizontal.png') }}" alt="RenovaCheck" style="height:9mm;margin-bottom:4mm">
 <h1>{{ __('report.title') }}</h1>
 <table class="meta">
     <tr><td class="k">{{ __('Reference') }}</td><td>{{ $report->case->reference }}</td></tr>

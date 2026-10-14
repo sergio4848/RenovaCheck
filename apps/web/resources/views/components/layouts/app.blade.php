@@ -6,8 +6,8 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <a href="{{ route('cases.index') }}" class="navbar-brand me-3 fw-bold text-decoration-none">
-                <span>Renova<span class="text-primary">Check</span></span>
+            <a href="{{ route('cases.index') }}" class="navbar-brand me-3 text-decoration-none">
+                <x-brand-logo height="28" />
             </a>
             <div class="navbar-nav flex-row order-md-last align-items-center gap-2">
                 <button type="button" class="btn btn-ghost-secondary btn-icon" data-theme-toggle aria-label="{{ __('Toggle dark mode') }}">
