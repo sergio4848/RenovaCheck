@@ -1,0 +1,22 @@
+id: ADR-01
+version: 1
+title_pl: "Adres budynku zgodny we wszystkich dokumentach"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: address
+valid_from: 2025-03-31
+valid_to: null
+severity: critical
+inputs:
+  doc_types: [wniosek_ekstrakt, oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+  fields: [address_street, address_building_no, address_postal_code, address_city]
+comparator: majority
+threshold:
+  min_confidence: 0.5
+  split_on_annex: false
+emits:
+  - outcome: discrepancy
+    fields: [address_street, address_building_no, address_postal_code, address_city]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Przedsięwzięcie dotyczy jednego budynku: adres na wniosku, umowie, fakturach i protokole musi być ten sam. Ulica porównywana po normalizacji (bez „ul.” i imienia patrona). Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

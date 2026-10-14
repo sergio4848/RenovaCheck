@@ -1,0 +1,48 @@
+{
+ "rule": "ADR-03@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "other investor on the invoice",
+   "patch": {
+    "set": {
+     "D3": {
+      "investor_name": [
+       "anna nowak",
+       "Anna Nowak"
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "investor_name"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "case and diacritics do not matter",
+   "patch": {
+    "set": {
+     "D3": {
+      "investor_name": [
+       "jan nowak",
+       "JAN NOWAK"
+      ]
+     }
+    }
+   },
+   "expect": []
+  }
+ ]
+}

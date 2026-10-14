@@ -1,0 +1,79 @@
+# Layout and tool settings adapted from careos/apps/backend/pyproject.toml — Copyright (c) 2026 Sergen Şahin.
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "renova-extract"
+version = "0.1.0"
+description = "RenovaCheck extraction service: rendering, OCR, classification, extraction, rules"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "Proprietary - all rights reserved" }
+# Direct dependencies are pinned exactly for reproducible images.
+dependencies = [
+  "fastapi==0.141.1",
+  "uvicorn[standard]==0.53.0",
+  "pydantic==2.13.5",
+  "pydantic-settings==2.15.0",
+  "redis==8.1.0",
+  "structlog==26.1.0",
+  "httpx==0.28.1",
+  "pypdfium2==5.13.0",
+  "pillow==12.3.0",
+  "pyyaml==6.0.3",
+  "boto3==1.43.103",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==9.1.1",
+  "pytest-asyncio==1.4.0",
+  "ruff==0.16.8",
+  "mypy==2.3.1",
+  "fakeredis==2.38.0",
+  "moto[s3]==5.2.3",
+  "types-PyYAML==6.0.12.20250915",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/renova_extract"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "ASYNC", "DTZ", "SIM", "C4", "PIE", "RET", "T20", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["renova_extract", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S311"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+packages = ["renova_extract"]
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+strict_equality = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["integration: needs running Redis/MinIO (docker compose)"]
+
+[[tool.mypy.overrides]]
+module = ["pypdfium2.*", "boto3.*", "botocore.*", "moto.*"]
+ignore_missing_imports = true

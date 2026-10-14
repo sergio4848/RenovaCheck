@@ -1,0 +1,21 @@
+id: PRD-03
+version: 1
+title_pl: "Zmiana urządzenia wprowadzona aneksem"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: product
+valid_from: 2025-03-31
+valid_to: null
+severity: warning
+inputs:
+  doc_types: [umowa, oferta, aneks]
+  fields: [product_manufacturer, product_model, product_power_kw]
+comparator: annex_change
+threshold:
+  min_confidence: 0.5
+emits:
+  - outcome: agreed_change
+    fields: [product_manufacturer, product_model, product_power_kw]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Aneks zmienia urządzenie lub jego moc względem umowy. Weryfikator potwierdza, czy zmiana jest uzgodniona i dopuszczalna w programie (np. urządzenie z listy ZUM). Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

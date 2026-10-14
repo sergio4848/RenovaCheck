@@ -1,0 +1,280 @@
+# RenovaCheck local stack. Service wiring and healthchecks adapted from careos/docker-compose.yml
+# and emlakpro/infrastructure/docker-compose.yml — Copyright (c) 2026 Sergen Şahin.
+# Start with `make up`; all ports bind to 127.0.0.1 only.
+
+x-build-common: &build-common
+  additional_contexts:
+    certs: ./infra/certs
+  network: ${COMPOSE_BUILD_NETWORK:-default}
+  args:
+    INSTALL_DEV: "true"
+    HTTPS_PROXY: ${HTTPS_PROXY:-}
+    NO_PROXY: ${NO_PROXY:-}
+
+x-web-env: &web-env
+  APP_NAME: RenovaCheck
+  APP_ENV: ${APP_ENV:-local}
+  APP_KEY: ${APP_KEY:?run make env}
+  APP_DEBUG: ${APP_DEBUG:-false}
+  APP_URL: ${APP_URL:-http://localhost:8080}
+  APP_LOCALE: pl
+  APP_FALLBACK_LOCALE: en
+  LOG_CHANNEL: stderr
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_DATABASE: renova
+  DB_USERNAME: renova_app
+  DB_PASSWORD: ${RENOVA_APP_PASSWORD:?}
+  DB_APP_ROLE: renova_app
+  REDIS_CLIENT: predis
+  REDIS_HOST: redis
+  SESSION_DRIVER: redis
+  CACHE_STORE: redis
+  QUEUE_CONNECTION: redis
+  FILESYSTEM_DISK: s3
+  AWS_ACCESS_KEY_ID: ${S3_WEB_ACCESS_KEY:?}
+  AWS_SECRET_ACCESS_KEY: ${S3_WEB_SECRET_KEY:?}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_BUCKET: ${S3_BUCKET:-renova-documents}
+  AWS_ENDPOINT: http://minio:9000
+  AWS_USE_PATH_STYLE_ENDPOINT: "true"
+  # Signed URLs for the browser must carry the host the browser uses to reach MinIO.
+  AWS_PUBLIC_ENDPOINT: ${AWS_PUBLIC_ENDPOINT:-http://localhost:9000}
+  CLAMAV_ENABLED: ${CLAMAV_ENABLED:-false}
+  CLAMAV_HOST: clamav
+  EXTRACT_URL: http://extract:8000
+  EXTRACT_TOKEN: ${RENOVA_INTERNAL_TOKEN:?}
+  DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-renova-demo}
+
+x-extract-env: &extract-env
+  RENOVA_ENVIRONMENT: ${RENOVA_ENVIRONMENT:-development}
+  RENOVA_REDIS_URL: redis://redis:6379/1
+  RENOVA_S3_ENDPOINT: http://minio:9000
+  RENOVA_S3_BUCKET: ${S3_BUCKET:-renova-documents}
+  RENOVA_S3_ACCESS_KEY: ${S3_EXTRACT_ACCESS_KEY:?}
+  RENOVA_S3_SECRET_KEY: ${S3_EXTRACT_SECRET_KEY:?}
+  RENOVA_INTERNAL_TOKEN: ${RENOVA_INTERNAL_TOKEN:?}
+  RENOVA_OCR_PROVIDER: ${RENOVA_OCR_PROVIDER:-tesseract}
+  RENOVA_AZURE_DI_ENDPOINT: ${RENOVA_AZURE_DI_ENDPOINT:-https://polandcentral.api.cognitive.microsoft.com}
+  RENOVA_AZURE_DI_KEY: ${RENOVA_AZURE_DI_KEY:-}
+  RENOVA_GOOGLE_PROJECT_ID: ${RENOVA_GOOGLE_PROJECT_ID:-}
+  RENOVA_GOOGLE_LOCATION: ${RENOVA_GOOGLE_LOCATION:-eu}
+  RENOVA_GOOGLE_PROCESSOR_ID: ${RENOVA_GOOGLE_PROCESSOR_ID:-}
+  RENOVA_GOOGLE_ACCESS_TOKEN: ${RENOVA_GOOGLE_ACCESS_TOKEN:-}
+  RENOVA_LLM_PROVIDER: ${RENOVA_LLM_PROVIDER:-off}
+  RENOVA_LLM_MODEL: ${RENOVA_LLM_MODEL:-claude-sonnet-5-5}
+  RENOVA_ANTHROPIC_API_KEY: ${RENOVA_ANTHROPIC_API_KEY:-}
+  # One Tesseract thread per page; concurrency is bounded by the service itself.
+  OMP_THREAD_LIMIT: "1"
+
+services:
+  postgres:
+    image: postgres:16.15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      RENOVA_OWNER_PASSWORD: ${RENOVA_OWNER_PASSWORD:?}
+      RENOVA_APP_PASSWORD: ${RENOVA_APP_PASSWORD:?}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./infra/postgres:/renova-sql:ro
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d renova_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7.4.5-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # Community build of MinIO (upstream stopped publishing images); see docs/ADR/0004.
+  minio:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+    volumes:
+      - miniodata:/data
+    ports:
+      - "127.0.0.1:${MINIO_PORT:-9000}:9000"
+      - "127.0.0.1:9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  minio-init:
+    image: pgsty/mc:RELEASE.2026-09-16T00-00-00Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+      S3_BUCKET: ${S3_BUCKET:-renova-documents}
+      S3_WEB_ACCESS_KEY: ${S3_WEB_ACCESS_KEY:?}
+      S3_WEB_SECRET_KEY: ${S3_WEB_SECRET_KEY:?}
+      S3_EXTRACT_ACCESS_KEY: ${S3_EXTRACT_ACCESS_KEY:?}
+      S3_EXTRACT_SECRET_KEY: ${S3_EXTRACT_SECRET_KEY:?}
+    volumes:
+      - ./infra/minio/init.sh:/renova/init.sh:ro
+    entrypoint: ["sh", "/renova/init.sh"]
+    restart: "no"
+
+  migrate:
+    build:
+      context: ./apps/web
+      <<: *build-common
+      additional_contexts:
+        certs: ./infra/certs
+        # Pre-installed vendor/ for networks where package archives cannot be downloaded.
+        vendor-seed: ${WEB_VENDOR_SEED:-./infra/empty}
+    image: renovacheck-web:dev
+    pull_policy: build
+    command: ["sh", "-c", "php artisan migrate --database=migrator --force && php artisan db:seed --database=migrator --force"]
+    # Only this one-off service gets the schema owner's credentials.
+    environment:
+      <<: *web-env
+      DB_MIGRATOR_USERNAME: renova_owner
+      DB_MIGRATOR_PASSWORD: ${RENOVA_OWNER_PASSWORD:?}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    image: renovacheck-web:dev
+    pull_policy: never
+    restart: unless-stopped
+    environment: *web-env
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+
+  queue:
+    image: renovacheck-web:dev
+    restart: unless-stopped
+    command: ["php", "artisan", "queue:work", "redis", "--sleep=1", "--tries=3", "--max-time=3600"]
+    pull_policy: never
+    environment: *web-env
+    healthcheck:
+      # PID 1 is the worker itself (exec-form command); it exits on failure and is restarted.
+      test: ["CMD-SHELL", "grep -qa 'queue:work' /proc/1/cmdline"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  extract:
+    build:
+      context: ./services/extract
+      <<: *build-common
+      additional_contexts:
+        certs: ./infra/certs
+        rules: ./packages/rules
+    image: renovacheck-extract:dev
+    pull_policy: build
+    restart: unless-stopped
+    environment: *extract-env
+    # Rendering and OCR are memory- and CPU-heavy; a hostile document must not starve the host.
+    mem_limit: ${EXTRACT_MEM_LIMIT:-2g}
+    cpus: ${EXTRACT_CPUS:-2}
+    ports:
+      - "127.0.0.1:${EXTRACT_PORT:-8001}:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  worker:
+    image: renovacheck-extract:dev
+    pull_policy: never
+    restart: unless-stopped
+    command: ["python", "-m", "renova_extract.worker"]
+    # Batch jobs need no cloud OCR or LLM credentials.
+    environment:
+      <<: *extract-env
+      RENOVA_OCR_PROVIDER: tesseract
+      RENOVA_AZURE_DI_KEY: ""
+      RENOVA_GOOGLE_ACCESS_TOKEN: ""
+      RENOVA_LLM_PROVIDER: "off"
+      RENOVA_ANTHROPIC_API_KEY: ""
+    healthcheck:
+      test: ["CMD", "python", "-m", "renova_extract.worker.healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      extract:
+        condition: service_healthy
+
+  # Optional virus scanning: docker compose --profile av up -d, and CLAMAV_ENABLED=true in .env.
+  # The signature database (~1 GB) is downloaded on first start.
+  clamav:
+    profiles: ["av"]
+    image: clamav/clamav:1.4.3
+    restart: unless-stopped
+    volumes:
+      - clamavdb:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 300s
+
+  # One-off tool: make synth
+  synth:
+    profiles: ["tools"]
+    build:
+      context: ./tools/synth
+      additional_contexts:
+        certs: ./infra/certs
+      network: ${COMPOSE_BUILD_NETWORK:-default}
+      args:
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+    image: renovacheck-synth:dev
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./data:/work/data
+      - ./packages:/work/packages:ro
+    restart: "no"
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
+  clamavdb:

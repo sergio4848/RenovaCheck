@@ -1,0 +1,232 @@
+"""Document analysis: load, render, read text (text layer or OCR), classify, store page images."""
+
+from __future__ import annotations
+
+import io
+import re
+import threading
+import time
+from dataclasses import dataclass, field
+from urllib.parse import unquote, urlsplit
+
+from pydantic import BaseModel, Field, field_validator
+
+from renova_extract.classify.classifier import DocTypeClassifier
+from renova_extract.core.config import Settings
+from renova_extract.core.errors import DependencyUnavailableError, UnsupportedDocumentError, ValidationFailedError
+from renova_extract.documents.loader import RENDER_DPI, load_document
+from renova_extract.documents.storage import ObjectStore
+from renova_extract.fields import llm
+from renova_extract.fields.dictionary import DOC_TYPES, FieldDictionary
+from renova_extract.fields.extractors import ExtractedField, FieldExtractor
+from renova_extract.fields.layout import PageLayout, layout
+from renova_extract.ocr.azure import AzureDocumentIntelligence
+from renova_extract.ocr.base import OcrAdapter
+from renova_extract.ocr.google import GoogleDocumentAI
+from renova_extract.ocr.tesseract import TesseractPol
+
+# org/<uuid>/cases/<uuid>/documents/<uuid>/ — assigned by the web application.
+OUTPUT_PREFIX = re.compile(r"^org/[0-9a-f-]{36}/cases/[0-9a-f-]{36}/documents/[0-9a-f-]{36}/$")
+
+
+class AnalyzeRequest(BaseModel):
+    document_id: str = Field(pattern=r"^[0-9a-f-]{36}$")
+    source_url: str = Field(max_length=4096)
+    output_prefix: str = Field(max_length=200)
+    # Type set by a person; it decides which fields are read instead of the classifier's guess.
+    doc_type: str | None = Field(default=None, max_length=32)
+    # Whether the organization agreed to send document content to external services (cloud OCR,
+    # LLM helper). Without it only local OCR runs and the LLM helper stays off.
+    allow_external: bool = False
+
+    @field_validator("doc_type")
+    @classmethod
+    def _known_type(cls, value: str | None) -> str | None:
+        if value is not None and value not in DOC_TYPES:
+            raise ValueError("unknown document type")
+        return value
+
+
+class PageInfo(BaseModel):
+    page_no: int
+    width_pt: float
+    height_pt: float
+    image_key: str
+    image_width_px: int
+    image_height_px: int
+    text_source: str
+    word_count: int
+
+
+class ClassificationInfo(BaseModel):
+    doc_type: str | None
+    confidence: float
+    scores: dict[str, int]
+    evidence: list[str]
+    method: str = "keywords"
+
+
+class BoxInfo(BaseModel):
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+
+
+class FieldInfo(BaseModel):
+    name: str
+    value: str | bool | None
+    text: str
+    doc_id: str
+    page: int
+    bbox: BoxInfo
+    method: str
+    confidence: float
+    status: str
+
+
+class ExtractionInfo(BaseModel):
+    dictionary_version: int
+    doc_type: str | None
+    llm_provider: str | None
+
+
+class AnalyzeResponse(BaseModel):
+    document_id: str
+    mime: str
+    page_count: int
+    pages: list[PageInfo]
+    classification: ClassificationInfo
+    ocr_provider: str
+    fields: list[FieldInfo]
+    extraction: ExtractionInfo
+
+
+@dataclass
+class Analyzer:
+    settings: Settings
+    classifier: DocTypeClassifier
+    store: ObjectStore
+    ocr: OcrAdapter | None
+    dictionary: FieldDictionary
+    helper: llm.FieldHelper | None = None
+    # Local fallback used when the organization has not agreed to external processing.
+    local_ocr: OcrAdapter | None = None
+    slots: threading.BoundedSemaphore = field(default_factory=lambda: threading.BoundedSemaphore(2))
+    slot_timeout_seconds: float = 30.0
+
+    @classmethod
+    def build(cls, settings: Settings, store: ObjectStore) -> Analyzer:
+        classifier = DocTypeClassifier.from_yaml(settings.rules_dir / "doc_types.yaml")
+        dictionary = FieldDictionary.from_yaml(settings.rules_dir / "fields.yaml")
+        local = TesseractPol() if settings.ocr_provider in ("tesseract", "azure", "google") else None
+        return cls(settings, classifier, store, ocr_adapter(settings), dictionary, llm.build_helper(settings), local)
+
+    def check_request(self, request: AnalyzeRequest) -> None:
+        """The prefix must be the document's own, and the source must live under that prefix."""
+        prefix = request.output_prefix
+        if not OUTPUT_PREFIX.fullmatch(prefix) or not prefix.endswith(f"/documents/{request.document_id}/"):
+            raise ValidationFailedError("output_prefix does not match the document.")
+        source_path = unquote(urlsplit(request.source_url).path)
+        if not source_path.startswith(f"/{self.settings.s3_bucket}/{prefix}original."):
+            raise ValidationFailedError("source_url does not belong to the output prefix.")
+
+    def analyze(self, request: AnalyzeRequest, data: bytes) -> AnalyzeResponse:
+        self.check_request(request)
+        # Bounded concurrency: rendering and OCR are memory- and CPU-heavy; callers retry on 503.
+        if not self.slots.acquire(timeout=self.slot_timeout_seconds):
+            raise DependencyUnavailableError("The analysis service is busy.")
+        try:
+            return self._analyze(request, data)
+        finally:
+            self.slots.release()
+
+    def _analyze(self, request: AnalyzeRequest, data: bytes) -> AnalyzeResponse:
+        deadline = time.monotonic() + self.settings.analysis_budget_seconds
+        ocr = self.ocr if request.allow_external or not _is_external(self.ocr) else self.local_ocr
+        helper = self.helper if request.allow_external else None
+        document = load_document(data, self.settings.max_pages, ocr, self.settings.ocr_budget_seconds)
+        if time.monotonic() > deadline:
+            raise UnsupportedDocumentError("The document took too long to analyse.")
+        pages = []
+        for page in document.pages:
+            key = f"{request.output_prefix}pages/{page.number:03d}.png"
+            buffer = io.BytesIO()
+            page.image.save(buffer, "PNG", optimize=True, dpi=(RENDER_DPI, RENDER_DPI))
+            self.store.put(key, buffer.getvalue(), "image/png")
+            pages.append(
+                PageInfo(
+                    page_no=page.number,
+                    width_pt=round(page.width_pt, 2),
+                    height_pt=round(page.height_pt, 2),
+                    image_key=key,
+                    image_width_px=page.image.width,
+                    image_height_px=page.image.height,
+                    text_source=page.source.value,
+                    word_count=len(page.words),
+                )
+            )
+        result = self.classifier.classify(document.text)
+        doc_type = request.doc_type or result.doc_type
+        fields = self.extract_fields(layout(document.pages), doc_type, helper, deadline)
+        return AnalyzeResponse(
+            document_id=request.document_id,
+            mime=document.mime,
+            page_count=len(pages),
+            pages=pages,
+            classification=ClassificationInfo(
+                doc_type=result.doc_type,
+                confidence=result.confidence,
+                scores=result.scores,
+                evidence=list(result.evidence),
+            ),
+            ocr_provider=ocr.name if ocr else "none",
+            fields=[FieldInfo.model_validate(f.as_dict(request.document_id)) for f in fields],
+            extraction=ExtractionInfo(
+                dictionary_version=self.dictionary.version,
+                doc_type=doc_type,
+                llm_provider=helper.name if helper else None,
+            ),
+        )
+
+    def extract_fields(
+        self,
+        pages: list[PageLayout],
+        doc_type: str | None,
+        helper: llm.FieldHelper | None = None,
+        deadline: float | None = None,
+    ) -> list[ExtractedField]:
+        fields = FieldExtractor(self.dictionary).extract_layout(pages, doc_type, deadline)
+        if helper is None:
+            return fields
+        found = {f.name for f in fields if f.status == "ok"}
+        # Signatures are visual; the helper only reads printed text.
+        missing = [s for s in self.dictionary.fields_for(doc_type) if s.name not in found and s.type != "bool"]
+        if not missing:
+            return fields
+        texts = llm.limit_pages([(p.page.number, "\n".join(line.span.text for line in p.lines)) for p in pages])
+        proposed = llm.accept(helper.propose(missing, texts), missing, pages)
+        replaced = {f.name for f in proposed}
+        return [f for f in fields if f.name not in replaced] + proposed
+
+
+def _is_external(ocr: OcrAdapter | None) -> bool:
+    return isinstance(ocr, AzureDocumentIntelligence | GoogleDocumentAI)
+
+
+def ocr_adapter(settings: Settings) -> OcrAdapter | None:
+    """The configured OCR engine; ``text_layer`` means no OCR (scans stay without text)."""
+    timeout = settings.cloud_ocr_timeout_seconds
+    if settings.ocr_provider == "tesseract":
+        return TesseractPol()
+    if settings.ocr_provider == "azure" and settings.azure_di_key is not None:
+        return AzureDocumentIntelligence(settings.azure_di_endpoint, settings.azure_di_key.get_secret_value(), timeout)
+    if settings.ocr_provider == "google" and settings.google_access_token is not None:
+        return GoogleDocumentAI(
+            settings.google_project_id or "",
+            settings.google_location,
+            settings.google_processor_id or "",
+            settings.google_access_token.get_secret_value(),
+            timeout,
+        )
+    return None

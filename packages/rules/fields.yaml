@@ -1,0 +1,204 @@
+# Field dictionary shared by the synthetic generator (tools/synth), extraction (services/extract)
+# and the rule engine (phase 5).
+#
+# type        how a printed value is parsed and normalized for comparison:
+#             text | name | street | building_no | postal_code | city | nip | money | power_kw |
+#             date | identifier | model | bool
+# documents   document types the field is read from (also when the type was set by a person)
+# extract     deterministic extraction methods, tried in order; the first value found wins
+#   label     anchor phrase on a line, value is the first match of the type's pattern in the
+#             rest of that line (text values end at a comma or a column gap)
+#   block     heading that forms a whole column segment; value is the segment below it
+#   above     value is the segment directly above the anchor line (e.g. a large title)
+#   title_number   identifier after the first "nr" in the page-1 header area
+#   address   one segment "<street> <no>, <postal> <city>", parsed into the four address fields
+#   signature ink above a signature caption (anchors are the captions)
+#
+# Anchors are compared after folding (lower case, no diacritics, single spaces, trailing ':'
+# ignored). Longer anchors are tried first.
+version: 2
+
+fields:
+  document_number:
+    type: identifier
+    label_pl: "Numer dokumentu"
+    documents: [oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+    extract:
+      - {method: title_number}
+
+  application_number:
+    type: identifier
+    label_pl: "Numer wniosku"
+    documents: [wniosek_ekstrakt]
+    extract:
+      - {method: label, anchors: ["numer wniosku"]}
+
+  related_document_number:
+    type: identifier
+    label_pl: "Numer dokumentu powiązanego"
+    documents: [aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+    extract:
+      - method: label
+        anchors: ["dotyczy umowy/oferty nr", "dotyczy umowy nr", "do umowy nr", "korekta do faktury nr",
+                  "zaliczka otrzymana na podstawie faktury"]
+
+  investor_name:
+    type: name
+    label_pl: "Inwestor / beneficjent"
+    documents: [wniosek_ekstrakt, oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+    extract:
+      - {method: label, anchors: ["imie i nazwisko"]}
+      - method: block
+        anchors: ["zamawiajacy / inwestor", "pomiedzy zamawiajacym", "zamawiajacy", "nabywca (adres inwestycji)",
+                  "nabywca", "inwestor", "dla"]
+
+  address_street:
+    type: street
+    label_pl: "Ulica"
+    documents: &address_docs [wniosek_ekstrakt, oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+    extract:
+      - {method: address}
+  address_building_no:
+    type: building_no
+    label_pl: "Numer budynku"
+    documents: *address_docs
+    extract:
+      - {method: address}
+  address_postal_code:
+    type: postal_code
+    label_pl: "Kod pocztowy"
+    documents: *address_docs
+    extract:
+      - {method: address}
+  address_city:
+    type: city
+    label_pl: "Miejscowość"
+    documents: *address_docs
+    extract:
+      - {method: address}
+
+  contractor_name:
+    type: text
+    label_pl: "Wykonawca"
+    documents: &contractor_docs [oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+    extract:
+      - method: block
+        anchors: ["a wykonawca", "wykonawca", "oferent", "sprzedawca"]
+  contractor_nip:
+    type: nip
+    label_pl: "NIP wykonawcy"
+    documents: *contractor_docs
+    extract:
+      - {method: label, anchors: ["nip"]}
+
+  product_manufacturer:
+    type: text
+    label_pl: "Producent urządzenia"
+    documents: &product_docs [wniosek_ekstrakt, oferta, umowa, aneks, faktura, protokol_odbioru, karta_produktu]
+    extract:
+      - {method: label, anchors: ["producent"]}
+      - {method: above, anchors: ["karta produktu"]}
+  product_model:
+    type: model
+    label_pl: "Model urządzenia"
+    documents: *product_docs
+    extract:
+      - {method: label, anchors: ["model"]}
+  product_power_kw:
+    type: power_kw
+    label_pl: "Moc grzewcza [kW]"
+    documents: *product_docs
+    extract:
+      - method: label
+        anchors: ["moc grzewcza nominalna", "znamionowa moc cieplna", "moc grzewcza", "moc nominalna", "moc"]
+  serial_number:
+    type: identifier
+    label_pl: "Numer seryjny"
+    documents: [protokol_odbioru, karta_produktu]
+    extract:
+      - {method: label, anchors: ["numer seryjny urzadzenia", "numer seryjny"]}
+  zum_id:
+    type: identifier
+    label_pl: "Pozycja na liście ZUM"
+    documents: [karta_produktu]
+    extract:
+      - {method: label, anchors: ["pozycja na liscie zum"]}
+
+  amount_net:
+    type: money
+    label_pl: "Kwota netto"
+    documents: &amount_docs [wniosek_ekstrakt, oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca]
+    extract:
+      - method: label
+        anchors: ["wynagrodzenie netto po zmianie", "wynagrodzenie netto", "razem netto", "koszty netto",
+                  "zaliczka netto", "korekta netto"]
+  amount_vat:
+    type: money
+    label_pl: "Kwota VAT"
+    documents: *amount_docs
+    extract:
+      - {method: label, anchors: ["podatek vat", "razem vat", "korekta vat", "vat"]}
+  amount_gross:
+    type: money
+    label_pl: "Kwota brutto"
+    documents: *amount_docs
+    extract:
+      - method: label
+        anchors: ["wynagrodzenie brutto po zmianie", "wynagrodzenie brutto", "razem brutto", "koszty brutto",
+                  "zaliczka brutto", "korekta brutto"]
+  advance_amount:
+    type: money
+    label_pl: "Zaliczka"
+    documents: [faktura]
+    extract:
+      - {method: label, anchors: ["zaliczka otrzymana na podstawie faktury"]}
+  amount_due:
+    type: money
+    label_pl: "Do zapłaty"
+    documents: [faktura]
+    extract:
+      - {method: label, anchors: ["pozostalo do zaplaty"]}
+
+  application_date:
+    type: date
+    label_pl: "Data złożenia wniosku"
+    documents: [wniosek_ekstrakt]
+    extract:
+      - {method: label, anchors: ["data zlozenia wniosku"]}
+  contract_date:
+    type: date
+    label_pl: "Data umowy / oferty"
+    documents: [oferta, umowa, aneks]
+    extract:
+      - {method: label, anchors: ["data oferty", "zawarta w dniu", "sporzadzony w dniu"]}
+  invoice_date:
+    type: date
+    label_pl: "Data wystawienia faktury"
+    documents: [faktura, faktura_zaliczkowa, faktura_korygujaca]
+    extract:
+      - {method: label, anchors: ["data wystawienia"]}
+  sale_date:
+    type: date
+    label_pl: "Data sprzedaży"
+    documents: [faktura, faktura_zaliczkowa, faktura_korygujaca]
+    extract:
+      - {method: label, anchors: ["data sprzedazy"]}
+  acceptance_date:
+    type: date
+    label_pl: "Data odbioru"
+    documents: [protokol_odbioru]
+    extract:
+      - {method: label, anchors: ["data odbioru"]}
+
+  signature_investor:
+    type: bool
+    label_pl: "Podpis inwestora"
+    documents: &signed_docs [oferta, umowa, aneks, protokol_odbioru]
+    extract:
+      - {method: signature, anchors: ["akceptacja zamawiajacego", "inwestor (odbierajacy)", "zamawiajacy"]}
+  signature_contractor:
+    type: bool
+    label_pl: "Podpis wykonawcy"
+    documents: *signed_docs
+    extract:
+      - {method: signature, anchors: ["wykonawca (przekazujacy)", "wykonawca"]}

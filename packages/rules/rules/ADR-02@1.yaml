@@ -1,0 +1,21 @@
+id: ADR-02
+version: 1
+title_pl: "Ta sama ulica zapisana w różny sposób"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: address
+valid_from: 2025-03-31
+valid_to: null
+severity: info
+inputs:
+  doc_types: [wniosek_ekstrakt, oferta, umowa, aneks, faktura, faktura_zaliczkowa, faktura_korygujaca, protokol_odbioru]
+  fields: [address_street]
+comparator: street_spelling
+threshold:
+  min_confidence: 0.5
+emits:
+  - outcome: match_after_normalization
+    fields: [address_street]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Informacja dla weryfikatora: zapis ulicy różni się od wniosku (np. brak polskich znaków, wielkie litery), ale po normalizacji wskazuje tę samą ulicę. Pominięcie imienia patrona lub inicjału nie jest zgłaszane. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

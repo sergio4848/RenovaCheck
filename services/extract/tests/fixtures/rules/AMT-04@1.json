@@ -1,0 +1,62 @@
+{
+ "rule": "AMT-04@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "VAT does not add up",
+   "patch": {
+    "set": {
+     "D3": {
+      "amount_vat": [
+       "3000.00",
+       ""
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "amount_net",
+      "amount_vat",
+      "amount_gross"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "negative correction adds up",
+   "patch": {
+    "add": [
+     {
+      "doc_id": "D6",
+      "doc_type": "faktura_korygujaca",
+      "fields": {
+       "amount_net": [
+        "-1000.00",
+        ""
+       ],
+       "amount_vat": [
+        "-80.00",
+        ""
+       ],
+       "amount_gross": [
+        "-1080.00",
+        ""
+       ]
+      }
+     }
+    ]
+   },
+   "expect": []
+  }
+ ]
+}

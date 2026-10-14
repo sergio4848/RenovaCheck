@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "renova-synth"
+version = "0.1.0"
+description = "Synthetic Polish thermal-modernisation case documents with ground truth for RenovaCheck"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "Proprietary - all rights reserved" }
+dependencies = [
+  "reportlab==5.0.1",
+  "pillow==12.3.0",
+  "numpy==2.5.3",
+  "pypdfium2==5.13.0",
+  "pydantic==2.13.5",
+  "jsonschema==4.26.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==9.1.1",
+  "ruff==0.16.8",
+  "mypy==2.3.1",
+]
+
+[project.scripts]
+renova-synth = "renova_synth.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/renova_synth"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "DTZ", "SIM", "C4", "PIE", "RET", "T20", "RUF"]
+ignore = ["S311"]  # random is used for reproducible synthetic data, not for security
+
+[tool.ruff.lint.isort]
+known-first-party = ["renova_synth", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+"src/renova_synth/cli.py" = ["T201"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+packages = ["renova_synth"]
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_unused_ignores = true
+strict_equality = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["reportlab.*", "pypdfium2.*", "jsonschema.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

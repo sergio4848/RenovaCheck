@@ -1,0 +1,54 @@
+1
+00:00:00,500 --> 00:00:04,500
+Application. Contract.
+Invoice. Acceptance report.
+
+2
+00:00:05,000 --> 00:00:09,800
+Every case means several documents – any
+of them can differ by one character.
+
+3
+00:00:10,200 --> 00:00:14,000
+One typo in the model – and the
+settlement goes back for fixes.
+
+4
+00:00:14,400 --> 00:00:18,200
+RenovaCheck cross-checks them –
+before the authority does.
+
+5
+00:00:18,600 --> 00:00:23,800
+Upload the files – it reads addresses,
+amounts, models, dates and signatures.
+
+6
+00:00:24,000 --> 00:00:29,600
+Discrepancies appear at once –
+with severity, reason and rule.
+
+7
+00:00:30,000 --> 00:00:35,600
+Every finding points to the
+exact spot on the document page.
+
+8
+00:00:36,000 --> 00:00:40,800
+A person makes the call – with a comment
+and a full who-and-when history.
+
+9
+00:00:41,200 --> 00:00:45,600
+Then a control report – PDF or
+CSV, ready for the case file.
+
+10
+00:00:46,200 --> 00:00:50,800
+Less manual cross-checking.
+More time for your clients.
+
+11
+00:00:52,200 --> 00:00:55,800
+RenovaCheck. Consistent
+documents, peace of mind.

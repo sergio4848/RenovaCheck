@@ -1,0 +1,35 @@
+{
+ "rule": "CMP-03@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "acceptance before the contract",
+   "patch": {
+    "set": {
+     "D4": {
+      "acceptance_date": [
+       "2026-03-01",
+       "01.03.2026"
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D4"
+     ],
+     "fields": [
+      "acceptance_date",
+      "contract_date"
+     ]
+    }
+   ]
+  }
+ ]
+}

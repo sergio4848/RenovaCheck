@@ -1,0 +1,24 @@
+id: AMT-03
+version: 1
+title_pl: "Faktura korygująca zmienia kwotę faktury"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: amount
+valid_from: 2025-03-31
+valid_to: null
+severity: warning
+inputs:
+  doc_types: [faktura, faktura_korygujaca]
+  fields: [amount_gross, related_document_number, document_number]
+comparator: correction
+threshold:
+  min_confidence: 0.5
+  tolerance_pln: 0.01
+emits:
+  - outcome: explained_by_correction
+    fields: [amount_gross]
+  - outcome: discrepancy
+    fields: [related_document_number]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Kwota po korekcie (faktura + korekta) jest podstawą rozliczenia. Korekta musi wskazywać fakturę ze sprawy. Wynik zawsze do sprawdzenia. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

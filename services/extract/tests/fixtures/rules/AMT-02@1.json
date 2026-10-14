@@ -1,0 +1,144 @@
+{
+ "rule": "AMT-02@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "advance settled correctly",
+   "patch": {
+    "add": [
+     {
+      "doc_id": "D6",
+      "doc_type": "faktura_zaliczkowa",
+      "fields": {
+       "amount_net": [
+        "11805.00",
+        ""
+       ],
+       "amount_vat": [
+        "944.40",
+        ""
+       ],
+       "amount_gross": [
+        "12749.40",
+        ""
+       ]
+      }
+     }
+    ],
+    "set": {
+     "D3": {
+      "advance_amount": [
+       "12749.40",
+       ""
+      ],
+      "amount_due": [
+       "29748.60",
+       ""
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "explained_by_advance",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "amount_due",
+      "advance_amount"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "amount due is wrong",
+   "patch": {
+    "add": [
+     {
+      "doc_id": "D6",
+      "doc_type": "faktura_zaliczkowa",
+      "fields": {
+       "amount_net": [
+        "11805.00",
+        ""
+       ],
+       "amount_vat": [
+        "944.40",
+        ""
+       ],
+       "amount_gross": [
+        "12749.40",
+        ""
+       ]
+      }
+     }
+    ],
+    "set": {
+     "D3": {
+      "advance_amount": [
+       "12749.40",
+       ""
+      ],
+      "amount_due": [
+       "30000.00",
+       ""
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "advance_amount",
+      "amount_due"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "advance invoice not settled",
+   "patch": {
+    "add": [
+     {
+      "doc_id": "D6",
+      "doc_type": "faktura_zaliczkowa",
+      "fields": {
+       "amount_net": [
+        "11805.00",
+        ""
+       ],
+       "amount_vat": [
+        "944.40",
+        ""
+       ],
+       "amount_gross": [
+        "12749.40",
+        ""
+       ]
+      }
+     }
+    ]
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "advance_amount"
+     ]
+    }
+   ]
+  }
+ ]
+}

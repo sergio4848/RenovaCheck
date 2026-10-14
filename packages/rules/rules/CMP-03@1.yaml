@@ -1,0 +1,24 @@
+id: CMP-03
+version: 1
+title_pl: "Odbiór po zawarciu umowy"
+program: czyste_powietrze
+edition: "2025-03-31"
+family: completeness
+valid_from: 2025-03-31
+valid_to: null
+severity: warning
+inputs:
+  doc_types: [protokol_odbioru, umowa, oferta]
+  fields: [acceptance_date, contract_date]
+comparator: date_order
+threshold:
+  min_confidence: 0.5
+  later: {doc_types: [protokol_odbioru], field: acceptance_date}
+  earlier: {doc_types: [umowa, oferta], field: contract_date}
+  min_days: 0
+emits:
+  - outcome: discrepancy
+    fields: [acceptance_date, contract_date]
+source_url: https://czystepowietrze.gov.pl/
+notes: >-
+  Odbiór prac nie może poprzedzać zawarcia umowy. Do weryfikacji z dokumentami programu (regulamin i załączniki edycji od 31.03.2025), które nie były dostępne przy tworzeniu reguły.

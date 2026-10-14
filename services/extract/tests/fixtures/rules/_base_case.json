@@ -1,0 +1,300 @@
+{
+ "case_id": "FIXTURE-1",
+ "fallback_reference_date": "2026-01-01",
+ "documents": [
+  {
+   "doc_id": "D1",
+   "doc_type": "wniosek_ekstrakt",
+   "fields": {
+    "application_number": [
+     "CP/2026/11111",
+     "CP/2026/11111"
+    ],
+    "application_date": [
+     "2026-03-02",
+     "02.03.2026"
+    ],
+    "investor_name": [
+     "jan nowak",
+     "Jan Nowak"
+    ],
+    "address_street": [
+     "kosciuszki",
+     "ul. Tadeusza Kościuszki"
+    ],
+    "address_building_no": [
+     "25",
+     "25"
+    ],
+    "address_postal_code": [
+     "98-134",
+     "98-134"
+    ],
+    "address_city": [
+     "debowa wola",
+     "Dębowa Wola"
+    ],
+    "product_manufacturer": [
+     "termavix",
+     "Termavix"
+    ],
+    "product_model": [
+     "TVX10A",
+     "TVX-10A"
+    ],
+    "product_power_kw": [
+     "10",
+     "10 kW"
+    ],
+    "amount_net": [
+     "39350.00",
+     "39 350,00 zł"
+    ],
+    "amount_vat": [
+     "3148.00",
+     "3 148,00 zł"
+    ],
+    "amount_gross": [
+     "42498.00",
+     "42 498,00 zł"
+    ]
+   }
+  },
+  {
+   "doc_id": "D2",
+   "doc_type": "umowa",
+   "fields": {
+    "document_number": [
+     "UM/2026/100",
+     "UM/2026/100"
+    ],
+    "contract_date": [
+     "2026-03-20",
+     "20.03.2026"
+    ],
+    "investor_name": [
+     "jan nowak",
+     "Jan Nowak"
+    ],
+    "address_street": [
+     "kosciuszki",
+     "ul. Kościuszki"
+    ],
+    "address_building_no": [
+     "25",
+     "25"
+    ],
+    "address_postal_code": [
+     "98-134",
+     "98-134"
+    ],
+    "address_city": [
+     "debowa wola",
+     "Dębowa Wola"
+    ],
+    "contractor_name": [
+     "energo-montaz sp. j.",
+     "Energo-Montaż Sp. j."
+    ],
+    "contractor_nip": [
+     "0016680523",
+     "001-668-05-23"
+    ],
+    "product_manufacturer": [
+     "termavix",
+     "Termavix"
+    ],
+    "product_model": [
+     "TVX10A",
+     "TVX-10A"
+    ],
+    "product_power_kw": [
+     "10",
+     "10 kW"
+    ],
+    "amount_net": [
+     "39350.00",
+     "39 350,00 zł"
+    ],
+    "amount_vat": [
+     "3148.00",
+     "3 148,00 zł"
+    ],
+    "amount_gross": [
+     "42498.00",
+     "42 498,00 zł"
+    ],
+    "signature_investor": [
+     "true",
+     ""
+    ],
+    "signature_contractor": [
+     "true",
+     ""
+    ]
+   }
+  },
+  {
+   "doc_id": "D3",
+   "doc_type": "faktura",
+   "fields": {
+    "document_number": [
+     "FV/1/05/2026",
+     "FV/1/05/2026"
+    ],
+    "invoice_date": [
+     "2026-05-12",
+     "12.05.2026"
+    ],
+    "sale_date": [
+     "2026-05-10",
+     "10.05.2026"
+    ],
+    "investor_name": [
+     "jan nowak",
+     "Jan Nowak"
+    ],
+    "address_street": [
+     "kosciuszki",
+     "ul. T. Kościuszki"
+    ],
+    "address_building_no": [
+     "25",
+     "25"
+    ],
+    "address_postal_code": [
+     "98-134",
+     "98-134"
+    ],
+    "address_city": [
+     "debowa wola",
+     "Dębowa Wola"
+    ],
+    "contractor_name": [
+     "energo-montaz sp. j.",
+     "Energo-Montaż Sp. j."
+    ],
+    "contractor_nip": [
+     "0016680523",
+     "001-668-05-23"
+    ],
+    "product_manufacturer": [
+     "termavix",
+     "Termavix"
+    ],
+    "product_model": [
+     "TVX10A",
+     "TVX-10A"
+    ],
+    "product_power_kw": [
+     "10",
+     "10 kW"
+    ],
+    "amount_net": [
+     "39350.00",
+     "39 350,00 zł"
+    ],
+    "amount_vat": [
+     "3148.00",
+     "3 148,00 zł"
+    ],
+    "amount_gross": [
+     "42498.00",
+     "42 498,00 zł"
+    ]
+   }
+  },
+  {
+   "doc_id": "D4",
+   "doc_type": "protokol_odbioru",
+   "fields": {
+    "document_number": [
+     "PO/1/2026",
+     "PO/1/2026"
+    ],
+    "acceptance_date": [
+     "2026-05-10",
+     "10.05.2026"
+    ],
+    "related_document_number": [
+     "UM/2026/100",
+     "UM/2026/100"
+    ],
+    "investor_name": [
+     "jan nowak",
+     "Jan Nowak"
+    ],
+    "address_street": [
+     "kosciuszki",
+     "ul. Kościuszki"
+    ],
+    "address_building_no": [
+     "25",
+     "25"
+    ],
+    "address_postal_code": [
+     "98-134",
+     "98-134"
+    ],
+    "address_city": [
+     "debowa wola",
+     "Dębowa Wola"
+    ],
+    "contractor_name": [
+     "energo-montaz sp. j.",
+     "Energo-Montaż Sp. j."
+    ],
+    "contractor_nip": [
+     "0016680523",
+     "001-668-05-23"
+    ],
+    "product_manufacturer": [
+     "termavix",
+     "Termavix"
+    ],
+    "product_model": [
+     "TVX10A",
+     "TVX-10A"
+    ],
+    "product_power_kw": [
+     "10",
+     "10 kW"
+    ],
+    "serial_number": [
+     "SN12345678",
+     "SN12345678"
+    ],
+    "signature_investor": [
+     "true",
+     ""
+    ],
+    "signature_contractor": [
+     "true",
+     ""
+    ]
+   }
+  },
+  {
+   "doc_id": "D5",
+   "doc_type": "karta_produktu",
+   "fields": {
+    "product_manufacturer": [
+     "termavix",
+     "Termavix"
+    ],
+    "product_model": [
+     "TVX10A",
+     "TVX-10A"
+    ],
+    "product_power_kw": [
+     "10",
+     "10 kW"
+    ],
+    "zum_id": [
+     "ZUM/PC/1818",
+     "ZUM/PC/1818"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,90 @@
+{
+ "rule": "AMT-03@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "correction lowers the invoice",
+   "patch": {
+    "add": [
+     {
+      "doc_id": "D6",
+      "doc_type": "faktura_korygujaca",
+      "fields": {
+       "related_document_number": [
+        "FV/1/05/2026",
+        "FV/1/05/2026"
+       ],
+       "amount_net": [
+        "-1000.00",
+        ""
+       ],
+       "amount_vat": [
+        "-80.00",
+        ""
+       ],
+       "amount_gross": [
+        "-1080.00",
+        ""
+       ]
+      }
+     }
+    ]
+   },
+   "expect": [
+    {
+     "outcome": "explained_by_correction",
+     "subjects": [
+      "D6"
+     ],
+     "fields": [
+      "amount_gross"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "correction of an unknown invoice",
+   "patch": {
+    "add": [
+     {
+      "doc_id": "D6",
+      "doc_type": "faktura_korygujaca",
+      "fields": {
+       "related_document_number": [
+        "FV/9/2026",
+        "FV/9/2026"
+       ],
+       "amount_net": [
+        "-1000.00",
+        ""
+       ],
+       "amount_vat": [
+        "-80.00",
+        ""
+       ],
+       "amount_gross": [
+        "-1080.00",
+        ""
+       ]
+      }
+     }
+    ]
+   },
+   "expect": [
+    {
+     "outcome": "discrepancy",
+     "subjects": [
+      "D6"
+     ],
+     "fields": [
+      "related_document_number"
+     ]
+    }
+   ]
+  }
+ ]
+}

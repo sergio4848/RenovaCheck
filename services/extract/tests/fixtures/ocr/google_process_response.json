@@ -1,0 +1,23 @@
+{
+  "document": {
+    "mimeType": "image/png",
+    "text": "Faktura VAT nr FV/145/05/2026\nRazem brutto: 49 522,27 zł\n",
+    "pages": [
+      {
+        "pageNumber": 1,
+        "dimension": {"width": 1240, "height": 1754, "unit": "pixels"},
+        "tokens": [
+          {"layout": {"textAnchor": {"textSegments": [{"endIndex": "8"}]}, "confidence": 0.99, "boundingPoly": {"normalizedVertices": [{"x": 0.0806, "y": 0.057}, {"x": 0.1532, "y": 0.057}, {"x": 0.1532, "y": 0.0713}, {"x": 0.0806, "y": 0.0713}]}}},
+          {"layout": {"textAnchor": {"textSegments": [{"startIndex": "8", "endIndex": "12"}]}, "confidence": 0.99, "boundingPoly": {"normalizedVertices": [{"x": 0.1597, "y": 0.057}, {"x": 0.1935, "y": 0.057}, {"x": 0.1935, "y": 0.0713}, {"x": 0.1597, "y": 0.0713}]}}},
+          {"layout": {"textAnchor": {"textSegments": [{"startIndex": "12", "endIndex": "15"}]}, "confidence": 0.98, "boundingPoly": {"normalizedVertices": [{"x": 0.2, "y": 0.057}, {"x": 0.2177, "y": 0.057}, {"x": 0.2177, "y": 0.0713}, {"x": 0.2, "y": 0.0713}]}}},
+          {"layout": {"textAnchor": {"textSegments": [{"startIndex": "15", "endIndex": "30"}]}, "confidence": 0.96, "boundingPoly": {"normalizedVertices": [{"x": 0.2242, "y": 0.057}, {"x": 0.379, "y": 0.057}, {"x": 0.379, "y": 0.0713}, {"x": 0.2242, "y": 0.0713}]}}},
+          {"layout": {"textAnchor": {"textSegments": [{"startIndex": "30", "endIndex": "36"}]}, "confidence": 0.99, "boundingPoly": {"normalizedVertices": [{"x": 0.7097, "y": 0.3649}, {"x": 0.7581, "y": 0.3649}, {"x": 0.7581, "y": 0.3763}, {"x": 0.7097, "y": 0.3763}]}}},
+          {"layout": {"textAnchor": {"textSegments": [{"startIndex": "36", "endIndex": "44"}]}, "confidence": 0.98, "boundingPoly": {"normalizedVertices": [{"x": 0.7629, "y": 0.3649}, {"x": 0.8145, "y": 0.3649}, {"x": 0.8145, "y": 0.3763}, {"x": 0.7629, "y": 0.3763}]}}},
+          {"layout": {"textAnchor": {"textSegments": [{"startIndex": "44", "endIndex": "47"}]}, "confidence": 0.95, "boundingPoly": {"normalizedVertices": [{"x": 0.8468, "y": 0.3649}, {"x": 0.8645, "y": 0.3649}, {"x": 0.8645, "y": 0.3763}, {"x": 0.8468, "y": 0.3763}]}}},
+          {"layout": {"textAnchor": {"textSegments": [{"startIndex": "47", "endIndex": "54"}]}, "confidence": 0.95, "boundingPoly": {"normalizedVertices": [{"x": 0.8694, "y": 0.3649}, {"x": 0.9274, "y": 0.3649}, {"x": 0.9274, "y": 0.3763}, {"x": 0.8694, "y": 0.3763}]}}},
+          {"layout": {"textAnchor": {"textSegments": [{"startIndex": "54", "endIndex": "57"}]}, "confidence": 0.93, "boundingPoly": {"normalizedVertices": [{"x": 0.9323, "y": 0.3649}, {"x": 0.9516, "y": 0.3649}, {"x": 0.9516, "y": 0.3763}, {"x": 0.9323, "y": 0.3763}]}}}
+        ]
+      }
+    ]
+  }
+}

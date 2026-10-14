@@ -1,0 +1,62 @@
+{
+ "rule": "ADR-02@1",
+ "cases": [
+  {
+   "name": "consistent case",
+   "patch": {},
+   "expect": []
+  },
+  {
+   "name": "street without diacritics",
+   "patch": {
+    "set": {
+     "D3": {
+      "address_street": [
+       "kosciuszki",
+       "ul. Kosciuszki"
+      ]
+     }
+    }
+   },
+   "expect": [
+    {
+     "outcome": "match_after_normalization",
+     "subjects": [
+      "D3"
+     ],
+     "fields": [
+      "address_street"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "patron initial only",
+   "patch": {
+    "set": {
+     "D3": {
+      "address_street": [
+       "kosciuszki",
+       "Kościuszki"
+      ]
+     }
+    }
+   },
+   "expect": []
+  },
+  {
+   "name": "different street is not a spelling",
+   "patch": {
+    "set": {
+     "D3": {
+      "address_street": [
+       "polna",
+       "ul. Polna"
+      ]
+     }
+    }
+   },
+   "expect": []
+  }
+ ]
+}
