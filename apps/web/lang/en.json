@@ -211,5 +211,6 @@
     "upload.accepted": "“:name” — accepted, analysis in progress.",
     "upload.duplicate": "“:name” — this file is already in the case.",
     "upload.rejected.infected": "“:name” — rejected: malware detected.",
+    "upload.rejected.storage": "“:name” — not saved: document storage is unavailable, try again later.",
     "upload.rejected.unsupported_type": "“:name” — rejected: only PDF, PNG and JPEG are allowed."
 }

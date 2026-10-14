@@ -269,5 +269,6 @@
     "upload.accepted": "„:name” — przyjęto, trwa analiza.",
     "upload.duplicate": "„:name” — ten plik jest już w sprawie.",
     "upload.rejected.infected": "„:name” — odrzucono: wykryto złośliwe oprogramowanie.",
+    "upload.rejected.storage": "„:name” — nie zapisano: magazyn dokumentów jest niedostępny, spróbuj ponownie później.",
     "upload.rejected.unsupported_type": "„:name” — odrzucono: dozwolone są tylko PDF, PNG i JPEG."
 }

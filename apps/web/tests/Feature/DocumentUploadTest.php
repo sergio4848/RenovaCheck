@@ -9,6 +9,7 @@ use App\Models\Document;
 use App\Services\Antivirus\InfectedFile;
 use App\Services\Antivirus\Scanner;
 use App\Tenancy\TenantContext;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -187,6 +188,24 @@ class DocumentUploadTest extends TestCase
         app(TenantContext::class)->activate($owner);
         $this->assertSame(1, Document::query()->count());
         $this->assertSame([], Storage::disk('s3')->allFiles());
+        $this->assertSame(0, AuditEvent::query()->where('event_type', 'document.uploaded')->count());
+        Queue::assertNothingPushed();
+    }
+
+    public function test_a_failed_storage_write_records_nothing(): void
+    {
+        $owner = $this->member();
+        $case = $this->caseFor($owner);
+        // The s3 disk does not throw (throw => false): a denied write only returns false.
+        $disk = \Mockery::mock(Filesystem::class);
+        $disk->shouldReceive('putFileAs')->once()->andReturn(false);
+        Storage::set('s3', $disk);
+
+        $this->actingAs($owner->user)->post("/cases/{$case->id}/documents", ['files' => [$this->pdf()]])
+            ->assertSessionHas('upload_results', ['„faktura.pdf” — nie zapisano: magazyn dokumentów jest niedostępny, spróbuj ponownie później.']);
+
+        app(TenantContext::class)->activate($owner);
+        $this->assertSame(0, Document::query()->count());
         $this->assertSame(0, AuditEvent::query()->where('event_type', 'document.uploaded')->count());
         Queue::assertNothingPushed();
     }

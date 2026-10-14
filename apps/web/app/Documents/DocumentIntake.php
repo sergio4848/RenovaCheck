@@ -57,9 +57,16 @@ final class DocumentIntake
         $document->organization_id = $case->organization_id;
         $document->storage_key = $document->storagePrefix().'original.'.FileSniffer::EXTENSIONS[$mime];
 
-        Storage::disk(config('documents.disk'))->putFileAs(
+        // The disk does not throw: a refused or failed write returns false. Never record a document
+        // whose file is not in storage, or analysis would run against a missing object.
+        $stored = Storage::disk(config('documents.disk'))->putFileAs(
             dirname($document->storage_key), $file, basename($document->storage_key), ['visibility' => 'private'],
         );
+        if ($stored === false) {
+            report(new \RuntimeException("Document storage write failed for {$document->storage_key}"));
+
+            return IntakeResult::rejected($file, 'storage');
+        }
 
         try {
             $this->persist($document);
