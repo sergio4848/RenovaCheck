@@ -103,6 +103,9 @@ return [
     |
     */
 
+    // The cache holds rate-limit counters and job locks only: never unserialize objects from it.
+    'serializable_classes' => false,
+
     'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
 
 ];

@@ -20,6 +20,9 @@ return [
 
     'driver' => env('SESSION_DRIVER', 'database'),
 
+    // Sessions hold scalars only (the active organization id); JSON rules out PHP object injection.
+    'serialization' => 'json',
+
     /*
     |--------------------------------------------------------------------------
     | Session Lifetime
