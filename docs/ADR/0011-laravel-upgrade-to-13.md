@@ -142,15 +142,32 @@ between remain valid under Laravel 11, so no data migration is involved.
   remains an accepted risk (ASSUMPTIONS J2).
 * Expected effort is small. The spike needed no code changes; the work is dependency updates,
   two config lines, the image rebuild and the end-to-end checks.
-* Not yet verified, and left to the migration branch:
-  * the Docker image built with Laravel 13;
-  * the Playwright demo against that image;
-  * JSON sessions in Redis behind the real login flow (only the test session driver was
-    exercised).
 * Users are signed out once when sessions switch to JSON.
 * Afterwards, minor Laravel releases carry security fixes. CI should run `composer audit` so a new
   advisory fails the build instead of waiting for someone to notice. That is a small follow-up,
   not part of this upgrade.
+
+## Implementation (2026-10-14)
+
+* Commits on the working branch:
+  * `chore: upgrade Laravel 11 to 12 (ADR-0011, step 1)` with the lock verified in the spike;
+  * `chore: upgrade Laravel 12 to 13 (ADR-0011, step 2)` with Laravel 13.36.0, tinker 3,
+    PHPUnit 12, Guzzle 8, `"php": "^8.3"`, and the cache/session hardening.
+* Checked on the result:
+  * `composer audit` clean;
+  * `php artisan test`: 128 passed;
+  * Pint;
+  * migrations apply → roll back → re-apply, seed twice;
+  * `make up` with the rebuilt web image (Laravel 13.36.0 in the container);
+  * `make test` (web 127 passed + 1 skipped as before, extract 242, synth 31), `make lint`,
+    `make eval-quick`.
+* Playwright demo on SYN-2026-012 against the rebuilt image: upload → findings → decisions → close
+  → PDF and CSV report, with no CSP or console errors. The CSV lists PRD-01 as unapproved before
+  the decisions and all three findings as decided afterwards.
+* Sessions created after the upgrade are stored in Redis as JSON (`{"_token":…`). Sessions from
+  before the upgrade remain PHP-serialized until they expire, and those users sign in again.
+* Not done here: the Laravel 12 commit was not run through CI on its own, because it was pushed
+  together with step 2; the spike covered it with the identical lock file.
 
 ## Sources
 
