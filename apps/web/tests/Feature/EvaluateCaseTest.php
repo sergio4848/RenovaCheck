@@ -13,8 +13,10 @@ use App\Models\Membership;
 use App\Services\AuditLog;
 use App\Tenancy\TenantContext;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -201,6 +203,9 @@ class EvaluateCaseTest extends TestCase
         $events = app(TenantContext::class)->run($this->owner, fn () => AuditEvent::query()->pluck('event_type')->all());
         $this->assertContains('case.evaluation_failed', $events);
         $this->assertNotContains('case.evaluated', $events);
+        $failed = app(TenantContext::class)->run($this->owner, fn () => CaseEvaluation::query()->sole());
+        $this->assertSame('failed', $failed->status);
+        $this->assertSame('invalid_rules_response', $failed->error_code);
     }
 
     public function test_job_for_another_organization_sees_nothing(): void
@@ -252,7 +257,7 @@ class EvaluateCaseTest extends TestCase
         $this->evaluate();
         $finding = $this->findings()->sole();
         $this->actingAs($this->owner->user)->post("/cases/{$this->case->id}/findings/{$finding->id}/decisions", [
-            'decision' => 'rozbieznosc', 'comment' => 'Numer 52 na fakturze jest błędny.',
+            'decision' => 'rozbieznosc', 'comment' => 'Numer 52 na fakturze jest błędny.', 'evidence_hash' => $finding->evidence_hash,
         ])->assertSessionHasNoErrors();
 
         $this->evaluate(force: true);
@@ -274,5 +279,28 @@ class EvaluateCaseTest extends TestCase
         $this->evaluate();
 
         $this->assertSame('in_review', app(TenantContext::class)->run($this->owner, fn () => $this->case->refresh()->status));
+    }
+
+    public function test_closed_cases_are_not_re_evaluated(): void
+    {
+        app(TenantContext::class)->run($this->owner, fn () => $this->case->forceFill(['status' => 'closed'])->save());
+        Http::fake();
+
+        $this->evaluate(force: true);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_analysis_requests_carry_the_organizations_consent(): void
+    {
+        $this->asOwner(fn () => DB::table('organizations')
+            ->where('id', $this->owner->organization_id)->update(['allow_external_processing' => true]));
+        Http::fake(['extract:8000/*' => Http::response([], 422)]);
+        Storage::fake('s3');
+        Storage::disk('s3')->buildTemporaryUrlsUsing(fn (string $path) => "http://minio:9000/b/{$path}?sig=1");
+
+        app(TenantContext::class)->run($this->owner, fn () => rescue(fn () => app(ExtractClient::class)->analyze($this->invoice)));
+
+        Http::assertSent(fn ($request) => $request['allow_external'] === true);
     }
 }

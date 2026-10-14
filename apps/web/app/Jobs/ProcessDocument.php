@@ -66,7 +66,9 @@ class ProcessDocument implements ShouldQueue
                 return;
             }
 
-            DB::transaction(function () use ($document, $result, $audit) {
+            DB::transaction(function () use (&$document, $result, $audit) {
+                // Fresh, locked copy: the stored type may have been set by a person meanwhile.
+                $document = Document::query()->lockForUpdate()->findOrFail($document->id);
                 $document->pages()->delete();
                 foreach ($result['pages'] as $page) {
                     $document->pages()->create($page);
@@ -105,6 +107,7 @@ class ProcessDocument implements ShouldQueue
                     'confidence' => $classification['confidence'],
                     'pages' => $result['page_count'],
                     'ocr_provider' => $result['ocr_provider'],
+                    'llm_provider' => $result['extraction']['llm_provider'] ?? null,
                     'fields' => count($result['fields']),
                     'unreadable' => count(array_filter($result['fields'], fn ($f) => $f['status'] === 'unreadable')),
                 ]);

@@ -25,6 +25,11 @@ class DocumentController extends Controller
         if ($caseFile->status === 'closed') {
             return self::closed($caseFile);
         }
+        $limit = (int) config('documents.max_documents_per_case');
+        if ($caseFile->documents()->count() + count($request->file('files')) > $limit) {
+            return redirect()->route('cases.show', $caseFile)
+                ->withErrors(['files' => __('A case can hold at most :max documents.', ['max' => $limit])]);
+        }
         $results = [];
         foreach ($request->file('files') as $file) {
             $results[] = $intake->accept($caseFile, $file, $request->user());
@@ -56,11 +61,17 @@ class DocumentController extends Controller
         $validated = $request->validate(['doc_type' => ['required', Rule::enum(DocType::class)]]);
         $previous = $document->doc_type?->value;
 
-        DB::transaction(function () use ($document, $validated, $previous, $audit) {
+        $changed = DB::transaction(function () use ($document, $validated, $previous, $audit) {
+            // Only a finished document can be retyped: a running analysis would overwrite the type.
+            $document = Document::query()->lockForUpdate()->findOrFail($document->id);
+            if ($document->status !== 'processed') {
+                return false;
+            }
             $document->forceFill([
                 'doc_type' => DocType::from($validated['doc_type']),
                 'doc_type_source' => 'user',
                 'doc_type_confidence' => null,
+                'status' => 'uploaded',
             ])->save();
             $audit->record('document.type_corrected', $document, [
                 'from' => $previous,
@@ -68,11 +79,14 @@ class DocumentController extends Controller
                 'classifier' => $document->classification['doc_type'] ?? null,
             ]);
             // The type decides which fields are read: analyse again with the corrected type.
-            if ($document->status === 'processed') {
-                $document->forceFill(['status' => 'uploaded'])->save();
-                ProcessDocument::dispatch($document->organization_id, $document->id)->afterCommit();
-            }
+            ProcessDocument::dispatch($document->organization_id, $document->id)->afterCommit();
+
+            return true;
         });
+        if (! $changed) {
+            return redirect()->route('cases.show', $caseFile)
+                ->withErrors(['case' => __('The document is still being processed; change its type afterwards.')]);
+        }
 
         return redirect()->route('cases.show', $caseFile)->with('status', __('Document type updated.'));
     }

@@ -54,14 +54,15 @@ class EvaluateCase implements ShouldQueue
     {
         $tenant->runForOrganization($this->organizationId, function () use ($extract, $audit) {
             $case = CaseFile::query()->find($this->caseFileId);
-            if ($case === null || $case->documents()->whereIn('status', ['uploaded', 'processing'])->exists()) {
-                return; // the last document to finish processing dispatches the evaluation again
+            if ($case === null || $case->status === 'closed'
+                || $case->documents()->whereIn('status', ['uploaded', 'processing'])->exists()) {
+                return; // closed cases keep their reviewed state; pending documents re-dispatch later
             }
-            $documents = $case->documents()->with(['pages', 'fields'])->whereIn('status', ['processed', 'failed'])->get();
+            $documents = self::evaluatedDocuments($case);
             $input = self::input($case, $documents);
-            $inputHash = hash('sha256', json_encode($input, JSON_THROW_ON_ERROR));
+            $inputHash = self::hash($input);
             $latest = $case->evaluations()->latest('created_at')->first();
-            if (! $this->force && $latest?->input_hash === $inputHash) {
+            if (! $this->force && $latest?->status === 'ok' && $latest->input_hash === $inputHash) {
                 return; // nothing changed since the last evaluation
             }
 
@@ -71,13 +72,38 @@ class EvaluateCase implements ShouldQueue
                 if ($e->retryable) {
                     throw $e; // retried with backoff until retryUntil()
                 }
-                $audit->record('case.evaluation_failed', $case, ['error_code' => $e->errorCode]);
+                DB::transaction(function () use ($case, $inputHash, $e, $audit) {
+                    // Recorded so the case page shows it and the case cannot be closed on stale findings.
+                    CaseEvaluation::query()->create([
+                        'case_file_id' => $case->id, 'input_hash' => $inputHash, 'status' => 'failed',
+                        'error_code' => mb_substr($e->errorCode, 0, 64), 'findings_count' => 0,
+                    ]);
+                    $audit->record('case.evaluation_failed', $case, ['error_code' => $e->errorCode]);
+                });
 
                 return;
             }
 
             DB::transaction(fn () => $this->store($case, $result, $inputHash, $audit));
         });
+    }
+
+    /** @return Collection<int, Document> */
+    public static function evaluatedDocuments(CaseFile $case): Collection
+    {
+        return $case->documents()->with(['pages', 'fields'])->whereIn('status', ['processed', 'failed'])->get();
+    }
+
+    /** Hash of what the rules would read now; equal to the latest evaluation's when it is up to date. */
+    public static function currentInputHash(CaseFile $case): string
+    {
+        return self::hash(self::input($case, self::evaluatedDocuments($case)));
+    }
+
+    /** @param  array<string, mixed>  $input */
+    private static function hash(array $input): string
+    {
+        return hash('sha256', json_encode($input, JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -119,7 +145,12 @@ class EvaluateCase implements ShouldQueue
     private function store(CaseFile $case, array $result, string $inputHash, AuditLog $audit): void
     {
         $now = now();
-        $existing = $case->findings()->get()->keyBy('fingerprint');
+        // Locks: a concurrent close or decision waits for this evaluation (and the other way round).
+        $case = CaseFile::query()->lockForUpdate()->findOrFail($case->id);
+        if ($case->status === 'closed') {
+            return;
+        }
+        $existing = $case->findings()->lockForUpdate()->get()->keyBy('fingerprint');
         $reported = [];
         $new = 0;
         $reopened = 0;
@@ -167,6 +198,7 @@ class EvaluateCase implements ShouldQueue
         }
         CaseEvaluation::query()->create([
             'case_file_id' => $case->id,
+            'status' => 'ok',
             'input_hash' => $inputHash,
             'reference_date' => $result['reference_date'],
             'reference_source' => $result['reference_source'],

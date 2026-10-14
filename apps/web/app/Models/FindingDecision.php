@@ -16,11 +16,11 @@ class FindingDecision extends Model
 
     public const UPDATED_AT = null;
 
-    protected $fillable = ['finding_id', 'decision', 'comment', 'decided_by', 'evidence_hash', 'rule_version'];
+    protected $fillable = ['finding_id', 'decision', 'comment', 'decided_by', 'evidence_hash', 'rule_version', 'reason_pl', 'evidence'];
 
     protected function casts(): array
     {
-        return ['created_at' => 'immutable_datetime', 'rule_version' => 'integer'];
+        return ['created_at' => 'immutable_datetime', 'rule_version' => 'integer', 'evidence' => 'array'];
     }
 
     /** @return BelongsTo<User, $this> */

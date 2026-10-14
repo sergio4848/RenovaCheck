@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\EvaluateCase;
 use App\Models\AuditEvent;
+use App\Models\CaseEvaluation;
 use App\Models\CaseFile;
 use App\Models\Document;
 use App\Models\Finding;
@@ -84,7 +86,16 @@ class FindingReviewTest extends TestCase
     private function decide(Finding $finding, array $data, ?Membership $as = null): TestResponse
     {
         return $this->actingAs(($as ?? $this->owner)->user)
-            ->post("/cases/{$this->case->id}/findings/{$finding->id}/decisions", $data);
+            ->post("/cases/{$this->case->id}/findings/{$finding->id}/decisions", $data + ['evidence_hash' => $finding->evidence_hash]);
+    }
+
+    /** A successful evaluation of the case's current documents (closing requires one). */
+    private function markEvaluated(): void
+    {
+        $this->asTenant(fn () => CaseEvaluation::query()->create([
+            'case_file_id' => $this->case->id, 'status' => 'ok', 'input_hash' => EvaluateCase::currentInputHash($this->case),
+            'reference_date' => '2026-03-02', 'reference_source' => 'application_date', 'ruleset' => [], 'findings_count' => 2,
+        ]));
     }
 
     public function test_review_screen_shows_evidence_boxes_on_signed_page_images(): void
@@ -116,6 +127,8 @@ class FindingReviewTest extends TestCase
             $this->assertSame($this->owner->user_id, $finding->decided_by);
             $row = FindingDecision::query()->sole();
             $this->assertSame('Numer 52 na fakturze — błąd wystawcy.', $row->comment);
+            $this->assertSame($finding->reason_pl, $row->reason_pl);
+            $this->assertSame('52', $row->evidence[0]['value']);
             $this->assertSame(str_repeat('e', 64), $row->evidence_hash);
             $event = AuditEvent::query()->where('event_type', 'finding.decided')->sole();
             $this->assertSame('rozbieznosc', $event->payload['decision']);
@@ -217,7 +230,11 @@ class FindingReviewTest extends TestCase
         $critical = $this->finding();
         $this->finding('info');
 
-        $this->actingAs($this->owner->user)->post("/cases/{$this->case->id}/close")->assertSessionHasErrors('case');
+        $this->actingAs($this->owner->user)->post("/cases/{$this->case->id}/close")
+            ->assertSessionHasErrors(['case' => 'Nie można zamknąć: sprawa nie została sprawdzona dla obecnych dokumentów. Użyj „Sprawdź ponownie”.']);
+        $this->markEvaluated();
+        $this->actingAs($this->owner->user)->post("/cases/{$this->case->id}/close")
+            ->assertSessionHasErrors(['case' => 'Nie można zamknąć: 1 ustalenie krytyczne czeka na decyzję.']);
         $this->assertNotSame('closed', $this->asTenant(fn () => $this->case->refresh()->status));
 
         $this->decide($critical, ['decision' => 'rozbieznosc', 'comment' => 'potwierdzone']);
@@ -266,5 +283,52 @@ class FindingReviewTest extends TestCase
             $this->assertDoesNotMatchRegularExpression('/\sstyle\s*=/i', $html, "inline style on {$url}");
             $this->assertDoesNotMatchRegularExpression('/\son[a-z]+\s*=/i', $html, "inline handler on {$url}");
         }
+    }
+
+    public function test_a_decision_on_values_the_reviewer_did_not_see_is_rejected(): void
+    {
+        $finding = $this->finding();
+
+        $this->actingAs($this->owner->user)->post("/cases/{$this->case->id}/findings/{$finding->id}/decisions", [
+            'decision' => 'zgodne', 'comment' => 'ok', 'evidence_hash' => str_repeat('a', 64),
+        ])->assertSessionHasErrors('decision');
+
+        $this->assertSame(0, $this->asTenant(fn () => FindingDecision::query()->count()));
+    }
+
+    public function test_closing_is_refused_while_documents_are_processing_or_the_last_check_failed(): void
+    {
+        $this->markEvaluated();
+        $this->asTenant(fn () => CaseEvaluation::query()->create([
+            'case_file_id' => $this->case->id, 'status' => 'failed', 'error_code' => 'invalid_rules_response',
+            'input_hash' => EvaluateCase::currentInputHash($this->case), 'findings_count' => 0,
+        ]));
+        $this->actingAs($this->owner->user)->post("/cases/{$this->case->id}/close")->assertSessionHasErrors('case');
+        $this->actingAs($this->owner->user)->get("/cases/{$this->case->id}")->assertSee('Ostatnie sprawdzenie nie powiodło się');
+
+        $this->markEvaluated();
+        $this->asTenant(fn () => $this->invoice->forceFill(['status' => 'processing'])->save());
+        $this->actingAs($this->owner->user)->post("/cases/{$this->case->id}/close")
+            ->assertSessionHasErrors(['case' => 'Nie można zamknąć: dokumenty są jeszcze przetwarzane.']);
+    }
+
+    public function test_type_changes_wait_until_the_document_is_processed(): void
+    {
+        $this->asTenant(fn () => $this->invoice->forceFill(['status' => 'processing'])->save());
+
+        $this->actingAs($this->owner->user)
+            ->patch("/cases/{$this->case->id}/documents/{$this->invoice->id}/type", ['doc_type' => 'umowa'])
+            ->assertSessionHasErrors('case');
+        $this->assertSame('classifier', $this->asTenant(fn () => $this->invoice->refresh()->doc_type_source));
+    }
+
+    public function test_decisions_are_rate_limited(): void
+    {
+        $finding = $this->finding('info');
+        for ($i = 0; $i < 60; $i++) {
+            $this->decide($finding, ['decision' => 'zgodne']);
+        }
+
+        $this->decide($finding, ['decision' => 'zgodne'])->assertStatus(429);
     }
 }

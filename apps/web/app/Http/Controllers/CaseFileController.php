@@ -77,24 +77,45 @@ class CaseFileController extends Controller
             'events' => $events,
             'documents' => $documents,
             'findings' => $findings,
-            'evaluation' => $caseFile->evaluations()->latest('created_at')->first(),
+            'evaluation' => $evaluation = $caseFile->evaluations()->latest('created_at')->first(),
+            // Findings describe the current documents only when the latest run succeeded on them.
+            'evaluationCurrent' => $evaluation?->status === 'ok'
+                && ! $documents->contains(fn ($d) => in_array($d->status, ['uploaded', 'processing'], true))
+                && $evaluation->input_hash === EvaluateCase::currentInputHash($caseFile),
         ]);
     }
 
-    /** Closing confirms the review: every current critical finding needs a (still valid) decision. */
+    /**
+     * Closing confirms the review. It needs an up-to-date, successful evaluation of every
+     * processed document and a valid decision on every current critical finding.
+     */
     public function close(CaseFile $caseFile, AuditLog $audit): RedirectResponse
     {
-        $undecided = $caseFile->findings()->open()->where('severity', 'critical')->count();
-        if ($undecided > 0) {
-            return redirect()->route('cases.show', $caseFile)
-                ->withErrors(['case' => trans_choice('Cannot close: :count critical finding still needs a decision.|Cannot close: :count critical findings still need a decision.', $undecided, ['count' => $undecided])]);
-        }
-        if ($caseFile->status !== 'closed') {
-            DB::transaction(function () use ($caseFile, $audit) {
-                $from = $caseFile->status;
-                $caseFile->forceFill(['status' => 'closed'])->save();
-                $audit->record('case.status_changed', $caseFile, ['from' => $from, 'to' => 'closed']);
-            });
+        $error = DB::transaction(function () use ($caseFile, $audit) {
+            $case = CaseFile::query()->lockForUpdate()->findOrFail($caseFile->id);
+            if ($case->status === 'closed') {
+                return null;
+            }
+            if ($case->documents()->whereIn('status', ['uploaded', 'processing'])->exists()) {
+                return __('Cannot close: documents are still being processed.');
+            }
+            $latest = $case->evaluations()->latest('created_at')->first();
+            if ($latest === null || $latest->status !== 'ok' || $latest->input_hash !== EvaluateCase::currentInputHash($case)) {
+                return __('Cannot close: the case has not been checked against its current documents. Use "Check again".');
+            }
+            // Decisions and evaluations lock the case row first, so this count cannot change underneath.
+            $undecided = $case->findings()->open()->where('severity', 'critical')->count();
+            if ($undecided > 0) {
+                return trans_choice('Cannot close: :count critical finding still needs a decision.|Cannot close: :count critical findings still need a decision.', $undecided, ['count' => $undecided]);
+            }
+            $from = $case->status;
+            $case->forceFill(['status' => 'closed'])->save();
+            $audit->record('case.status_changed', $case, ['from' => $from, 'to' => 'closed']);
+
+            return null;
+        });
+        if ($error !== null) {
+            return redirect()->route('cases.show', $caseFile)->withErrors(['case' => $error]);
         }
 
         return redirect()->route('cases.show', $caseFile)->with('status', __('Case closed.'));

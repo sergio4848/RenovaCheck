@@ -4,6 +4,8 @@ return [
     'disk' => 's3',
     'public_disk' => 's3-public',
     'max_files_per_upload' => 20,
+    // The rule engine reads at most 50 documents per case.
+    'max_documents_per_case' => 40,
     'max_file_kb' => 20 * 1024,
     // Lifetime of signed URLs handed to the browser and to the extraction service.
     'browser_url_minutes' => 5,

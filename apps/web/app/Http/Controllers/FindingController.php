@@ -43,8 +43,9 @@ class FindingController extends Controller
         $validated = $request->validate([
             'decision' => ['required', Rule::in(FindingDecision::DECISIONS)],
             'comment' => ['nullable', 'string', 'max:2000'],
+            'evidence_hash' => ['required', 'string', 'regex:/^[0-9a-f]{64}$/'],
         ]);
-        $decide($finding, $validated['decision'], $validated['comment'] ?? null, $request->user());
+        $decide($finding, $validated['decision'], $validated['comment'] ?? null, $validated['evidence_hash'], $request->user());
 
         $next = self::reviewOrder($caseFile)->first(fn (Finding $f) => $f->isOpen() && $f->id !== $finding->id);
 

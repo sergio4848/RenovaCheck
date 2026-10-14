@@ -73,7 +73,7 @@
                         <div class="card-header">
                             <h3 class="card-title">{{ __('Findings') }}</h3>
                             <div class="card-actions d-flex align-items-center gap-3">
-                                @if ($evaluation)
+                                @if ($evaluation?->status === 'ok')
                                     <span class="small text-secondary">
                                         {{ __('Checked :when · rules valid on :date (:count)', ['when' => $evaluation->created_at->format('Y-m-d H:i'), 'date' => $evaluation->reference_date->format('d.m.Y'), 'count' => count($evaluation->ruleset)]) }}
                                     </span>
@@ -86,9 +86,24 @@
                                 @endif
                             </div>
                         </div>
+                        @if ($evaluation?->status === 'failed')
+                            <div class="alert alert-warning m-3 mb-0" role="status">
+                                {{ __('The last check failed (:code). The findings below may be out of date; use "Check again".', ['code' => $evaluation->error_code]) }}
+                            </div>
+                        @elseif ($evaluation && ! $evaluationCurrent)
+                            <div class="alert alert-info m-3 mb-0" role="status">
+                                {{ __('The documents changed after the last check; the findings are updated when processing finishes.') }}
+                            </div>
+                        @endif
                         @if ($findings->isEmpty())
                             <div class="card-body text-secondary">
-                                {{ $evaluation ? __('No findings: the documents are consistent under the current rules.') : __('The case has not been checked yet. It is checked automatically once all documents are processed.') }}
+                                @if (! $evaluation)
+                                    {{ __('The case has not been checked yet. It is checked automatically once all documents are processed.') }}
+                                @elseif ($evaluationCurrent)
+                                    {{ __('No findings: the documents are consistent under the current rules.') }}
+                                @else
+                                    {{ __('No current findings.') }}
+                                @endif
                             </div>
                         @else
                             <div class="list-group list-group-flush">

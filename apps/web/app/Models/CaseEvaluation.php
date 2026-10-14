@@ -11,7 +11,7 @@ class CaseEvaluation extends Model
 {
     use BelongsToOrganization, HasUuids;
 
-    protected $fillable = ['case_file_id', 'input_hash', 'reference_date', 'reference_source', 'ruleset', 'findings_count'];
+    protected $fillable = ['case_file_id', 'input_hash', 'status', 'error_code', 'reference_date', 'reference_source', 'ruleset', 'findings_count'];
 
     protected function casts(): array
     {

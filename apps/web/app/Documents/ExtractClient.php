@@ -4,6 +4,7 @@ namespace App\Documents;
 
 use App\Models\Document;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
@@ -31,6 +32,8 @@ final class ExtractClient
                     'output_prefix' => $document->storagePrefix(),
                     // A type set by a person decides which fields are read.
                     'doc_type' => $document->doc_type_source === 'user' ? $document->doc_type?->value : null,
+                    // Cloud OCR and the LLM helper only with the organization's consent.
+                    'allow_external' => (bool) DB::selectOne('SELECT app_org_allows_external() AS allowed')->allowed,
                 ]);
         } catch (ConnectionException $e) {
             throw new ExtractFailed('extract_unreachable', retryable: true, previous: $e);

@@ -124,6 +124,8 @@
                                 @else
                                     <form method="POST" action="{{ route('findings.decide', [$case, $finding]) }}">
                                         @csrf
+                                        {{-- The decision applies to exactly the values shown on this page. --}}
+                                        <input type="hidden" name="evidence_hash" value="{{ $finding->evidence_hash }}">
                                         <fieldset class="mb-3">
                                             <legend class="form-label">{{ __('Reviewer decision') }}</legend>
                                             <div class="d-grid gap-2">
